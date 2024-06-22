@@ -1,0 +1,336 @@
+:root {
+    --base-color: #121212;
+    --accent-color: #00ffff;
+    --text-primary: #f0f0f0;
+    --text-secondary: #d0d0d0;
+    --text-tertiary: #999;
+    --bg-secondary: #181818;
+    --bg-tertiary: #222;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: var(--base-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+header {
+    background-color: var(--bg-secondary);
+    padding: 1rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--bg-tertiary);
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.auth-btn {
+    background-color: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--accent-color);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.auth-btn:hover {
+    background-color: var(--accent-color);
+    color: var(--base-color);
+}
+
+main {
+    padding: 2rem 5%;
+}
+
+#search-bar {
+    margin-bottom: 2rem;
+}
+
+#search-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+#featured-artist {
+    position: relative;
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+#featured-artist-carousel {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+
+#featured-artist > div {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 2rem;
+    gap: 2rem;
+}
+
+#featured-artist img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text-primary);
+    font-size: 2rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.carousel-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+#prev-featured { left: 1rem; }
+#next-featured { right: 1rem; }
+
+#categories {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.category {
+    background-color: var(--bg-tertiary);
+    padding: 0.75rem 1.5rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.category:hover {
+    background-color: var(--accent-color);
+    color: var(--base-color);
+}
+
+section {
+    margin-bottom: 3rem;
+}
+
+h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+}
+
+.carousel {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.stream-container {
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.stream-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.stream-preview {
+    background-color: var(--bg-tertiary);
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.stream-info {
+    padding: 1rem;
+}
+
+.stream-title {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.artist-name {
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+}
+
+.stream-time {
+    font-size: 0.9rem;
+    color: var(--text-tertiary);
+    margin-top: 0.3rem;
+}
+
+#create-stream {
+    background-color: var(--accent-color);
+    color: var(--base-color);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    position: fixed;
+    right: 2rem;
+    bottom: 2rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+#create-stream:hover {
+    background-color: #00cccc;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: var(--bg-secondary);
+    margin: 10% auto;
+    padding: 2rem;
+    border: 1px solid var(--accent-color);
+    width: 350px;
+    border-radius: 8px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.close {
+    color: var(--text-tertiary);
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: var(--accent-color);
+}
+
+.modal h2 {
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: var(--text-primary);
+}
+
+.modal form {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal input {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border: none;
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: 4px;
+}
+
+.modal button {
+    background-color: var(--accent-color);
+    color: var(--base-color);
+    border: none;
+    padding: 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-weight: bold;
+}
+
+.modal button:hover {
+    background-color: #00cccc;
+}
+
+footer {
+    background-color: var(--bg-secondary);
+    padding: 1rem 5%;
+    text-align: center;
+    margin-top: 3rem;
+}
+
+.follow-btn {
+    background-color: var(--accent-color);
+    border: none;
+    color: var(--base-color);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.follow-btn:hover {
+    background-color: #00cccc;
+}
+
+#notifications {
+    margin-top: 2rem;
+    color: var(--accent-color);
+    cursor: pointer;
+    text-align: center;
+}
+
+#notifications:hover {
+    text-decoration: underline;
+}
+
+#upcoming-streams {
+    margin-top: 3rem;
+}

@@ -1,0 +1,167 @@
+const liveStreamsContainer = document.getElementById('live-streams-container');
+const popularVideosContainer = document.getElementById('popular-videos-container');
+const upcomingStreamsContainer = document.getElementById('upcoming-streams-container');
+const createStreamButton = document.getElementById('create-stream');
+const loginButton = document.getElementById('login-btn');
+const signupButton = document.getElementById('signup-btn');
+const loginModal = document.getElementById('login-modal');
+const signupModal = document.getElementById('signup-modal');
+const closeBtns = document.getElementsByClassName('close');
+const prevFeaturedBtn = document.getElementById('prev-featured');
+const nextFeaturedBtn = document.getElementById('next-featured');
+const notifications = document.getElementById('notifications');
+let featuredIndex = 0;
+
+// Sample data
+const sampleLiveStreams = [
+    { title: "Neon Cityscape Digital Painting", artist: "CyberArtist42" },
+    { title: "Sculpting Alien Lifeforms", artist: "GalacticSculptor" },
+    { title: "Holographic Portrait Session", artist: "FuturePortraits" },
+    { title: "AI-Assisted Abstract Art", artist: "NeuralBrush" },
+    { title: "Quantum Brushstrokes", artist: "QuantumPainter" },
+];
+
+const samplePopularVideos = [
+    { title: "Quantum Canvas Masterclass", artist: "QuantumArtist" },
+    { title: "3D Printed Sculpture Timelapse", artist: "PrintMaster3000" },
+    { title: "Virtual Reality Mural Creation", artist: "VRMuralPro" },
+    { title: "Bioluminescent Body Painting", artist: "GlowingArtistry" },
+    { title: "Nano-Art: Painting with Atoms", artist: "AtomicArtisan" },
+];
+
+const sampleUpcomingStreams = [
+    { title: "Digital Painting Techniques", artist: "PixelPainter", time: "3:00 PM" },
+    { title: "3D Modeling for Beginners", artist: "ModelMaster", time: "5:00 PM" },
+    { title: "Advanced Animation Tips", artist: "AnimPro", time: "7:00 PM" },
+];
+
+const sampleFeaturedArtists = [
+    { name: "NeonDreamer", description: "Cyberpunk-inspired digital art", image: "images/artist.jpg" },
+    { name: "GalacticSculptor", description: "Extraterrestrial-themed sculptures", image: "images/artist2.jpeg" },
+    { name: "FuturePortraits", description: "Holographic portraits", image: 
+    "images/artist3.jpg" },
+];
+
+// Function to create a stream element
+function createStreamElement(stream) {
+    const streamElement = document.createElement('div');
+    streamElement.className = 'stream-container';
+    streamElement.innerHTML = `
+        <div class="stream-preview">
+            <p>Stream Preview</p>
+        </div>
+        <div class="stream-info">
+            <div class="stream-title">${stream.title}</div>
+            <div class="artist-name">${stream.artist}</div>
+        </div>
+    `;
+    return streamElement;
+}
+
+// Function to create an upcoming stream element
+function createUpcomingStreamElement(stream) {
+    const streamElement = document.createElement('div');
+    streamElement.className = 'stream-container';
+    streamElement.innerHTML = `
+        <div class="stream-info">
+            <div class="stream-title">${stream.title}</div>
+            <div class="artist-name">${stream.artist}</div>
+            <div class="stream-time">${stream.time}</div>
+        </div>
+    `;
+    return streamElement;
+}
+
+// Add sample streams to the page
+sampleLiveStreams.forEach(stream => {
+    liveStreamsContainer.appendChild(createStreamElement(stream));
+});
+
+samplePopularVideos.forEach(video => {
+    popularVideosContainer.appendChild(createStreamElement(video));
+});
+
+sampleUpcomingStreams.forEach(stream => {
+    upcomingStreamsContainer.appendChild(createUpcomingStreamElement(stream));
+});
+
+// Handle create stream button click
+createStreamButton.addEventListener('click', () => {
+    alert('Starting a new stream... (This feature would be implemented in a full version)');
+});
+
+// Modal functionality
+loginButton.onclick = () => loginModal.style.display = "block";
+signupButton.onclick = () => signupModal.style.display = "block";
+
+for (let closeBtn of closeBtns) {
+    closeBtn.onclick = function() {
+        loginModal.style.display = "none";
+        signupModal.style.display = "none";
+    }
+}
+
+window.onclick = function(event) {
+    if (event.target == loginModal) {
+        loginModal.style.display = "none";
+    }
+    if (event.target == signupModal) {
+        signupModal.style.display = "none";
+    }
+}
+
+// Handle form submissions
+document.getElementById('login-form').onsubmit = function(e) {
+    e.preventDefault();
+    alert('Login functionality would be implemented here');
+    loginModal.style.display = "none";
+}
+
+document.getElementById('signup-form').onsubmit = function(e) {
+    e.preventDefault();
+    alert('Sign up functionality would be implemented here');
+    signupModal.style.display = "none";
+}
+
+// Handle category clicks
+document.querySelectorAll('.category').forEach(category => {
+    category.addEventListener('click', (e) => {
+        alert(`Filtering by ${e.target.textContent}... (This feature would be implemented in a full version)`);
+    });
+});
+
+// Handle search
+document.getElementById('search-input').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        alert(`Searching for "${this.value}"... (This feature would be implemented in a full version)`);
+    }
+});
+
+// Handle featured artist carousel
+function updateFeaturedArtist(index) {
+    const featuredArtist = sampleFeaturedArtists[index];
+    const img = document.querySelector('#featured-artist img');
+    const name = document.querySelector('#featured-artist h3');
+    const description = document.querySelector('#featured-artist p');
+    img.src = featuredArtist.image;
+    name.textContent = featuredArtist.name;
+    description.textContent = featuredArtist.description;
+}
+
+prevFeaturedBtn.addEventListener('click', () => {
+    featuredIndex = (featuredIndex - 1 + sampleFeaturedArtists.length) % sampleFeaturedArtists.length;
+    updateFeaturedArtist(featuredIndex);
+});
+
+nextFeaturedBtn.addEventListener('click', () => {
+    featuredIndex = (featuredIndex + 1) % sampleFeaturedArtists.length;
+    updateFeaturedArtist(featuredIndex);
+});
+
+// Initialize the featured artist carousel
+updateFeaturedArtist(featuredIndex);
+
+// Handle notifications
+notifications.addEventListener('click', () => {
+    alert('Notifications for live streams enabled! (This feature would be implemented in a full version)');
+});
