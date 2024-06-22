@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArtStream - Waiting Room</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center" x-data="waitingRoomData()">
+    <div class="max-w-4xl w-full p-8 space-y-8">
+        <h1 class="text-4xl font-bold text-center text-cyan-400">Waiting Room</h1>
+        
+        <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <div class="p-6 space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-semibold text-cyan-300" x-text="streamName"></h2>
+                    <span class="px-3 py-1 bg-cyan-500 text-white rounded-full text-sm" x-text="streamCategory"></span>
+                </div>
+                
+                <p class="text-gray-300" x-text="streamDescription"></p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gray-700 rounded-lg p-4 flex items-center">
+                        <i class="fas fa-users text-2xl text-cyan-400 mr-3"></i>
+                        <div>
+                            <p class="text-sm text-gray-400">Artists</p>
+                            <p class="text-lg font-semibold"><span x-text="currentArtists"></span>/<span x-text="maxArtists"></span></p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-700 rounded-lg p-4 flex items-center">
+                        <i class="fas fa-clock text-2xl text-cyan-400 mr-3"></i>
+                        <div>
+                            <p class="text-sm text-gray-400">Estimated Duration</p>
+                            <p class="text-lg font-semibold" x-text="estimatedDuration"></p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-700 rounded-lg p-4 flex items-center">
+                        <i class="fas fa-comments text-2xl text-cyan-400 mr-3"></i>
+                        <div>
+                            <p class="text-sm text-gray-400">Chat</p>
+                            <p class="text-lg font-semibold" x-text="chatEnabled ? 'Enabled' : 'Disabled'"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-700 p-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                <div class="flex items-center space-x-2">
+                    <span class="w-3 h-3 bg-green-500 rounded-full pulse"></span>
+                    <p class="text-green-400">Ready to go live</p>
+                </div>
+                <button @click="goLive" class="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105">
+                    Go Live
+                </button>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-gray-800 rounded-lg p-6 space-y-4">
+                <h3 class="text-xl font-semibold text-cyan-300">Connected Artists</h3>
+                <ul class="space-y-2">
+                    <template x-for="artist in connectedArtists" :key="artist.id">
+                        <li class="flex items-center space-x-3">
+                            <img :src="artist.avatar" :alt="artist.name" class="w-10 h-10 rounded-full">
+                            <span x-text="artist.name"></span>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+            
+            <div class="bg-gray-800 rounded-lg p-6 space-y-4">
+                <h3 class="text-xl font-semibold text-cyan-300">Stream Settings</h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span>Video Quality</span>
+                        <select class="bg-gray-700 rounded px-2 py-1">
+                            <option>720p</option>
+                            <option>1080p</option>
+                            <option>1440p</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Audio Input</span>
+                        <select class="bg-gray-700 rounded px-2 py-1">
+                            <option>Default Microphone</option>
+                            <option>External Mic</option>
+                        </select>
+                    </div>
+                    <button class="w-full mt-4 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded transition duration-300 ease-in-out">
+                        Check Stream Health
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function waitingRoomData() {
+            return {
+                streamName: "Collaborative Digital Art Session",
+                streamCategory: "Digital Art",
+                streamDescription: "Join us for an exciting collaborative digital art session where we'll be creating a futuristic cityscape!",
+                currentArtists: 1,
+                maxArtists: 5,
+                estimatedDuration: "2 hours",
+                chatEnabled: true,
+                connectedArtists: [
+                    { id: 1, name: "ArtMaster42", avatar: "https://i.pravatar.cc/150?img=1" },
+                    { id: 2, name: "DigitalDreamer", avatar: "https://i.pravatar.cc/150?img=2" },
+                    { id: 3, name: "BrushWizard", avatar: "https://i.pravatar.cc/150?img=3" }
+                ],
+                goLive() {
+                    alert("Going live! This is where you'd transition to the live stream interface.");
+                }
+            }
+        }
+    </script>
+</body>
+</html>
