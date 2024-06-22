@@ -6,122 +6,207 @@
     <title>ArtStream - Waiting Room</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        .float { animation: float 6s ease-in-out infinite; }
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-        .pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
+        .spin { animation: spin 20s linear infinite; }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center" x-data="waitingRoomData()">
-    <div class="max-w-4xl w-full p-8 space-y-8">
-        <h1 class="text-4xl font-bold text-center text-cyan-400">Waiting Room</h1>
+<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 min-h-screen" x-data="waitingRoomData()">
+    <div class="max-w-6xl mx-auto p-8 space-y-8">
+        <header class="text-center">
+            <h1 class="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+                Waiting Room
+            </h1>
+            <p class="text-xl text-cyan-300">Get ready to create something amazing!</p>
+        </header>
         
-        <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-            <div class="p-6 space-y-6">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-2xl font-semibold text-cyan-300" x-text="streamName"></h2>
-                    <span class="px-3 py-1 bg-cyan-500 text-white rounded-full text-sm" x-text="streamCategory"></span>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg">
+                <div class="p-6 space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-3xl font-semibold text-cyan-300" x-text="streamName"></h2>
+                        <span class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full text-sm font-bold" x-text="streamCategory"></span>
+                    </div>
+                    
+                    <p class="text-gray-300 text-lg" x-text="streamDescription"></p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-gray-700 rounded-lg p-4 flex items-center transform hover:scale-105 transition-transform">
+                            <i class="fas fa-users text-3xl text-cyan-400 mr-3"></i>
+                            <div>
+                                <p class="text-sm text-gray-400">Artists</p>
+                                <p class="text-2xl font-semibold"><span x-text="currentArtists"></span>/<span x-text="maxArtists"></span></p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-700 rounded-lg p-4 flex items-center transform hover:scale-105 transition-transform">
+                            <i class="fas fa-clock text-3xl text-cyan-400 mr-3"></i>
+                            <div>
+                                <p class="text-sm text-gray-400">Estimated Duration</p>
+                                <p class="text-2xl font-semibold" x-text="estimatedDuration"></p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-700 rounded-lg p-4 flex items-center transform hover:scale-105 transition-transform">
+                            <i class="fas fa-comments text-3xl text-cyan-400 mr-3"></i>
+                            <div>
+                                <p class="text-sm text-gray-400">Chat</p>
+                                <p class="text-2xl font-semibold" x-text="chatEnabled ? 'Enabled' : 'Disabled'"></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <p class="text-gray-300" x-text="streamDescription"></p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-gray-700 rounded-lg p-4 flex items-center">
-                        <i class="fas fa-users text-2xl text-cyan-400 mr-3"></i>
-                        <div>
-                            <p class="text-sm text-gray-400">Artists</p>
-                            <p class="text-lg font-semibold"><span x-text="currentArtists"></span>/<span x-text="maxArtists"></span></p>
-                        </div>
+                <div class="bg-gray-700 p-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-4 h-4 bg-green-500 rounded-full pulse"></span>
+                        <p class="text-green-400 text-lg">Ready to go live</p>
                     </div>
-                    <div class="bg-gray-700 rounded-lg p-4 flex items-center">
-                        <i class="fas fa-clock text-2xl text-cyan-400 mr-3"></i>
-                        <div>
-                            <p class="text-sm text-gray-400">Estimated Duration</p>
-                            <p class="text-lg font-semibold" x-text="estimatedDuration"></p>
-                        </div>
-                    </div>
-                    <div class="bg-gray-700 rounded-lg p-4 flex items-center">
-                        <i class="fas fa-comments text-2xl text-cyan-400 mr-3"></i>
-                        <div>
-                            <p class="text-sm text-gray-400">Chat</p>
-                            <p class="text-lg font-semibold" x-text="chatEnabled ? 'Enabled' : 'Disabled'"></p>
-                        </div>
-                    </div>
+                    <button @click="goLive" class="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white text-xl font-bold rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50">
+                        Go Live
+                    </button>
                 </div>
             </div>
             
-            <div class="bg-gray-700 p-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                <div class="flex items-center space-x-2">
-                    <span class="w-3 h-3 bg-green-500 rounded-full pulse"></span>
-                    <p class="text-green-400">Ready to go live</p>
-                </div>
-                <button @click="goLive" class="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105">
-                    Go Live
-                </button>
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="bg-gray-800 rounded-lg p-6 space-y-4">
-                <h3 class="text-xl font-semibold text-cyan-300">Connected Artists</h3>
-                <ul class="space-y-2">
+            <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-6">
+                <h3 class="text-2xl font-semibold text-cyan-300">Connected Artists</h3>
+                <ul class="space-y-4">
                     <template x-for="artist in connectedArtists" :key="artist.id">
-                        <li class="flex items-center space-x-3">
-                            <img :src="artist.avatar" :alt="artist.name" class="w-10 h-10 rounded-full">
-                            <span x-text="artist.name"></span>
+                        <li class="flex items-center space-x-4 bg-gray-700 rounded-lg p-3 transform hover:scale-105 transition-transform">
+                            <img :src="artist.avatar" :alt="artist.name" class="w-12 h-12 rounded-full border-2 border-cyan-400">
+                            <div>
+                                <span x-text="artist.name" class="font-semibold"></span>
+                                <p class="text-sm text-gray-400" x-text="artist.specialty"></p>
+                            </div>
                         </li>
                     </template>
                 </ul>
+                <div class="text-center" x-show="currentArtists < maxArtists">
+                    <p class="text-lg text-cyan-300 mb-2">Waiting for more artists...</p>
+                    <div class="inline-block">
+                        <i class="fas fa-spinner fa-spin text-4xl text-cyan-400"></i>
+                    </div>
+                </div>
             </div>
-            
-            <div class="bg-gray-800 rounded-lg p-6 space-y-4">
-                <h3 class="text-xl font-semibold text-cyan-300">Stream Settings</h3>
-                <div class="space-y-2">
-                    <div class="flex justify-between">
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-4">
+                <h3 class="text-2xl font-semibold text-cyan-300">Stream Settings</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
                         <span>Video Quality</span>
-                        <select class="bg-gray-700 rounded px-2 py-1">
+                        <select class="bg-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                             <option>720p</option>
                             <option>1080p</option>
                             <option>1440p</option>
                         </select>
                     </div>
-                    <div class="flex justify-between">
+                    <div class="flex justify-between items-center">
                         <span>Audio Input</span>
-                        <select class="bg-gray-700 rounded px-2 py-1">
+                        <select class="bg-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                             <option>Default Microphone</option>
                             <option>External Mic</option>
                         </select>
                     </div>
-                    <button class="w-full mt-4 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded transition duration-300 ease-in-out">
+                    <button class="w-full mt-4 px-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50">
                         Check Stream Health
                     </button>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-4">
+                <h3 class="text-2xl font-semibold text-cyan-300">Audience Engagement</h3>
+                <canvas id="engagementChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        
+        <div class="fixed bottom-4 right-4 z-10">
+            <button @click="toggleChat" class="bg-cyan-500 hover:bg-cyan-600 text-white rounded-full p-4 shadow-lg transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50">
+                <i class="fas fa-comments text-2xl"></i>
+            </button>
+        </div>
+        
+        <div x-show="showChat" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform translate-x-full" x-transition:enter-end="opacity-100 transform translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 transform translate-x-0" x-transition:leave-end="opacity-0 transform translate-x-full" class="fixed top-0 right-0 w-80 h-full bg-gray-800 bg-opacity-90 backdrop-filter backdrop-blur-lg shadow-lg overflow-hidden">
+            <div class="p-4 border-b border-gray-700">
+                <h3 class="text-xl font-semibold text-cyan-300">Pre-Stream Chat</h3>
+            </div>
+            <div class="h-full overflow-y-auto p-4 space-y-4">
+                <div class="bg-gray-700 rounded-lg p-3">
+                    <p class="font-semibold">ArtEnthusiast:</p>
+                    <p>Can't wait for the stream to start!</p>
+                </div>
+                <div class="bg-gray-700 rounded-lg p-3">
+                    <p class="font-semibold">CreativeSoul:</p>
+                    <p>What tools will you be using today?</p>
                 </div>
             </div>
         </div>
     </div>
 
+
     <script>
         function waitingRoomData() {
             return {
-                streamName: "Collaborative Digital Art Session",
+                streamName: "Collaborative Digital Art Extravaganza",
                 streamCategory: "Digital Art",
-                streamDescription: "Join us for an exciting collaborative digital art session where we'll be creating a futuristic cityscape!",
-                currentArtists: 1,
+                streamDescription: "Join us for an epic collaborative digital art session where we'll be creating a mind-bending futuristic cityscape! Get ready to push the boundaries of imagination!",
+                currentArtists: 3,
                 maxArtists: 5,
-                estimatedDuration: "2 hours",
+                estimatedDuration: "2.5 hours",
                 chatEnabled: true,
+                showChat: false,
                 connectedArtists: [
-                    { id: 1, name: "ArtMaster42", avatar: "https://i.pravatar.cc/150?img=1" },
-                    { id: 2, name: "DigitalDreamer", avatar: "https://i.pravatar.cc/150?img=2" },
-                    { id: 3, name: "BrushWizard", avatar: "https://i.pravatar.cc/150?img=3" }
+                    { id: 1, name: "ArtMaster42", specialty: "Concept Art", avatar: "https://i.pravatar.cc/150?img=1" },
+                    { id: 2, name: "DigitalDreamer", specialty: "3D Modeling", avatar: "https://i.pravatar.cc/150?img=2" },
+                    { id: 3, name: "BrushWizard", specialty: "Digital Painting", avatar: "https://i.pravatar.cc/150?img=3" }
                 ],
                 goLive() {
-                    alert("Going live! This is where you'd transition to the live stream interface.");
+                    alert("🎉 Going live! Time to create some amazing art!");
+                },
+                toggleChat() {
+                    this.showChat = !this.showChat;
+                },
+                init() {
+                    this.initEngagementChart();
+                },
+                initEngagementChart() {
+                    const ctx = document.getElementById('engagementChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['1 week ago', '6 days ago', '5 days ago', '4 days ago', '3 days ago', '2 days ago', 'Yesterday'],
+                            datasets: [{
+                                label: 'Viewer Engagement',
+                                data: [65, 59, 80, 81, 56, 55, 90],
+                                fill: false,
+                                borderColor: 'rgb(6, 182, 212)',
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
                 }
             }
         }
