@@ -36,10 +36,9 @@ const sampleUpcomingStreams = [
 ];
 
 const sampleFeaturedArtists = [
-    { name: "NeonDreamer", description: "Cyberpunk-inspired digital art", image: "images/artist.jpg" },
-    { name: "GalacticSculptor", description: "Extraterrestrial-themed sculptures", image: "images/artist2.jpeg" },
-    { name: "FuturePortraits", description: "Holographic portraits", image: 
-    "images/artist3.jpg" },
+    { name: "NeonDreamer", description: "Cyberpunk-inspired digital art", image: "/images/artist.jpg" },
+    { name: "GalacticSculptor", description: "Extraterrestrial-themed sculptures", image: "/images/artist2.jpeg" },
+    { name: "FuturePortraits", description: "Holographic portraits", image: "/images/artist3.jpg" },
 ];
 
 // Function to create a stream element
@@ -111,16 +110,51 @@ window.onclick = function(event) {
 }
 
 // Handle form submissions
-document.getElementById('login-form').onsubmit = function(e) {
+document.getElementById('login-form').onsubmit = async function(e) {
     e.preventDefault();
-    alert('Login functionality would be implemented here');
-    loginModal.style.display = "none";
+    const email = e.target[0].value;
+    const password = e.target[1].value;
+    try {
+        const response = await fetch('http://localhost:3000/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        if (response.ok) {
+            document.querySelector('.auth-buttons').innerHTML = `Welcome ${data.username}!`;
+            loginModal.style.display = "none";
+            e.target.reset();
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        console.error('Login error:', err);
+    }
 }
 
-document.getElementById('signup-form').onsubmit = function(e) {
+document.getElementById('signup-form').onsubmit = async function(e) {
     e.preventDefault();
-    alert('Sign up functionality would be implemented here');
-    signupModal.style.display = "none";
+    const username = e.target[0].value;
+    const email = e.target[1].value;
+    const password = e.target[2].value;
+    try {
+        const response = await fetch('http://localhost:3000/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, password })
+        });
+        const data = await response.json();
+        if (response.ok) {
+            document.querySelector('.auth-buttons').innerHTML = `Welcome ${data.username}!`;
+            signupModal.style.display = "none";
+            e.target.reset();
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        console.error('Sign up error:', err);
+    }
 }
 
 // Handle category clicks
@@ -165,3 +199,4 @@ updateFeaturedArtist(featuredIndex);
 notifications.addEventListener('click', () => {
     alert('Notifications for live streams enabled! (This feature would be implemented in a full version)');
 });
+
