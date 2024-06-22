@@ -76,6 +76,18 @@
             display: flex;
             align-items: center;
         }
+        #featured-artist-carousel {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .carousel-btn {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
         #featured-artist img {
             width: 80px;
             height: 80px;
@@ -221,6 +233,30 @@
             text-align: center;
             margin-top: 3rem;
         }
+        .follow-btn {
+            background-color: var(--accent-color);
+            border: none;
+            color: var(--bg-color);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        .follow-btn:hover {
+            background-color: #00cccc;
+        }
+        #notifications {
+            margin-top: 2rem;
+            color: var(--accent-color);
+            cursor: pointer;
+        }
+        #notifications:hover {
+            text-decoration: underline;
+        }
+        #upcoming-streams {
+            margin-top: 3rem;
+        }
     </style>
 </head>
 <body>
@@ -260,6 +296,13 @@
                 <!-- Popular videos will be dynamically added here -->
             </div>
         </section>
+        <section id="upcoming-streams">
+            <h2>Upcoming Streams</h2>
+            <div class="carousel" id="upcoming-streams-container">
+                <!-- Upcoming streams will be dynamically added here -->
+            </div>
+        </section>
+        <div id="notifications">Enable notifications for live streams</div>
     </main>
     <footer>
         <p>&copy; 2024 ArtStream. All rights reserved.</p>
@@ -296,14 +339,19 @@
     <script>
         const liveStreamsContainer = document.getElementById('live-streams-container');
         const popularVideosContainer = document.getElementById('popular-videos-container');
+        const upcomingStreamsContainer = document.getElementById('upcoming-streams-container');
         const createStreamButton = document.getElementById('create-stream');
         const loginButton = document.getElementById('login-btn');
         const signupButton = document.getElementById('signup-btn');
         const loginModal = document.getElementById('login-modal');
         const signupModal = document.getElementById('signup-modal');
         const closeBtns = document.getElementsByClassName('close');
+        const prevFeaturedBtn = document.getElementById('prev-featured');
+        const nextFeaturedBtn = document.getElementById('next-featured');
+        const notifications = document.getElementById('notifications');
+        let featuredIndex = 0;
 
-        // Sample stream data
+        // Sample data
         const sampleLiveStreams = [
             { title: "Neon Cityscape Digital Painting", artist: "CyberArtist42" },
             { title: "Sculpting Alien Lifeforms", artist: "GalacticSculptor" },
@@ -318,6 +366,18 @@
             { title: "Virtual Reality Mural Creation", artist: "VRMuralPro" },
             { title: "Bioluminescent Body Painting", artist: "GlowingArtistry" },
             { title: "Nano-Art: Painting with Atoms", artist: "AtomicArtisan" },
+        ];
+
+        const sampleUpcomingStreams = [
+            { title: "Digital Painting Techniques", artist: "PixelPainter", time: "3:00 PM" },
+            { title: "3D Modeling for Beginners", artist: "ModelMaster", time: "5:00 PM" },
+            { title: "Advanced Animation Tips", artist: "AnimPro", time: "7:00 PM" },
+        ];
+
+        const sampleFeaturedArtists = [
+            { name: "NeonDreamer", description: "Cyberpunk-inspired digital art", image: "artist.jpg" },
+            { name: "GalacticSculptor", description: "Extraterrestrial-themed sculptures", image: "artist2.jpg" },
+            { name: "FuturePortraits", description: "Holographic portraits", image: "artist3.jpg" },
         ];
 
         // Function to create a stream element
@@ -336,6 +396,20 @@
             return streamElement;
         }
 
+        // Function to create an upcoming stream element
+        function createUpcomingStreamElement(stream) {
+            const streamElement = document.createElement('div');
+            streamElement.className = 'stream-container';
+            streamElement.innerHTML = `
+                <div class="stream-info">
+                    <div class="stream-title">${stream.title}</div>
+                    <div class="artist-name">${stream.artist}</div>
+                    <div class="stream-time">${stream.time}</div>
+                </div>
+            `;
+            return streamElement;
+        }
+
         // Add sample streams to the page
         sampleLiveStreams.forEach(stream => {
             liveStreamsContainer.appendChild(createStreamElement(stream));
@@ -343,6 +417,10 @@
 
         samplePopularVideos.forEach(video => {
             popularVideosContainer.appendChild(createStreamElement(video));
+        });
+
+        sampleUpcomingStreams.forEach(stream => {
+            upcomingStreamsContainer.appendChild(createUpcomingStreamElement(stream));
         });
 
         // Handle create stream button click
@@ -395,6 +473,35 @@
             if (e.key === 'Enter') {
                 alert(`Searching for "${this.value}"... (This feature would be implemented in a full version)`);
             }
+        });
+
+        // Handle featured artist carousel
+        function updateFeaturedArtist(index) {
+            const featuredArtist = sampleFeaturedArtists[index];
+            const img = document.querySelector('#featured-artist img');
+            const name = document.querySelector('#featured-artist h3');
+            const description = document.querySelector('#featured-artist p');
+            img.src = featuredArtist.image;
+            name.textContent = featuredArtist.name;
+            description.textContent = featuredArtist.description;
+        }
+
+        prevFeaturedBtn.addEventListener('click', () => {
+            featuredIndex = (featuredIndex - 1 + sampleFeaturedArtists.length) % sampleFeaturedArtists.length;
+            updateFeaturedArtist(featuredIndex);
+        });
+
+        nextFeaturedBtn.addEventListener('click', () => {
+            featuredIndex = (featuredIndex + 1) % sampleFeaturedArtists.length;
+            updateFeaturedArtist(featuredIndex);
+        });
+
+        // Initialize the featured artist carousel
+        updateFeaturedArtist(featuredIndex);
+
+        // Handle notifications
+        notifications.addEventListener('click', () => {
+            alert('Notifications for live streams enabled! (This feature would be implemented in a full version)');
         });
     </script>
 </body>
