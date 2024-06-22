@@ -10,6 +10,12 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
         .custom-range::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -57,98 +63,107 @@
             to { transform: rotate(360deg); }
         }
         .spin { animation: spin 20s linear infinite; }
+
+        .bg-art-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239C92AC' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 min-h-screen p-8" x-data="setupData()">
-    <div class="max-w-4xl mx-auto space-y-8">
-        <h1 class="text-5xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Set Up Your Stream</h1>
+<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 min-h-screen p-8 bg-art-pattern" x-data="setupData()">
+    <div class="max-w-6xl mx-auto space-y-8">
+        <header class="text-center mb-12">
+            <h1 class="text-6xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Set Up Your Stream</h1>
+            <p class="text-xl text-gray-300">Bring your artistic vision to life and connect with your audience</p>
+        </header>
 
-        <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg p-6">
-            <form @submit.prevent="submitForm" class="space-y-6">
+        <div class="bg-gray-800 bg-opacity-50 backdrop-blur-sm rounded-lg shadow-lg p-8">
+            <form @submit.prevent="submitForm" class="space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block mb-2 font-semibold" for="streamName">
+                                <i class="fas fa-video mr-2 text-cyan-400"></i>Stream Name
+                            </label>
+                            <input id="streamName" x-model="streamName" type="text" placeholder="Enter your stream name" class="w-full bg-gray-700 border border-gray-600 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition duration-300">
+                        </div>
+
+                        <div>
+                            <label class="block mb-2 font-semibold" for="streamCategory">
+                                <i class="fas fa-tags mr-2 text-cyan-400"></i>Stream Category
+                            </label>
+                            <select id="streamCategory" x-model="streamCategory" class="w-full bg-gray-700 border border-gray-600 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition duration-300">
+                                <option value="">Select a category</option>
+                                <option value="digital-art">Digital Art</option>
+                                <option value="traditional-art">Traditional Art</option>
+                                <option value="3d-modeling">3D Modeling</option>
+                                <option value="animation">Animation</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block mb-2 font-semibold" for="streamDescription">
+                                <i class="fas fa-info-circle mr-2 text-cyan-400"></i>Stream Description
+                            </label>
+                            <textarea id="streamDescription" x-model="streamDescription" placeholder="Describe your stream..." class="w-full bg-gray-700 border border-gray-600 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition duration-300" rows="4"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block mb-2 font-semibold">
+                                <i class="fas fa-users mr-2 text-cyan-400"></i>Max Number of Artists
+                            </label>
+                            <input type="range" x-model="maxArtists" min="2" max="15" step="1" class="w-full custom-range">
+                            <span class="block mt-2 text-sm text-gray-400">Current: <span x-text="maxArtists"></span> artists</span>
+                        </div>
+
+                        <div>
+                            <label class="block mb-2 font-semibold">
+                                <i class="fas fa-clock mr-2 text-cyan-400"></i>Estimated Duration
+                            </label>
+                            <select x-model="estimatedDuration" class="w-full bg-gray-700 border border-gray-600 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition duration-300">
+                                <option value="30">30 minutes</option>
+                                <option value="60">1 hour</option>
+                                <option value="90">1.5 hours</option>
+                                <option value="120">2 hours</option>
+                                <option value="180">3 hours</option>
+                                <option value="240">4+ hours</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center space-x-4">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" x-model="isScheduled" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+                                <span class="ml-3 font-semibold"><i class="far fa-calendar-alt mr-2 text-cyan-400"></i>Schedule for Later</span>
+                            </label>
+                        </div>
+
+                        <div x-show="isScheduled" x-transition class="ml-8">
+                            <label class="block mb-2 font-semibold" for="scheduleTime">
+                                <i class="far fa-clock mr-2 text-cyan-400"></i>Start Time
+                            </label>
+                            <input id="scheduleTime" x-model="scheduleTime" type="text" placeholder="Select date and time" class="w-full bg-gray-700 border border-gray-600 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition duration-300">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block mb-2 font-semibold" for="streamName">
-                            <i class="fas fa-video mr-2"></i>Stream Name
-                        </label>
-                        <input id="streamName" x-model="streamName" type="text" placeholder="Enter your stream name" class="w-full bg-gray-800 border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                    </div>
-
-                    <div>
-                        <label class="block mb-2 font-semibold" for="streamCategory">
-                            <i class="fas fa-tags mr-2"></i>Stream Category
-                        </label>
-                        <select id="streamCategory" x-model="streamCategory" class="w-full bg-gray-800 border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                            <option value="">Select a category</option>
-                            <option value="digital-art">Digital Art</option>
-                            <option value="traditional-art">Traditional Art</option>
-                            <option value="3d-modeling">3D Modeling</option>
-                            <option value="animation">Animation</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block mb-2 font-semibold" for="streamDescription">
-                        <i class="fas fa-info-circle mr-2"></i>Stream Description
-                    </label>
-                    <textarea id="streamDescription" x-model="streamDescription" placeholder="Describe your stream..." class="w-full bg-gray-800 border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-cyan-500" rows="4"></textarea>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block mb-2 font-semibold">
-                            <i class="fas fa-users mr-2"></i>Max Number of Artists
-                        </label>
-                        <input type="range" x-model="maxArtists" min="2" max="15" step="1" class="w-full custom-range">
-                        <span class="block mt-2 text-sm text-gray-400">Current: <span x-text="maxArtists"></span> artists</span>
-                    </div>
-
-                    <div>
-                        <label class="block mb-2 font-semibold">
-                            <i class="fas fa-clock mr-2"></i>Estimated Duration
-                        </label>
-                        <select x-model="estimatedDuration" class="w-full bg-gray-800 border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                            <option value="30">30 minutes</option>
-                            <option value="60">1 hour</option>
-                            <option value="90">1.5 hours</option>
-                            <option value="120">2 hours</option>
-                            <option value="180">3 hours</option>
-                            <option value="240">4+ hours</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="flex items-center space-x-4">
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" x-model="isScheduled" class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
-                        <span class="ml-3 font-semibold"><i class="far fa-calendar-alt mr-2"></i>Schedule for Later</span>
-                    </label>
-                </div>
-
-                <div x-show="isScheduled" x-transition class="ml-8">
-                    <label class="block mb-2 font-semibold" for="scheduleTime">
-                        <i class="far fa-clock mr-2"></i>Start Time
-                    </label>
-                    <input id="scheduleTime" x-model="scheduleTime" type="text" placeholder="Select date and time" class="w-full bg-gray-800 border border-gray-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <button type="button" @click="testCamera" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out">
+                        <button type="button" @click="testCamera" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                             <i class="fas fa-camera mr-2"></i>Test Camera
                         </button>
                         <div x-show="showCameraPreview" class="mt-4 relative">
                             <video id="cameraPreview" class="w-full rounded-md"></video>
-                            <button @click="closeCameraPreview" class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1">
+                            <button @click="closeCameraPreview" class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-red-400">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
                     </div>
 
                     <div>
-                        <button type="button" @click="testMicrophone" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out">
+                        <button type="button" @click="testMicrophone" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                             <i class="fas fa-microphone mr-2"></i>Test Microphone
                         </button>
                         <div x-show="showMicrophonePreview" class="mt-4 relative">
@@ -157,7 +172,7 @@
                                     <div class="audio-bar" :style="{ height: audioLevels[i-1] + '%' }"></div>
                                 </template>
                             </div>
-                            <button @click="closeMicrophonePreview" class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1">
+                            <button @click="closeMicrophonePreview" class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-red-400">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
