@@ -112,13 +112,13 @@ window.onclick = function(event) {
 // Handle form submissions
 document.getElementById('login-form').onsubmit = async function(e) {
     e.preventDefault();
-    const email = e.target[0].value;
+    const username = e.target[0].value;
     const password = e.target[1].value;
     try {
         const response = await fetch('http://localhost:3000/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ username, password })
         });
         const data = await response.json();
         if (response.ok) {
@@ -199,4 +199,3 @@ updateFeaturedArtist(featuredIndex);
 notifications.addEventListener('click', () => {
     alert('Notifications for live streams enabled! (This feature would be implemented in a full version)');
 });
-
