@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArtStream - Join a Server</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(to bottom right, #1a202c, #4a1d96, #312e81);
+        }
+        .card-bg {
+            background: linear-gradient(to right, #4a1d96, #312e81);
+        }
+        .btn-gradient {
+            background: linear-gradient(to right, #06b6d4, #3b82f6);
+        }
+        .text-gradient {
+            background: linear-gradient(to right, #06b6d4, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .scale-102:hover {
+            transform: scale(1.02);
+        }
+        .floating-btn {
+            background: linear-gradient(to right, #ec4899, #8b5cf6);
+        }
+    </style>
+</head>
+<body class="gradient-bg text-white min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-4xl font-extrabold text-center mb-2 text-gradient">
+            Join a Creative Stream
+        </h1>
+        <p class="text-xl text-center text-cyan-300 mb-12">
+            Discover active streams and collaborate with fellow artists!
+        </p>
+        <div id="serverList" class="grid grid-cols-1 gap-8">
+            <!-- Server cards will be dynamically inserted here -->
+        </div>
+    </div>
+    <div class="fixed bottom-8 right-8">
+        <button class="p-4 floating-btn rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50">
+            <i class="fas fa-bolt text-white text-2xl"></i>
+        </button>
+    </div>
+
+    <script>
+        const serverData = [
+            {
+                id: 1,
+                name: "Neon Dreams Collective",
+                category: "Digital Art",
+                description: "Join us for a cyberpunk-inspired digital painting session. We'll be creating a futuristic cityscape bathed in neon lights!",
+                currentArtists: 2,
+                maxArtists: 5,
+                estimatedDuration: "3 hours",
+                chatEnabled: true,
+                tags: ["cyberpunk", "digital painting", "cityscape"]
+            },
+            {
+                id: 2,
+                name: "Sculptors' Haven",
+                category: "3D Modeling",
+                description: "Let's sculpt otherworldly creatures together using ZBrush. Bring your wildest imagination!",
+                currentArtists: 1,
+                maxArtists: 3,
+                estimatedDuration: "2.5 hours",
+                chatEnabled: true,
+                tags: ["3D", "creature design", "ZBrush"]
+            },
+            {
+                id: 3,
+                name: "Watercolor Wonderland",
+                category: "Traditional Art",
+                description: "Relaxing watercolor session focusing on ethereal landscapes. Let's paint serenity!",
+                currentArtists: 3,
+                maxArtists: 4,
+                estimatedDuration: "2 hours",
+                chatEnabled: false,
+                tags: ["watercolor", "landscape", "relaxing"]
+            }
+        ];
+
+        function createServerCard(server) {
+            const card = document.createElement('div');
+            card.className = 'card-bg rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl scale-102 mb-6';
+            card.innerHTML = `
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-cyan-300">${server.name}</h2>
+                        <span class="px-3 py-1 bg-cyan-600 text-white text-sm font-semibold rounded-full">
+                            ${server.category}
+                        </span>
+                    </div>
+                    <p class="text-gray-300 mb-4 description">${server.description.substring(0, 100)}...</p>
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <div class="flex items-center text-cyan-300">
+                            <i class="fas fa-users mr-2"></i>
+                            <span>${server.currentArtists}/${server.maxArtists} Artists</span>
+                        </div>
+                        <div class="flex items-center text-cyan-300">
+                            <i class="fas fa-clock mr-2"></i>
+                            <span>${server.estimatedDuration}</span>
+                        </div>
+                        <div class="flex items-center text-cyan-300">
+                            <i class="fas fa-comments mr-2"></i>
+                            <span>${server.chatEnabled ? 'Chat Enabled' : 'Chat Disabled'}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 tags hidden">
+                        <h3 class="text-lg font-semibold text-cyan-300 mb-2">Tags:</h3>
+                        <div class="flex flex-wrap gap-2">
+                            ${server.tags.map(tag => `
+                                <span class="px-2 py-1 bg-indigo-700 text-cyan-200 rounded-full text-sm">
+                                    #${tag}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-indigo-900 flex justify-between items-center">
+                    <button class="text-cyan-300 flex items-center focus:outline-none toggle-expand">
+                        <i class="fas fa-chevron-down mr-2"></i>
+                        Show More
+                    </button>
+                    <button class="px-4 py-2 btn-gradient text-white font-semibold rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50">
+                        Join Server
+                    </button>
+                </div>
+            `;
+
+            const toggleBtn = card.querySelector('.toggle-expand');
+            const description = card.querySelector('.description');
+            const tags = card.querySelector('.tags');
+
+            toggleBtn.addEventListener('click', () => {
+                const isExpanded = toggleBtn.querySelector('i').classList.contains('fa-chevron-up');
+                if (isExpanded) {
+                    description.textContent = server.description.substring(0, 100) + '...';
+                    tags.classList.add('hidden');
+                    toggleBtn.innerHTML = '<i class="fas fa-chevron-down mr-2"></i> Show More';
+                } else {
+                    description.textContent = server.description;
+                    tags.classList.remove('hidden');
+                    toggleBtn.innerHTML = '<i class="fas fa-chevron-up mr-2"></i> Show Less';
+                }
+            });
+
+            return card;
+        }
+
+        function renderServerList() {
+            const serverList = document.getElementById('serverList');
+            serverData.forEach(server => {
+                serverList.appendChild(createServerCard(server));
+            });
+        }
+
+        renderServerList();
+    </script>
+</body>
+</html>
