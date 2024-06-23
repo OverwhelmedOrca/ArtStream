@@ -3,47 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArtStream - Join a Server</title>
+    <title>ArtStream - Join a Creative Stream</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        .gradient-bg {
-            background: linear-gradient(to bottom right, #1a202c, #4a1d96, #312e81);
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .animated-gradient {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
         }
         .card-bg {
-            background: linear-gradient(to right, #4a1d96, #312e81);
+            background: rgba(76, 29, 149, 0.6);
+            backdrop-filter: blur(10px);
         }
         .btn-gradient {
-            background: linear-gradient(to right, #06b6d4, #3b82f6);
+            background: linear-gradient(to right, #00c6ff, #0072ff);
         }
-        .text-gradient {
-            background: linear-gradient(to right, #06b6d4, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .text-glow {
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.7);
         }
         .scale-102:hover {
             transform: scale(1.02);
         }
         .floating-btn {
-            background: linear-gradient(to right, #ec4899, #8b5cf6);
+            background: linear-gradient(to right, #ff00cc, #333399);
+        }
+        .pulse {
+            box-shadow: 0 0 0 rgba(204,169,44, 0.4);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(204,169,44, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(204,169,44, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(204,169,44, 0);
+            }
         }
     </style>
 </head>
-<body class="gradient-bg text-white min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+<body class="animated-gradient text-white min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
-        <h1 class="text-4xl font-extrabold text-center mb-2 text-gradient">
+        <h1 class="text-5xl font-extrabold text-center mb-2 text-glow">
             Join a Creative Stream
         </h1>
-        <p class="text-xl text-center text-cyan-300 mb-12">
+        <p class="text-xl text-center text-cyan-300 mb-8">
             Discover active streams and collaborate with fellow artists!
         </p>
+        <div class="mb-8 flex justify-center">
+            <input type="text" placeholder="Search streams..." class="px-4 py-2 rounded-l-lg bg-purple-900 border-2 border-cyan-500 text-white focus:outline-none focus:border-cyan-300" id="searchInput">
+            <button class="btn-gradient px-4 py-2 rounded-r-lg text-white" onclick="filterStreams()">Search</button>
+        </div>
+        <div class="mb-8 flex justify-center space-x-4">
+            <button class="px-4 py-2 rounded-full bg-purple-700 text-white hover:bg-purple-600 transition" onclick="filterByCategory('all')">All</button>
+            <button class="px-4 py-2 rounded-full bg-purple-700 text-white hover:bg-purple-600 transition" onclick="filterByCategory('Digital Art')">Digital Art</button>
+            <button class="px-4 py-2 rounded-full bg-purple-700 text-white hover:bg-purple-600 transition" onclick="filterByCategory('3D Modeling')">3D Modeling</button>
+            <button class="px-4 py-2 rounded-full bg-purple-700 text-white hover:bg-purple-600 transition" onclick="filterByCategory('Traditional Art')">Traditional Art</button>
+        </div>
         <div id="serverList" class="grid grid-cols-1 gap-8">
             <!-- Server cards will be dynamically inserted here -->
         </div>
     </div>
-    <div class="fixed bottom-8 right-8">
-        <button class="p-4 floating-btn rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50">
-            <i class="fas fa-bolt text-white text-2xl"></i>
+    <div class="fixed bottom-8 right-8 flex flex-col space-y-4">
+        <button id="notificationBtn" class="p-4 floating-btn rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50" onclick="toggleNotifications()">
+            <i class="fas fa-bell text-white text-2xl"></i>
+        </button>
+        <button class="p-4 floating-btn rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 pulse" onclick="createNewStream()">
+            <i class="fas fa-plus text-white text-2xl"></i>
         </button>
     </div>
 
@@ -58,7 +92,9 @@
                 maxArtists: 5,
                 estimatedDuration: "3 hours",
                 chatEnabled: true,
-                tags: ["cyberpunk", "digital painting", "cityscape"]
+                tags: ["cyberpunk", "digital painting", "cityscape"],
+                viewers: 120,
+                startTime: "2024-06-23T20:00:00Z"
             },
             {
                 id: 2,
@@ -69,7 +105,9 @@
                 maxArtists: 3,
                 estimatedDuration: "2.5 hours",
                 chatEnabled: true,
-                tags: ["3D", "creature design", "ZBrush"]
+                tags: ["3D", "creature design", "ZBrush"],
+                viewers: 85,
+                startTime: "2024-06-23T21:30:00Z"
             },
             {
                 id: 3,
@@ -80,17 +118,23 @@
                 maxArtists: 4,
                 estimatedDuration: "2 hours",
                 chatEnabled: false,
-                tags: ["watercolor", "landscape", "relaxing"]
+                tags: ["watercolor", "landscape", "relaxing"],
+                viewers: 200,
+                startTime: "2024-06-23T19:00:00Z"
             }
         ];
 
         function createServerCard(server) {
             const card = document.createElement('div');
             card.className = 'card-bg rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl scale-102 mb-6';
+            
+            const startTime = new Date(server.startTime);
+            const timeString = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
             card.innerHTML = `
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-2xl font-bold text-cyan-300">${server.name}</h2>
+                        <h2 class="text-3xl font-bold text-cyan-300">${server.name}</h2>
                         <span class="px-3 py-1 bg-cyan-600 text-white text-sm font-semibold rounded-full">
                             ${server.category}
                         </span>
@@ -109,6 +153,14 @@
                             <i class="fas fa-comments mr-2"></i>
                             <span>${server.chatEnabled ? 'Chat Enabled' : 'Chat Disabled'}</span>
                         </div>
+                        <div class="flex items-center text-cyan-300">
+                            <i class="fas fa-eye mr-2"></i>
+                            <span>${server.viewers} viewers</span>
+                        </div>
+                        <div class="flex items-center text-cyan-300">
+                            <i class="fas fa-calendar-alt mr-2"></i>
+                            <span>Starts at ${timeString}</span>
+                        </div>
                     </div>
                     <div class="mt-4 tags hidden">
                         <h3 class="text-lg font-semibold text-cyan-300 mb-2">Tags:</h3>
@@ -126,7 +178,7 @@
                         <i class="fas fa-chevron-down mr-2"></i>
                         Show More
                     </button>
-                    <button class="px-4 py-2 btn-gradient text-white font-semibold rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50">
+                    <button class="px-4 py-2 btn-gradient text-white font-semibold rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50" onclick="joinServer(${server.id})">
                         Join Server
                     </button>
                 </div>
@@ -152,11 +204,47 @@
             return card;
         }
 
-        function renderServerList() {
+        function renderServerList(servers = serverData) {
             const serverList = document.getElementById('serverList');
-            serverData.forEach(server => {
+            serverList.innerHTML = '';
+            servers.forEach(server => {
                 serverList.appendChild(createServerCard(server));
             });
+        }
+
+        function filterStreams() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredServers = serverData.filter(server => 
+                server.name.toLowerCase().includes(searchTerm) || 
+                server.description.toLowerCase().includes(searchTerm) ||
+                server.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+            );
+            renderServerList(filteredServers);
+        }
+
+        function filterByCategory(category) {
+            if (category === 'all') {
+                renderServerList();
+            } else {
+                const filteredServers = serverData.filter(server => server.category === category);
+                renderServerList(filteredServers);
+            }
+        }
+
+        function joinServer(serverId) {
+            const server = serverData.find(s => s.id === serverId);
+            alert(`Joining server: ${server.name}. Redirecting to stream...`);
+            // Here you would typically redirect to the actual stream page
+        }
+
+        function toggleNotifications() {
+            alert("Notifications toggled. You'll receive updates about new streams!");
+            // Implement actual notification logic here
+        }
+
+        function createNewStream() {
+            alert("Creating a new stream. Redirecting to stream setup...");
+            // Redirect to stream setup page
         }
 
         renderServerList();
