@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArtStream Live</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #4a0e4e, #081730, #0a2472);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            display: flex;
+            flex: 1;
+            padding: 20px;
+            gap: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .end-stream-btn {
+            background-color: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .canvas-area {
+            flex: 1;
+            background-color: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .tools {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+        .tool-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .sidebar {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+        .stream-info, .chat-container {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .stream-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+        }
+        .chat-tabs {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .chat-tab {
+            flex: 1;
+            background-color: #2c3e50;
+            border: none;
+            padding: 10px;
+            color: white;
+            cursor: pointer;
+        }
+        .chat-tab.active {
+            background-color: #3498db;
+        }
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .chat-input {
+            display: flex;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px 0 0 5px;
+        }
+        .chat-input button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>ArtStream Live</h1>
+        <button class="end-stream-btn">End Stream</button>
+    </header>
+    <div class="container">
+        <div class="main-content">
+            <div class="canvas-area" id="canvas-area"></div>
+            <div class="tools">
+                <button class="tool-btn">Draw</button>
+                <button class="tool-btn">Camera</button>
+                <button class="tool-btn">Mic</button>
+                <button class="tool-btn">Video</button>
+                <button class="tool-btn">Save</button>
+                <button class="tool-btn">Switch</button>
+            </div>
+        </div>
+        <div class="sidebar">
+            <div class="stream-info">
+                <div class="info-item">⏱️ 1:23:45</div>
+                <div class="info-item">👥 1,234</div>
+                <div class="info-item">🎨 3/5</div>
+                <div class="info-item">👍 567</div>
+            </div>
+            <div class="chat-container">
+                <div class="chat-tabs">
+                    <button class="chat-tab active" data-target="viewers">Viewers</button>
+                    <button class="chat-tab" data-target="artists">Artists</button>
+                </div>
+                <div class="chat-messages" id="chat-messages"></div>
+                <div class="chat-input">
+                    <input type="text" placeholder="Type a message...">
+                    <button>Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Basic functionality for chat tabs
+        document.querySelectorAll('.chat-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                // Here you would typically switch the chat content
+            });
+        });
+
+        // Basic canvas functionality
+        const canvas = document.createElement('canvas');
+        canvas.width = document.getElementById('canvas-area').offsetWidth;
+        canvas.height = document.getElementById('canvas-area').offsetHeight;
+        document.getElementById('canvas-area').appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+
+        function startDrawing(e) {
+            isDrawing = true;
+            draw(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#000';
+
+            ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            ctx.beginPath();
+        }
+    </script>
+</body>
+</html>
