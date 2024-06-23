@@ -1,11 +1,12 @@
 const liveStreamsContainer = document.getElementById('live-streams-container');
 const popularVideosContainer = document.getElementById('popular-videos-container');
 const upcomingStreamsContainer = document.getElementById('upcoming-streams-container');
-const createStreamButton = document.getElementById('create-stream');
+const goLiveButton = document.getElementById('go-live');
 const loginButton = document.getElementById('login-btn');
 const signupButton = document.getElementById('signup-btn');
 const loginModal = document.getElementById('login-modal');
 const signupModal = document.getElementById('signup-modal');
+const liveOptionsModal = document.getElementById('live-options-modal');
 const closeBtns = document.getElementsByClassName('close');
 const prevFeaturedBtn = document.getElementById('prev-featured');
 const nextFeaturedBtn = document.getElementById('next-featured');
@@ -84,9 +85,9 @@ sampleUpcomingStreams.forEach(stream => {
     upcomingStreamsContainer.appendChild(createUpcomingStreamElement(stream));
 });
 
-// Handle create stream button click
-createStreamButton.addEventListener('click', () => {
-    alert('Starting a new stream... (This feature would be implemented in a full version)');
+// Handle go live button click
+goLiveButton.addEventListener('click', () => {
+    liveOptionsModal.style.display = "block";
 });
 
 // Modal functionality
@@ -97,6 +98,7 @@ for (let closeBtn of closeBtns) {
     closeBtn.onclick = function() {
         loginModal.style.display = "none";
         signupModal.style.display = "none";
+        liveOptionsModal.style.display = "none";
     }
 }
 
@@ -106,6 +108,9 @@ window.onclick = function(event) {
     }
     if (event.target == signupModal) {
         signupModal.style.display = "none";
+    }
+    if (event.target == liveOptionsModal) {
+        liveOptionsModal.style.display = "none";
     }
 }
 
