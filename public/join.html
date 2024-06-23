@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArtStream - Join a Creative Stream</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         @keyframes gradientBG {
@@ -48,9 +49,46 @@
                 box-shadow: 0 0 0 0 rgba(204,169,44, 0);
             }
         }
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            padding-top: 100px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
-<body class="animated-gradient text-white min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+<body class="animated-gradient text-white min-h-screen py-12 px-4 sm:px-6 lg:px-8" x-data="joinStreamData()" x-init="init()">
     <div class="max-w-7xl mx-auto">
         <h1 class="text-5xl font-extrabold text-center mb-2 text-glow">
             Join a Creative Stream
@@ -59,195 +97,188 @@
             Discover active streams and collaborate with fellow artists!
         </p>
         <div class="mb-8 flex justify-center">
-            <input type="text" placeholder="Search streams..." class="px-4 py-2 rounded-l-lg bg-purple-900 border-2 border-cyan-500 text-white focus:outline-none focus:border-cyan-300" id="searchInput">
-            <button class="btn-gradient px-4 py-2 rounded-r-lg text-white" onclick="filterStreams()">Search</button>
+            <input type="text" placeholder="Search streams..." class="px-4 py-2 rounded-l-lg bg-purple-900 border-2 border-cyan-500 text-white focus:outline-none focus:border-cyan-300" x-model="searchTerm" @input="filterStreams">
+            <button class="btn-gradient px-4 py-2 rounded-r-lg text-white" @click="filterStreams">Search</button>
         </div>
         <div class="mb-8 flex justify-center space-x-4">
-            <button class="px-4 py-2 rounded-full bg-purple-700 text-white hover:bg-purple-600 transition" onclick="filterByCategory('all')">All</button>
-            <button class="px-4 py-2 rounded-full bg-purple-700 text-white hover:bg-purple-600 transition" onclick="filterByCategory('Digital Art')">Digital Art</button>
-            <button class="px-4 py-2 rounded-full bg-purple-700 text-white hover:bg-purple-600 transition" onclick="filterByCategory('3D Modeling')">3D Modeling</button>
-            <button class="px-4 py-2 rounded-full bg-purple-700 text-white hover:bg-purple-600 transition" onclick="filterByCategory('Traditional Art')">Traditional Art</button>
+            <button class="px-4 py-2 rounded-full bg-purple-700 text-white hover:bg-purple-600 transition" @click="filterByCategory('all')">All</button>
+            <button class="px-4 py-2 rounded-full bg-purple-700 text-white hover:bg-purple-600 transition" @click="filterByCategory('digital-art')">Digital Art</button>
+            <button class="px-4 py-2 rounded-full bg-purple-700 text-white hover:bg-purple-600 transition" @click="filterByCategory('3d-modeling')">3D Modeling</button>
+            <button class="px-4 py-2 rounded-full bg-purple-700 text-white hover:bg-purple-600 transition" @click="filterByCategory('traditional-art')">Traditional Art</button>
         </div>
         <div id="serverList" class="grid grid-cols-1 gap-8">
-            <!-- Server cards will be dynamically inserted here -->
+            <template x-for="stream in filteredStreams" :key="stream._id">
+                <div class="card-bg rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl scale-102 mb-6">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-3xl font-bold text-cyan-300" x-text="stream.name"></h2>
+                            <span class="px-3 py-1 bg-cyan-600 text-white text-sm font-semibold rounded-full" x-text="stream.category"></span>
+                        </div>
+                        <p class="text-gray-300 mb-4" x-text="stream.description"></p>
+                        <div class="flex flex-wrap gap-4 mb-4">
+                            <div class="flex items-center text-cyan-300">
+                                <i class="fas fa-users mr-2"></i>
+                                <span x-text="`${stream.currentArtists}/${stream.maxArtists} Artists`"></span>
+                            </div>
+                            <div class="flex items-center text-cyan-300">
+                                <i class="fas fa-clock mr-2"></i>
+                                <span x-text="stream.estimatedDuration + ' minutes'"></span>
+                            </div>
+                            <div class="flex items-center text-cyan-300">
+                                <i class="fas fa-comments mr-2"></i>
+                                <span x-text="stream.chatEnabled ? 'Chat Enabled' : 'Chat Disabled'"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-6 py-4 bg-indigo-900 flex justify-between items-center">
+                        <button class="px-4 py-2 btn-gradient text-white font-semibold rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50" @click="joinStream(stream._id)">
+                            Join Stream
+                        </button>
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
+
     <div class="fixed bottom-8 right-8 flex flex-col space-y-4">
-        <button id="notificationBtn" class="p-4 floating-btn rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50" onclick="toggleNotifications()">
+        <button id="notificationBtn" class="p-4 floating-btn rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50" @click="toggleNotifications">
             <i class="fas fa-bell text-white text-2xl"></i>
         </button>
-        <button class="p-4 floating-btn rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 pulse" onclick="createNewStream()">
+        <button class="p-4 floating-btn rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 pulse" onclick="window.location.href='setup.html'">
             <i class="fas fa-plus text-white text-2xl"></i>
         </button>
     </div>
 
+    <!-- The Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Login</h2>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+
     <script>
-        const serverData = [
-            {
-                id: 1,
-                name: "Neon Dreams Collective",
-                category: "Digital Art",
-                description: "Join us for a cyberpunk-inspired digital painting session. We'll be creating a futuristic cityscape bathed in neon lights!",
-                currentArtists: 2,
-                maxArtists: 5,
-                estimatedDuration: "3 hours",
-                chatEnabled: true,
-                tags: ["cyberpunk", "digital painting", "cityscape"],
-                viewers: 120,
-                startTime: "2024-06-23T20:00:00Z"
-            },
-            {
-                id: 2,
-                name: "Sculptors' Haven",
-                category: "3D Modeling",
-                description: "Let's sculpt otherworldly creatures together using ZBrush. Bring your wildest imagination!",
-                currentArtists: 1,
-                maxArtists: 3,
-                estimatedDuration: "2.5 hours",
-                chatEnabled: true,
-                tags: ["3D", "creature design", "ZBrush"],
-                viewers: 85,
-                startTime: "2024-06-23T21:30:00Z"
-            },
-            {
-                id: 3,
-                name: "Watercolor Wonderland",
-                category: "Traditional Art",
-                description: "Relaxing watercolor session focusing on ethereal landscapes. Let's paint serenity!",
-                currentArtists: 3,
-                maxArtists: 4,
-                estimatedDuration: "2 hours",
-                chatEnabled: false,
-                tags: ["watercolor", "landscape", "relaxing"],
-                viewers: 200,
-                startTime: "2024-06-23T19:00:00Z"
-            }
-        ];
+        function joinStreamData() {
+            return {
+                streams: [],
+                filteredStreams: [],
+                searchTerm: '',
+                async init() {
+                    await this.loadStreams();
+                    this.filterStreams();
+                },
+                async loadStreams() {
+                    try {
+                        const response = await fetch('/streams');
+                        const responseText = await response.text(); // Get the response text
+                        console.log('Response text:', responseText); // Debugging: Log the response text
 
-        function createServerCard(server) {
-            const card = document.createElement('div');
-            card.className = 'card-bg rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl scale-102 mb-6';
-            
-            const startTime = new Date(server.startTime);
-            const timeString = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        if (!response.ok) {
+                            console.error('Error response text:', responseText); // Debugging: Log error response text
+                            throw new Error(`Failed to fetch streams: ${responseText}`);
+                        }
 
-            card.innerHTML = `
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-3xl font-bold text-cyan-300">${server.name}</h2>
-                        <span class="px-3 py-1 bg-cyan-600 text-white text-sm font-semibold rounded-full">
-                            ${server.category}
-                        </span>
-                    </div>
-                    <p class="text-gray-300 mb-4 description">${server.description.substring(0, 100)}...</p>
-                    <div class="flex flex-wrap gap-4 mb-4">
-                        <div class="flex items-center text-cyan-300">
-                            <i class="fas fa-users mr-2"></i>
-                            <span>${server.currentArtists}/${server.maxArtists} Artists</span>
-                        </div>
-                        <div class="flex items-center text-cyan-300">
-                            <i class="fas fa-clock mr-2"></i>
-                            <span>${server.estimatedDuration}</span>
-                        </div>
-                        <div class="flex items-center text-cyan-300">
-                            <i class="fas fa-comments mr-2"></i>
-                            <span>${server.chatEnabled ? 'Chat Enabled' : 'Chat Disabled'}</span>
-                        </div>
-                        <div class="flex items-center text-cyan-300">
-                            <i class="fas fa-eye mr-2"></i>
-                            <span>${server.viewers} viewers</span>
-                        </div>
-                        <div class="flex items-center text-cyan-300">
-                            <i class="fas fa-calendar-alt mr-2"></i>
-                            <span>Starts at ${timeString}</span>
-                        </div>
-                    </div>
-                    <div class="mt-4 tags hidden">
-                        <h3 class="text-lg font-semibold text-cyan-300 mb-2">Tags:</h3>
-                        <div class="flex flex-wrap gap-2">
-                            ${server.tags.map(tag => `
-                                <span class="px-2 py-1 bg-indigo-700 text-cyan-200 rounded-full text-sm">
-                                    #${tag}
-                                </span>
-                            `).join('')}
-                        </div>
-                    </div>
-                </div>
-                <div class="px-6 py-4 bg-indigo-900 flex justify-between items-center">
-                    <button class="text-cyan-300 flex items-center focus:outline-none toggle-expand">
-                        <i class="fas fa-chevron-down mr-2"></i>
-                        Show More
-                    </button>
-                    <button class="px-4 py-2 btn-gradient text-white font-semibold rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50" onclick="joinServer(${server.id})">
-                        Join Server
-                    </button>
-                </div>
-            `;
+                        this.streams = JSON.parse(responseText); // Parse the response text as JSON
+                        console.log('Streams data:', this.streams); // Debugging: Log streams data
+                        this.filteredStreams = this.streams;
+                    } catch (error) {
+                        console.error('Error loading streams:', error);
+                        alert('Failed to load streams. Please try again later.');
+                    }
+                },
+                filterStreams() {
+                    const searchTerm = this.searchTerm.toLowerCase();
+                    this.filteredStreams = this.streams.filter(stream => 
+                        stream.name.toLowerCase().includes(searchTerm) || 
+                        stream.description.toLowerCase().includes(searchTerm) ||
+                        stream.category.toLowerCase().includes(searchTerm)
+                    );
+                },
+                filterByCategory(category) {
+                    if (category === 'all') {
+                        this.filteredStreams = this.streams;
+                    } else {
+                        this.filteredStreams = this.streams.filter(stream => stream.category.toLowerCase() === category);
+                    }
+                },
+                async joinStream(streamId) {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        this.showLoginModal(streamId);
+                        return;
+                    }
+                    try {
+                        const response = await fetch(`/streams/${streamId}/join`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}` // Ensure the token is correctly set
+                            }
+                        });
 
-            const toggleBtn = card.querySelector('.toggle-expand');
-            const description = card.querySelector('.description');
-            const tags = card.querySelector('.tags');
+                        if (!response.ok) {
+                            throw new Error('Failed to join stream');
+                        }
 
-            toggleBtn.addEventListener('click', () => {
-                const isExpanded = toggleBtn.querySelector('i').classList.contains('fa-chevron-up');
-                if (isExpanded) {
-                    description.textContent = server.description.substring(0, 100) + '...';
-                    tags.classList.add('hidden');
-                    toggleBtn.innerHTML = '<i class="fas fa-chevron-down mr-2"></i> Show More';
-                } else {
-                    description.textContent = server.description;
-                    tags.classList.remove('hidden');
-                    toggleBtn.innerHTML = '<i class="fas fa-chevron-up mr-2"></i> Show Less';
+                        const stream = await response.json();
+                        alert(`Joining stream: ${stream.name}. Redirecting to stream...`);
+                        // Here you would typically redirect to the actual stream page
+                        window.location.href = `live-stream.html?id=${streamId}`;
+                    } catch (error) {
+                        console.error('Error joining stream:', error);
+                        alert('Failed to join stream. Please try again.');
+                    }
+                },
+                showLoginModal(streamId) {
+                    const modal = document.getElementById('loginModal');
+                    modal.style.display = "block";
+
+                    const form = document.getElementById('loginForm');
+                    form.onsubmit = async (e) => {
+                        e.preventDefault();
+                        const username = document.getElementById('username').value;
+                        const password = document.getElementById('password').value;
+
+                        try {
+                            const response = await fetch('/login', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ username, password })
+                            });
+
+                            const data = await response.json();
+                            if (response.ok) {
+                                localStorage.setItem('token', data.token);
+                                modal.style.display = "none";
+                                this.joinStream(streamId); // Retry joining the stream after successful login
+                            } else {
+                                alert(data.message);
+                            }
+                        } catch (err) {
+                            console.error('Login error:', err);
+                        }
+                    };
+
+                    const span = document.getElementsByClassName("close")[0];
+                    span.onclick = function() {
+                        modal.style.display = "none";
+                    };
+                },
+                toggleNotifications() {
+                    alert("Notifications toggled. You'll receive updates about new streams!");
+                    // Implement actual notification logic here
                 }
-            });
-
-            return card;
-        }
-
-        function renderServerList(servers = serverData) {
-            const serverList = document.getElementById('serverList');
-            serverList.innerHTML = '';
-            servers.forEach(server => {
-                serverList.appendChild(createServerCard(server));
-            });
-        }
-
-        function filterStreams() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filteredServers = serverData.filter(server => 
-                server.name.toLowerCase().includes(searchTerm) || 
-                server.description.toLowerCase().includes(searchTerm) ||
-                server.tags.some(tag => tag.toLowerCase().includes(searchTerm))
-            );
-            renderServerList(filteredServers);
-        }
-
-        function filterByCategory(category) {
-            if (category === 'all') {
-                renderServerList();
-            } else {
-                const filteredServers = serverData.filter(server => server.category === category);
-                renderServerList(filteredServers);
             }
         }
 
-        function joinServer(serverId) {
-            const server = serverData.find(s => s.id === serverId);
-            alert(`Joining server: ${server.name}. Redirecting to stream...`);
-            // Here you would typically redirect to the actual stream page
-        }
-
-        function toggleNotifications() {
-            alert("Notifications toggled. You'll receive updates about new streams!");
-            // Implement actual notification logic here
-        }
-
-        function createNewStream() {
-            alert("Creating a new stream. Redirecting to stream setup...");
-            // Redirect to stream setup page
-        }
-
-        renderServerList();
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('joinStreamData', joinStreamData);
+        });
     </script>
 </body>
 </html>

@@ -232,20 +232,47 @@
                 audioStream: null,
                 recordStream: false,
                 enableNotifications: false,
-                submitForm() {
-                    console.log('Form submitted', {
-                        streamName: this.streamName,
-                        streamDescription: this.streamDescription,
-                        streamCategory: this.streamCategory,
-                        maxArtists: this.maxArtists,
+                async submitForm() {
+                    const formData = {
+                        name: this.streamName,
+                        description: this.streamDescription,
+                        category: this.streamCategory,
+                        maxArtists: parseInt(this.maxArtists),
                         estimatedDuration: this.estimatedDuration,
-                        isScheduled: this.isScheduled,
-                        scheduleTime: this.scheduleTime,
-                        enableChat: this.enableChat,
-                        recordStream: this.recordStream,
-                        enableNotifications: this.enableNotifications
-                    });
-                    // You would typically send this data to your server here
+                        chatEnabled: this.enableChat,
+                    };
+
+                    try {
+                        const token = localStorage.getItem('token');
+                        console.log('Retrieved token in submitForm:', token); // Debugging: Log the retrieved token
+                        if (!token) {
+                            throw new Error('No authentication token found');
+                        }
+
+                        console.log('Sending data:', formData);
+                        const response = await fetch('http://localhost:3000/streams', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}` // Ensure the token is correctly set
+                            },
+                            body: JSON.stringify(formData)
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(`Failed to create stream: ${errorData.message || response.statusText}`);
+                        }
+
+                        const stream = await response.json();
+                        
+                        localStorage.setItem('currentStreamId', stream._id);
+                        
+                        window.location.href = 'waiting.html';
+                    } catch (error) {
+                        console.error('Error creating stream:', error);
+                        alert(`Failed to create stream: ${error.message}`);
+                    }
                 },
                 async testCamera() {
                     try {

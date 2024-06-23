@@ -11,6 +11,13 @@ const closeBtns = document.getElementsByClassName('close');
 const prevFeaturedBtn = document.getElementById('prev-featured');
 const nextFeaturedBtn = document.getElementById('next-featured');
 const notifications = document.getElementById('notifications');
+
+// Get the button that opens the modal
+const goLiveBtn = document.getElementById('go-live');
+
+// Get the <span> element that closes the modal
+const closeLiveOptionsBtn = liveOptionsModal.querySelector('.close');
+
 let featuredIndex = 0;
 
 // Sample data
@@ -127,6 +134,8 @@ document.getElementById('login-form').onsubmit = async function(e) {
         });
         const data = await response.json();
         if (response.ok) {
+            localStorage.setItem('token', data.token); // Store the token in local storage
+            console.log('Token stored:', data.token); // Debugging: Log the stored token
             document.querySelector('.auth-buttons').innerHTML = `Welcome ${data.username}!`;
             loginModal.style.display = "none";
             e.target.reset();
@@ -196,6 +205,40 @@ nextFeaturedBtn.addEventListener('click', () => {
     featuredIndex = (featuredIndex + 1) % sampleFeaturedArtists.length;
     updateFeaturedArtist(featuredIndex);
 });
+
+// When the user clicks on the button, open the modal
+goLiveBtn.onclick = function() {
+    liveOptionsModal.style.display = "block";
+  }
+  
+  // When the user clicks on <span> (x), close the modal
+  closeLiveOptionsBtn.onclick = function() {
+    liveOptionsModal.style.display = "none";
+  }
+  
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function(event) {
+    if (event.target == liveOptionsModal) {
+      liveOptionsModal.style.display = "none";
+    }
+  }
+  
+  // Get the Start Server and Join Server buttons
+  const startServerBtn = document.getElementById('start-server-btn');
+  const joinServerBtn = document.getElementById('join-server-btn');
+  
+  // When the user clicks on Start Server, redirect to setup.html
+  startServerBtn.onclick = function() {
+    const token = localStorage.getItem('token');
+    console.log('Token before navigating to setup:', token); // Debugging: Log the token before navigation
+    window.location.href = 'setup.html';
+  }
+
+  
+  // When the user clicks on Join Server, redirect to join.html
+  joinServerBtn.onclick = function() {
+    window.location.href = 'join.html';
+  }
 
 // Initialize the featured artist carousel
 updateFeaturedArtist(featuredIndex);

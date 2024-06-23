@@ -158,31 +158,99 @@
         </div>
     </div>
 
-
     <script>
         function waitingRoomData() {
             return {
-                streamName: "Collaborative Digital Art Extravaganza",
-                streamCategory: "Digital Art",
-                streamDescription: "Join us for an epic collaborative digital art session where we'll be creating a mind-bending futuristic cityscape! Get ready to push the boundaries of imagination!",
-                currentArtists: 3,
-                maxArtists: 5,
-                estimatedDuration: "2.5 hours",
+                streamName: '',
+                streamCategory: '',
+                streamDescription: '',
+                currentArtists: 1,
+                maxArtists: 0,
+                estimatedDuration: '',
                 chatEnabled: true,
                 showChat: false,
-                connectedArtists: [
-                    { id: 1, name: "ArtMaster42", specialty: "Concept Art", avatar: "https://i.pravatar.cc/150?img=1" },
-                    { id: 2, name: "DigitalDreamer", specialty: "3D Modeling", avatar: "https://i.pravatar.cc/150?img=2" },
-                    { id: 3, name: "BrushWizard", specialty: "Digital Painting", avatar: "https://i.pravatar.cc/150?img=3" }
-                ],
-                goLive() {
-                    alert("🎉 Going live! Time to create some amazing art!");
+                connectedArtists: [],
+                streamId: '',
+                async goLive() {
+                    try {
+                        const token = localStorage.getItem('token');
+                        console.log('Token on go live:', token); // Debugging: Log the token on go live
+                        if (!token) {
+                            throw new Error('No authentication token found');
+                        }
+                        const response = await fetch(`/streams/${this.streamId}/start`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}` // Ensure the token is correctly set
+                            }
+                        });
+    
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(`Failed to start stream: ${errorData.message || response.statusText}`);
+                        }
+    
+                        alert("🎉 Going live! Time to create some amazing art!");
+                        // Here you would typically start the actual streaming process
+                        // For now, we'll just redirect to a hypothetical live stream page
+                        window.location.href = `live-stream.html?id=${this.streamId}`;
+                    } catch (error) {
+                        console.error('Error starting stream:', error);
+                        alert('Failed to start stream. Please try again.');
+                    }
                 },
                 toggleChat() {
                     this.showChat = !this.showChat;
                 },
-                init() {
+                async init() {
+                    await this.loadStreamData();
                     this.initEngagementChart();
+                },
+                async loadStreamData() {
+                    try {
+                        const streamId = localStorage.getItem('currentStreamId');
+                        console.log('Stream ID:', streamId); // Debugging: Log the stream ID
+                        if (!streamId) {
+                            throw new Error('No stream ID found');
+                        }
+                        this.streamId = streamId;
+
+                        const token = localStorage.getItem('token');
+                        console.log('Token on load stream data:', token); // Debugging: Log the token on load stream data
+                        if (!token) {
+                            throw new Error('No authentication token found');
+                        }
+                        const response = await fetch(`/streams/${streamId}`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}` // Ensure the token is correctly set
+                            }
+                        });
+
+                        const responseText = await response.text(); // Get the response text
+                        console.log('Response text:', responseText); // Debugging: Log the response text
+
+                        if (!response.ok) {
+                            console.error('Error response text:', responseText); // Debugging: Log error response text
+                            throw new Error(`Failed to fetch stream data: ${responseText}`);
+                        }
+
+                        const streamData = JSON.parse(responseText); // Parse the response text as JSON
+                        console.log('Stream data:', streamData); // Debugging: Log stream data
+                        this.streamName = streamData.name;
+                        this.streamCategory = streamData.category;
+                        this.streamDescription = streamData.description;
+                        this.maxArtists = streamData.maxArtists;
+                        this.estimatedDuration = streamData.estimatedDuration + ' minutes';
+                        this.chatEnabled = streamData.chatEnabled;
+                        this.currentArtists = streamData.participants.length;
+                        // You might want to fetch and display connected artists here as well
+                    } catch (error) {
+                        console.error('Error loading stream data:', error);
+                        // Temporarily remove the redirect to allow checking logs
+                        // alert('Failed to load stream data. Redirecting to setup page.');
+                        // window.location.href = 'setup.html';
+                    }
                 },
                 initEngagementChart() {
                     const ctx = document.getElementById('engagementChart').getContext('2d');
@@ -207,9 +275,28 @@
                             }
                         }
                     });
+                },
+                addStreamToJoinPage() {
+                    let streams = JSON.parse(localStorage.getItem('availableStreams')) || [];
+                    streams.push({
+                        id: Date.now(), // Use timestamp as a simple unique ID
+                        name: this.streamName,
+                        category: this.streamCategory,
+                        description: this.streamDescription,
+                        currentArtists: this.currentArtists,
+                        maxArtists: this.maxArtists,
+                        estimatedDuration: this.estimatedDuration,
+                        chatEnabled: this.chatEnabled
+                    });
+                    localStorage.setItem('availableStreams', JSON.stringify(streams));
                 }
             }
         }
-    </script>
+    
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('waitingRoomData', waitingRoomData);
+            Alpine.start();
+        });
+    </script>     
 </body>
 </html>
