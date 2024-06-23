@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --color-accent: #0f3460;
+            --color-text: #e94560;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .profile-section {
+            display: flex;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .avatar-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .avatar-option {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+        
+        .avatar-option:hover {
+            border-color: var(--color-text);
+        }
+        
+        .bio-section {
+            flex-grow: 1;
+        }
+        
+        .bio-text {
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            border-radius: 10px;
+            padding: 10px;
+            width: 100%;
+            height: 100px;
+            color: #ffffff;
+            resize: none;
+        }
+        
+        .edit-btn, .save-btn {
+            background: var(--color-accent);
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .edit-btn:hover, .save-btn:hover {
+            background: var(--color-text);
+        }
+        
+        .streams-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stream-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stream-info {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .show-more-btn {
+            background: var(--color-accent);
+            color: #ffffff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+        
+        .modal-content {
+            background-color: var(--bg-secondary);
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid var(--color-accent);
+            width: 80%;
+            max-width: 600px;
+            border-radius: 15px;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: var(--color-text);
+        }
+        
+        #engagementChart {
+            width: 100%;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <header class="header">
+            <h1>Artist Dashboard</h1>
+            <button class="edit-btn">Edit Profile</button>
+        </header>
+        
+        <section class="profile-section">
+            <div>
+                <img src="https://i.pravatar.cc/150?img=1" alt="Profile Picture" class="avatar" id="profile-avatar">
+                <div class="avatar-options">
+                    <img src="https://i.pravatar.cc/150?img=1" alt="Avatar Option 1" class="avatar-option" onclick="changeAvatar(1)">
+                    <img src="https://i.pravatar.cc/150?img=2" alt="Avatar Option 2" class="avatar-option" onclick="changeAvatar(2)">
+                    <img src="https://i.pravatar.cc/150?img=3" alt="Avatar Option 3" class="avatar-option" onclick="changeAvatar(3)">
+                    <img src="https://i.pravatar.cc/150?img=4" alt="Avatar Option 4" class="avatar-option" onclick="changeAvatar(4)">
+                    <img src="https://i.pravatar.cc/150?img=5" alt="Avatar Option 5" class="avatar-option" onclick="changeAvatar(5)">
+                </div>
+            </div>
+            <div class="bio-section">
+                <textarea class="bio-text" id="bio-text" readonly>Hi, I'm an artist passionate about digital art and collaborative creation!</textarea>
+                <button class="save-btn" style="display: none;">Save Changes</button>
+            </div>
+        </section>
+        
+        <section class="streams-section">
+            <h2>Previously Hosted Streams</h2>
+            <div id="streams-list"></div>
+        </section>
+    </div>
+
+    <div id="streamModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle"></h2>
+            <p id="modalDetails"></p>
+            <canvas id="engagementChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const bioText = document.getElementById('bio-text');
+        const editBtn = document.querySelector('.edit-btn');
+        const saveBtn = document.querySelector('.save-btn');
+        const streamsList = document.getElementById('streams-list');
+        const modal = document.getElementById('streamModal');
+        const closeBtn = document.getElementsByClassName('close')[0];
+        
+        const streams = [
+            { id: 1, title: "Futuristic Cityscape Collab", artists: 4, viewers: 1200, duration: "2h 30m", likes: 3500 },
+            { id: 2, title: "Underwater Fantasy World", artists: 3, viewers: 800, duration: "1h 45m", likes: 2200 },
+            { id: 3, title: "Sci-Fi Character Design Workshop", artists: 2, viewers: 1500, duration: "3h 15m", likes: 4100 },
+        ];
+
+        function changeAvatar(index) {
+            document.getElementById('profile-avatar').src = `https://i.pravatar.cc/150?img=${index}`;
+        }
+
+        editBtn.addEventListener('click', () => {
+            bioText.readOnly = !bioText.readOnly;
+            saveBtn.style.display = bioText.readOnly ? 'none' : 'inline-block';
+            editBtn.textContent = bioText.readOnly ? 'Edit Profile' : 'Cancel';
+        });
+
+        saveBtn.addEventListener('click', () => {
+            bioText.readOnly = true;
+            saveBtn.style.display = 'none';
+            editBtn.textContent = 'Edit Profile';
+            // Here you would typically send the updated bio to a server
+        });
+
+        function createStreamCard(stream) {
+            const card = document.createElement('div');
+            card.className = 'stream-card';
+            card.innerHTML = `
+                <div class="stream-info">
+                    <h3>${stream.title}</h3>
+                    <p>Artists: ${stream.artists}</p>
+                    <p>Viewers: ${stream.viewers}</p>
+                    <p>Duration: ${stream.duration}</p>
+                    <p>Likes: ${stream.likes}</p>
+                </div>
+                <button class="show-more-btn" onclick="showStreamDetails(${stream.id})">Show More</button>
+            `;
+            return card;
+        }
+
+        streams.forEach(stream => {
+            streamsList.appendChild(createStreamCard(stream));
+        });
+
+        function showStreamDetails(streamId) {
+            const stream = streams.find(s => s.id === streamId);
+            document.getElementById('modalTitle').textContent = stream.title;
+            document.getElementById('modalDetails').textContent = `
+                Artists: ${stream.artists}
+                Viewers: ${stream.viewers}
+                Duration: ${stream.duration}
+                Likes: ${stream.likes}
+            `;
+            modal.style.display = "block";
+            
+            // Create engagement chart
+            const ctx = document.getElementById('engagementChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['0:00', '0:30', '1:00', '1:30', '2:00', '2:30'],
+                    datasets: [{
+                        label: 'Viewer Engagement',
+                        data: [0, 500, 1000, 1200, 800, 1500],
+                        borderColor: 'rgb(233, 69, 96)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
