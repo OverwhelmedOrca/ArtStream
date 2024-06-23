@@ -4,264 +4,255 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArtStream Live</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #2c003e, #000428);
+            background: linear-gradient(135deg, #4a0e4e, #081730, #0a2472);
             color: white;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
-        .container {
-            display: flex;
-            flex: 1;
-            padding: 20px;
-            gap: 20px;
-        }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            background-color: rgba(0, 0, 0, 0.3);
-        }
-        h1 {
-            margin: 0;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .end-stream-btn {
-            background-color: #ff4757;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .canvas-area {
-            flex: 1;
+        .canvas-container {
             background-color: white;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-        }
-        .tools {
-            display: flex;
-            gap: 10px;
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: 10px;
-            border-radius: 10px;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            flex-grow: 1;
         }
         .tool-btn {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
+            width: 40px;
+            height: 40px;
         }
-        .tool-btn.active {
-            background-color: #2980b9;
-        }
-        .sidebar {
-            width: 300px;
-            display: flex;
-            flex-direction: column;
-        }
-        .stream-info {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .info-item {
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-        }
-        .chat-container {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .chat-tabs {
-            display: flex;
-            margin-bottom: 10px;
-        }
-        .chat-tab {
-            flex: 1;
-            background-color: rgba(255, 255, 255, 0.2);
-            border: none;
-            padding: 10px;
-            color: white;
-            cursor: pointer;
-        }
-        .chat-tab.active {
-            background-color: #3498db;
-        }
-        .chat-messages {
-            flex-grow: 1;
-            overflow-y: auto;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        .chat-input {
-            display: flex;
-        }
-        .chat-input input {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 5px 0 0 5px;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        .chat-input button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 0 5px 5px 0;
-            cursor: pointer;
-        }
-        #color-picker {
-            width: 30px;
-            height: 30px;
+        .color-picker {
+            width: 40px;
+            height: 40px;
+            padding: 0;
             border: none;
             border-radius: 50%;
-            cursor: pointer;
+            overflow: hidden;
         }
-        #brush-size {
-            width: 100px;
+        .color-picker::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        .color-picker::-webkit-color-swatch {
+            border: none;
+        }
+        .chat-message {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .reaction-btn {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
         }
     </style>
 </head>
-<body>
-    <header>
-        <h1>ArtStream Live</h1>
-        <button class="end-stream-btn">End Stream</button>
+<body class="p-4 flex flex-col h-screen">
+    <header class="flex justify-between items-center mb-4">
+        <h1 class="text-3xl font-bold">ArtStream Live</h1>
+        <div class="flex items-center space-x-4">
+            <div class="text-sm">
+                <span class="mr-2"><i class="far fa-clock"></i> 1:23:45</span>
+                <span class="mr-2"><i class="fas fa-users"></i> 1,234</span>
+                <span class="mr-2"><i class="fas fa-palette"></i> 3/5</span>
+                <span><i class="fas fa-thumbs-up"></i> 567</span>
+            </div>
+            <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                End Stream
+            </button>
+        </div>
     </header>
-    <div class="container">
-        <div class="main-content">
-            <div class="canvas-area">
+
+    <div class="flex gap-4 flex-grow">
+        <div class="flex-1 flex flex-col">
+            <div class="canvas-container mb-4 flex-grow">
                 <canvas id="drawing-canvas"></canvas>
             </div>
-            <div class="tools">
-                <button class="tool-btn" id="brush-tool">🖌️ Brush</button>
-                <button class="tool-btn" id="eraser-tool">❌ Eraser</button>
-                <input type="color" id="color-picker" value="#000000">
-                <input type="range" id="brush-size" min="1" max="50" value="5">
-                <button class="tool-btn" id="camera-toggle">📷 Camera</button>
-                <button class="tool-btn" id="mic-toggle">🎤 Mic</button>
-                <button class="tool-btn" id="clear-canvas">🗑️ Clear</button>
+            <div class="bg-gray-800 p-4 rounded-lg flex items-center space-x-4">
+                <button id="brush-tool" class="tool-btn bg-blue-500 hover:bg-blue-600 text-white rounded">
+                    <i class="fas fa-paint-brush"></i>
+                </button>
+                <button id="eraser-tool" class="tool-btn bg-gray-500 hover:bg-gray-600 text-white rounded">
+                    <i class="fas fa-eraser"></i>
+                </button>
+                <input type="color" id="color-picker" class="color-picker">
+                <input type="range" id="brush-size" min="1" max="50" value="5" class="w-32">
+                <button id="camera-toggle" class="tool-btn bg-green-500 hover:bg-green-600 text-white rounded">
+                    <i class="fas fa-video"></i>
+                </button>
+                <button id="mic-toggle" class="tool-btn bg-green-500 hover:bg-green-600 text-white rounded">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button id="clear-canvas" class="tool-btn bg-red-500 hover:bg-red-600 text-white rounded">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button id="save-canvas" class="tool-btn bg-purple-500 hover:bg-purple-600 text-white rounded">
+                    <i class="fas fa-save"></i>
+                </button>
             </div>
         </div>
-        <div class="sidebar">
-            <div class="stream-info">
-                <div class="info-item">⏱️ 1:23:45</div>
-                <div class="info-item">👥 1,234</div>
-                <div class="info-item">🎨 3/5</div>
-                <div class="info-item">👍 567</div>
-            </div>
-            <div class="chat-container">
-                <div class="chat-tabs">
-                    <button class="chat-tab active" data-target="viewers">Viewers</button>
-                    <button class="chat-tab" data-target="artists">Artists</button>
+
+        <div class="w-96 flex flex-col">
+            <div class="bg-gray-800 rounded-lg p-4 flex-grow flex flex-col">
+                <div class="flex mb-2">
+                    <button class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-l">Viewers</button>
+                    <button class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded-r">Artists</button>
                 </div>
-                <div class="chat-messages" id="chat-messages"></div>
-                <div class="chat-input">
-                    <input type="text" placeholder="Type a message...">
-                    <button>Send</button>
+                <div id="chat-messages" class="flex-grow bg-gray-700 rounded-lg p-2 overflow-y-auto mb-2 space-y-2">
+                    <!-- Chat messages will be inserted here -->
+                </div>
+                <div class="flex">
+                    <input type="text" id="chat-input" class="flex-1 bg-gray-700 rounded-l-lg p-2 outline-none" placeholder="Type a message...">
+                    <button id="send-message" class="bg-blue-500 hover:bg-blue-600 text-white px-4 rounded-r-lg">Send</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <script>
-        const canvas = document.getElementById('drawing-canvas');
-        const ctx = canvas.getContext('2d');
+        // Initialize Fabric.js canvas
+        const canvas = new fabric.Canvas('drawing-canvas', {
+            isDrawingMode: true,
+            width: window.innerWidth * 0.7,
+            height: window.innerHeight * 0.75,
+        });
+
+        // Set up drawing tools
+        const brushTool = document.getElementById('brush-tool');
+        const eraserTool = document.getElementById('eraser-tool');
         const colorPicker = document.getElementById('color-picker');
         const brushSize = document.getElementById('brush-size');
-        let isDrawing = false;
-        let currentTool = 'brush';
+        const clearCanvas = document.getElementById('clear-canvas');
+        const saveCanvas = document.getElementById('save-canvas');
+        const cameraToggle = document.getElementById('camera-toggle');
+        const micToggle = document.getElementById('mic-toggle');
 
+        brushTool.addEventListener('click', () => {
+            canvas.isDrawingMode = true;
+            canvas.freeDrawingBrush.color = colorPicker.value;
+            canvas.freeDrawingBrush.width = parseInt(brushSize.value, 10);
+        });
+
+        eraserTool.addEventListener('click', () => {
+            canvas.isDrawingMode = true;
+            canvas.freeDrawingBrush.color = '#FFFFFF';
+            canvas.freeDrawingBrush.width = parseInt(brushSize.value, 10);
+        });
+
+        colorPicker.addEventListener('input', (e) => {
+            canvas.freeDrawingBrush.color = e.target.value;
+        });
+
+        brushSize.addEventListener('input', (e) => {
+            canvas.freeDrawingBrush.width = parseInt(e.target.value, 10);
+        });
+
+        clearCanvas.addEventListener('click', () => {
+            canvas.clear();
+        });
+
+        saveCanvas.addEventListener('click', () => {
+            const dataURL = canvas.toDataURL({
+                format: 'png',
+                quality: 0.8
+            });
+            const link = document.createElement('a');
+            link.download = 'artstream-drawing.png';
+            link.href = dataURL;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Toggle camera and mic (placeholder functionality)
+        function toggleButton(button) {
+            button.classList.toggle('bg-green-500');
+            button.classList.toggle('bg-red-500');
+            const icon = button.querySelector('i');
+            icon.classList.toggle('fa-video');
+            icon.classList.toggle('fa-video-slash');
+        }
+
+        cameraToggle.addEventListener('click', () => toggleButton(cameraToggle));
+        micToggle.addEventListener('click', () => {
+            toggleButton(micToggle);
+            const icon = micToggle.querySelector('i');
+            icon.classList.toggle('fa-microphone');
+            icon.classList.toggle('fa-microphone-slash');
+        });
+
+        // Enhanced chat functionality
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendMessage = document.getElementById('send-message');
+
+        function createChatMessage(user, message, time) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'chat-message';
+            messageElement.innerHTML = `
+                <div class="flex justify-between items-start mb-1">
+                    <span class="font-bold">${user}</span>
+                    <span class="text-xs text-gray-400">${time}</span>
+                </div>
+                <p class="mb-2">${message}</p>
+                <div class="flex space-x-2">
+                    <button class="reaction-btn bg-blue-500 hover:bg-blue-600">
+                        <i class="fas fa-thumbs-up"></i> Like
+                    </button>
+                    <button class="reaction-btn bg-red-500 hover:bg-red-600">
+                        <i class="fas fa-thumbs-down"></i> Dislike
+                    </button>
+                </div>
+            `;
+            return messageElement;
+        }
+
+        sendMessage.addEventListener('click', () => {
+            const message = chatInput.value.trim();
+            if (message) {
+                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const messageElement = createChatMessage('User', message, time);
+                chatMessages.appendChild(messageElement);
+                chatInput.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage.click();
+            }
+        });
+
+        // Add some placeholder messages
+        const placeholderMessages = [
+            { user: 'ArtLover123', message: 'Wow, loving this stream! The colors are amazing!', time: '14:30' },
+            { user: 'CreativeSoul', message: 'Can you share some tips on blending techniques?', time: '14:32' },
+            { user: 'ArtistMod', message: 'Remember to stay respectful in the chat, everyone!', time: '14:35' },
+        ];
+
+        placeholderMessages.forEach(msg => {
+            const messageElement = createChatMessage(msg.user, msg.message, msg.time);
+            chatMessages.appendChild(messageElement);
+        });
+
+        // Responsive canvas sizing
         function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
+            canvas.setDimensions({
+                width: window.innerWidth * 0.7,
+                height: window.innerHeight * 0.75
+            });
+            canvas.renderAll();
         }
 
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
-
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
-
-        function startDrawing(e) {
-            isDrawing = true;
-            draw(e);
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            ctx.lineWidth = brushSize.value;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = currentTool === 'eraser' ? 'white' : colorPicker.value;
-
-            ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
-        }
-
-        function stopDrawing() {
-            isDrawing = false;
-            ctx.beginPath();
-        }
-
-        document.getElementById('brush-tool').addEventListener('click', () => currentTool = 'brush');
-        document.getElementById('eraser-tool').addEventListener('click', () => currentTool = 'eraser');
-        document.getElementById('clear-canvas').addEventListener('click', () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        });
-
-        ['camera-toggle', 'mic-toggle'].forEach(id => {
-            const button = document.getElementById(id);
-            button.addEventListener('click', () => {
-                button.classList.toggle('active');
-                button.textContent = button.classList.contains('active') ? 
-                    button.textContent.replace('🚫', '') : 
-                    '🚫' + button.textContent;
-            });
-        });
-
-        document.querySelectorAll('.chat-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-            });
-        });
     </script>
 </body>
 </html>
