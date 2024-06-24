@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Artist Community Forum</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&family=Roboto:wght@300;400;700&display=swap');
+
+        :root {
+            --primary-color: #00a8cc;
+            --secondary-color: #005073;
+            --background-color: #001f3f;
+            --text-color: #f0f0f0;
+            --accent-color: #ffd700;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            cursor: none;
+        }
+
+        #cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent-color);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            background-color: rgba(0, 80, 115, 0.8);
+            padding: 20px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Comfortaa', cursive;
+            color: var(--accent-color);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .forum-categories {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .category {
+            background-color: rgba(0, 80, 115, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            width: calc(33% - 20px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .category:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 168, 204, 0.2);
+        }
+
+        .category h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .category-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .post-form {
+            background-color: rgba(0, 80, 115, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .post-form h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+
+        .post-form input, .post-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: rgba(0, 31, 63, 0.8);
+            color: var(--text-color);
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .post-form button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .post-form button:hover {
+            background-color: var(--accent-color);
+            color: var(--secondary-color);
+            transform: scale(1.05);
+        }
+
+        .recent-posts {
+            margin-top: 30px;
+        }
+
+        .recent-posts h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+
+        .post {
+            background-color: rgba(0, 80, 115, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .post:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 168, 204, 0.2);
+        }
+
+        .post h3 {
+            color: var(--primary-color);
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .post-meta {
+            font-size: 0.9em;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .post-content {
+            line-height: 1.6;
+        }
+
+        .post-actions {
+            margin-top: 15px;
+        }
+
+        .post-actions button {
+            background-color: transparent;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            margin-right: 15px;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        .post-actions button:hover {
+            color: var(--accent-color);
+            transform: scale(1.1);
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .floating-menu {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .floating-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .floating-button:hover {
+            background-color: var(--accent-color);
+            transform: scale(1.1);
+        }
+
+        .menu-items {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            background-color: rgba(0, 80, 115, 0.9);
+            border-radius: 5px;
+            padding: 10px;
+            display: none;
+        }
+
+        .menu-items button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 5px;
+            background-color: transparent;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .menu-items button:hover {
+            background-color: rgba(0, 168, 204, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .category {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="cursor"></div>
+    <div id="canvas-container"></div>
+    
+    <header>
+        <h1>Artist Community Forum</h1>
+        <p>Connect, Share, and Inspire</p>
+    </header>
+
+    <div class="container">
+        <section class="forum-categories">
+            <div class="category">
+                <div class="category-icon"><i class="fas fa-paint-brush"></i></div>
+                <h2>Digital Art</h2>
+                <p>Discuss techniques, tools, and showcase your digital masterpieces.</p>
+            </div>
+            <div class="category">
+                <div class="category-icon"><i class="fas fa-video"></i></div>
+                <h2>Streaming Tips</h2>
+                <p>Share your streaming setup, engage viewers, and grow your audience.</p>
+            </div>
+            <div class="category">
+                <div class="category-icon"><i class="fas fa-lightbulb"></i></div>
+                <h2>Creative Inspiration</h2>
+                <p>Find and share inspiration for your next artistic project.</p>
+            </div>
+        </section>
+
+        <section class="post-form">
+            <h2>Start a Discussion</h2>
+            <form id="new-post-form">
+                <input type="text" id="post-title" placeholder="Title" required>
+                <textarea id="post-content" placeholder="Share your thoughts..." required></textarea>
+                <button type="submit">Post</button>
+            </form>
+        </section>
+
+        <section class="recent-posts">
+            <h2>Recent Discussions</h2>
+            <div id="posts-container"></div>
+        </section>
+    </div>
+
+    <div class="floating-menu">
+        <div class="floating-button" id="floating-menu-button">
+            <i class="fas fa-plus"></i>
+        </div>
+        <div class="menu-items">
+            <button id="new-post-button"><i class="fas fa-pen"></i> New Post</button>
+            <button id="art-prompt-button"><i class="fas fa-magic"></i> Art Prompt</button>
+            <button id="events-button"><i class="fas fa-calendar-alt"></i> Events</button>
+        </div>
+    </div>
+
+    <script>
+        // Three.js background animation
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const geometry = new THREE.BufferGeometry();
+        const vertices = [];
+        for (let i = 0; i < 10000; i++) {
+            vertices.push(
+                THREE.MathUtils.randFloatSpread(2000),
+                THREE.MathUtils.randFloatSpread(2000),
+                THREE.MathUtils.randFloatSpread(2000)
+            );
+        }
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        const particles = new THREE.Points(
+            geometry,
+            new THREE.PointsMaterial({ color: 0x00a8cc, size: 3 })
+        );
+        scene.add(particles);
+
+        camera.position.z = 1000;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particles.rotation.x += 0.0001;
+            particles.rotation.y += 0.0001;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Custom cursor
+        const cursor = document.getElementById('cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        // Floating menu
+        const floatingMenuButton = document.getElementById('floating-menu-button');
+        const menuItems = document.querySelector('.menu-items');
+        let menuOpen = false;
+
+        floatingMenuButton.addEventListener('click', () => {
+            menuOpen = !menuOpen;
+            menuItems.style.display = menuOpen ? 'block' : 'none';
+        });
+
+        // Forum functionality
+        const postForm = document.getElementById('new-post-form');
+        const postsContainer = document.getElementById('posts-container');
+
+        postForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+            addPost(title, content);
+            postForm.reset();
+        });
+
+        function addPost(title, content) {
+            const post = document.createElement('div');
+            post.className = 'post';
+            post.innerHTML = `
+                <h3>${title}</h3>
+                <div class="post-meta">Posted by You | Just now</div>
+                <div class="post-content">${content}</div>
+                <div class="post-actions">
+                    <button class="like-btn"><i class="fas fa-heart"></i> Like</button>
+                    <button class="comment-btn"><i class="fas fa-comment"></i> Comment</button>
+                    <button class="share-btn"><i class="fas fa-share"></i> Share</button>
+                </div>
+            `;
+            postsContainer.prepend(post);
+
+            const likeBtn = post.querySelector('.like-btn');
+            likeBtn.addEventListener('click', () => {
+                likeBtn.classList.toggle('liked');
+                likeBtn.innerHTML = likeBtn.classList.contains('liked') ? 
+                    '<i class="fas fa-heart"></i> Liked' : 
+                    '<i class="fas fa-heart"></i> Like';
+            });
+        }
+
+        // Add some initial posts
+        addPost('Best Digital Drawing Tablets for Beginners', 'I\'m new to digital art and looking for recommendations on affordable drawing tablets. Any suggestions?');
+        addPost('How to Increase Viewer Engagement During Art Streams', 'Share your tips and tricks for keeping your audience engaged during long drawing sessions!');
+
+        // Art prompt generator
+        const artPromptButton = document.getElementById('art-prompt-button');
+        artPromptButton.addEventListener('click', () => {
+            const prompts = [
+                "A futuristic cityscape with floating gardens",
+                "A steampunk-inspired animal hybrid",
+                "An underwater civilization hidden in a coral reef",
+                "A surreal self-portrait incorporating elements of nature",
+                "A magical library where books come to life"
+            ];
+            const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+            alert(`Art Prompt: ${randomPrompt}`);
+        });
+    </script>
+</body>
+</html>
