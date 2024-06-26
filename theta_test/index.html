@@ -4,11 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Theta Network Livestream</title>
+    <link href="https://vjs.zencdn.net/7.15.4/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/7.15.4/video.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@0.12.4"></script>
+    <script src="https://d1ktbyo67sh8fw.cloudfront.net/js/theta.umd.min.js"></script>
+    <script src="https://d1ktbyo67sh8fw.cloudfront.net/js/theta-hls-plugin.umd.min.js"></script>
+    <script src="https://d1ktbyo67sh8fw.cloudfront.net/js/videojs-theta-plugin.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             padding: 20px;
+        }
+        .video-js {
+            width: 80% !important;
+            height: 450px !important;
+            margin: 0 auto;
+        }
+        .vjs-fullscreen {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        #my-player {
+            background-color: black;
         }
     </style>
 </head>
@@ -18,6 +36,8 @@
     <button id="listIngestors">List Edge Ingestors</button>
     <button id="selectIngestor">Select Edge Ingestor</button>
     <div id="streamInfo"></div>
+    <br>
+    <video id="my-player" class="video-js vjs-default-skin" controls preload="auto"></video>
     <script src="script.js"></script>
 </body>
 </html>
