@@ -20,22 +20,25 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #718096;
         }
+        .gradient-bg {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white">
     <div class="flex flex-col h-screen">
         <!-- Header -->
-        <header class="bg-gray-800 p-4">
+        <header class="gradient-bg p-4 shadow-lg">
             <div class="container mx-auto flex justify-between items-center">
                 <div class="flex items-center">
-                    <img src="/api/placeholder/40/40" alt="Logo" class="w-10 h-10 mr-2">
-                    <h1 class="text-xl font-bold">ArtStream</h1>
+                    <img src="/api/placeholder/40/40" alt="Logo" class="w-10 h-10 mr-2 rounded-full">
+                    <h1 class="text-2xl font-bold text-white">ArtStream</h1>
                 </div>
                 <nav>
-                    <ul class="flex space-x-4">
-                        <li><a href="#" class="hover:text-purple-400">Browse</a></li>
-                        <li><a href="#" class="hover:text-purple-400">Following</a></li>
-                        <li><a href="#" class="hover:text-purple-400">Categories</a></li>
+                    <ul class="flex space-x-6">
+                        <li><a href="#" class="hover:text-purple-300 transition duration-300">Browse</a></li>
+                        <li><a href="#" class="hover:text-purple-300 transition duration-300">Following</a></li>
+                        <li><a href="#" class="hover:text-purple-300 transition duration-300">Categories</a></li>
                     </ul>
                 </nav>
             </div>
@@ -46,59 +49,62 @@
             <!-- Left Column: Video Player and Info -->
             <div class="w-3/4 flex flex-col overflow-y-auto custom-scrollbar">
                 <!-- Video Player -->
-                <div class="bg-black aspect-video">
-                    <img src="/api/placeholder/1280/720" alt="Livestream placeholder" class="w-full h-auto">
+                <div class="relative w-full h-full bg-black aspect-video max-h-[65vh]">
+                    <img src="https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8YXJ0fGVufDB8fDB8fHww" alt="Livestream placeholder" class="absolute top-0 left-0 w-full h-full object-cover">
                 </div>
                 
                 <!-- Stream Info and Buttons -->
-                <div class="bg-gray-800 p-4">
+                <div class="bg-gray-800 p-4 shadow-md">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
-                            <img src="/api/placeholder/64/64" alt="Channel Avatar" class="w-12 h-12 rounded-full">
+                            <img src="https://i.pravatar.cc/100?img=3" alt="Channel Avatar" class="w-12 h-12 rounded-full border-2 border-purple-500">
                             <div class="ml-4">
-                                <h2 class="text-xl font-bold">iiTzTimmy</h2>
-                                <p class="text-gray-400">NEW APEX PATCH! | Socials @iiTzTimmy</p>
+                                <h2 class="text-xl font-bold">CanvasRebel</h2>
+                                <p class="text-gray-400">Creating Dreams with Digital Art | Follow me on socials @CanvasRebel</p>
                             </div>
                         </div>
-                        <div class="flex space-x-4">
-                            <button id="followBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
-                                Follow
+                        <div class="flex space-x-4 items-center">
+                            <button id="likeBtn" class="text-2xl text-gray-400 hover:text-red-500 transition duration-300">
+                                <i class="far fa-heart"></i>
                             </button>
-                            <button id="subscribeBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                                Subscribe
+                            <button id="shareBtn" class="text-2xl text-gray-400 hover:text-blue-400 transition duration-300">
+                                <i class="fas fa-share"></i>
+                            </button>
+                            <button id="followBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-full transition duration-300">
+                                Follow
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- About Section -->
-                <div class="bg-gray-800 p-4 mt-4">
-                    <h3 class="text-2xl font-bold mb-2">About iiTzTimmy</h3>
-                    <p class="text-gray-300">Professional Apex Legends player and content creator. Streaming daily with high-energy gameplay and community interaction.</p>
+                <div class="bg-gray-800 p-6 mt-4 rounded-lg shadow-md">
+                    <h3 class="text-2xl font-bold mb-4 text-purple-400">About iiTzTimmy</h3>
+                    <p class="text-gray-300 leading-relaxed">Passionate digital artist and illustrator, streaming daily creative sessions filled with vibrant art, interactive tutorials, and community-driven projects. Join me as we explore the colorful world of digital art, one brushstroke at a time!</p>
                 </div>
 
                 <!-- Recommended Videos -->
-                <div class="bg-gray-800 p-4 mt-4">
-                    <h3 class="text-2xl font-bold mb-4">Recommended Streams</h3>
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="bg-gray-700 rounded overflow-hidden">
-                            <img src="/api/placeholder/320/180" alt="Recommended stream 1" class="w-full h-auto">
-                            <div class="p-2">
-                                <h4 class="font-bold">Artist 1</h4>
+                <div class="bg-gray-800 p-6 mt-4 rounded-lg shadow-md">
+                    <h3 class="text-2xl font-bold mb-6 text-purple-400">Recommended Streams</h3>
+                    <div class="grid grid-cols-3 gap-6">
+                        <div class="bg-gray-700 rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
+                            <img src="https://images.unsplash.com/photo-1637416067365-2b5e7e8fe8fa?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8ZGlnaXRhbCUyMGFydHxlbnwwfHwwfHx8MA%3D%3D" alt="Recommended stream 1" class="w-full h-40 object-cover">
+                            <div class="p-4">
+                                <h4 class="font-bold text-lg">ArtisticSoul</h4>
                                 <p class="text-gray-400">Digital Art Creation</p>
                             </div>
                         </div>
-                        <div class="bg-gray-700 rounded overflow-hidden">
-                            <img src="/api/placeholder/320/180" alt="Recommended stream 2" class="w-full h-auto">
-                            <div class="p-2">
-                                <h4 class="font-bold">Artist 2</h4>
+                        <div class="bg-gray-700 rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
+                            <img src="https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGFydHxlbnwwfHwwfHx8MA%3D%3D" alt="Recommended stream 2" class="w-full h-40 object-cover">
+                            <div class="p-4">
+                                <h4 class="font-bold text-lg">BrushMaster</h4>
                                 <p class="text-gray-400">Painting Landscapes</p>
                             </div>
                         </div>
-                        <div class="bg-gray-700 rounded overflow-hidden">
-                            <img src="/api/placeholder/320/180" alt="Recommended stream 3" class="w-full h-auto">
-                            <div class="p-2">
-                                <h4 class="font-bold">Artist 3</h4>
+                        <div class="bg-gray-700 rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
+                            <img src="https://plus.unsplash.com/premium_photo-1677171381977-334fb9dc9a74?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8U2N1bHB0dXJlfGVufDB8fDB8fHww" alt="Recommended stream 3" class="w-full h-40 object-cover">
+                            <div class="p-4">
+                                <h4 class="font-bold text-lg">SculptureWizard</h4>
                                 <p class="text-gray-400">Sculpting Session</p>
                             </div>
                         </div>
@@ -107,15 +113,15 @@
             </div>
 
             <!-- Right Column: Chat -->
-            <div class="w-1/4 bg-gray-800 flex flex-col">
-                <div class="p-4 bg-gray-700 font-bold">
-                    Stream Chat
+            <div class="w-1/4 bg-gray-800 flex flex-col border-l border-gray-700">
+                <div class="p-4 bg-gray-700 font-bold text-lg">
+                    <i class="fas fa-comments mr-2"></i> Stream Chat
                 </div>
                 <div id="chatMessages" class="flex-grow overflow-y-auto p-4 custom-scrollbar">
                     <!-- Chat messages will be inserted here -->
                 </div>
                 <div class="p-4 border-t border-gray-700">
-                    <input type="text" id="chatInput" placeholder="Send a message" class="w-full p-2 rounded bg-gray-700 text-white">
+                    <input type="text" id="chatInput" placeholder="Send a message" class="w-full p-3 rounded-full bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
                 </div>
             </div>
         </div>
@@ -124,16 +130,16 @@
     <script>
         // Simulated chat messages
         const chatMessages = [
-            { user: 'User1', message: 'Great stream!' },
-            { user: 'User2', message: 'How long have you been playing Apex?' },
-            { user: 'User3', message: 'Nice skills!' },
+            { user: 'ArtLover99', message: 'This stream is amazing!' },
+            { user: 'CreativeSoul', message: 'How long have you been doing digital art?' },
+            { user: 'ColorMaster', message: 'The color palette you\'re using is fantastic!' },
         ];
 
         // Function to add a chat message
         function addChatMessage(user, message) {
             const chatContainer = document.getElementById('chatMessages');
             const messageElement = document.createElement('div');
-            messageElement.className = 'mb-2';
+            messageElement.className = 'mb-3 p-2 bg-gray-700 rounded-lg';
             messageElement.innerHTML = `<span class="font-bold text-purple-400">${user}:</span> ${message}`;
             chatContainer.appendChild(messageElement);
             chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -143,14 +149,20 @@
         chatMessages.forEach(msg => addChatMessage(msg.user, msg.message));
 
         // Event listeners for buttons
-        document.getElementById('followBtn').addEventListener('click', function() {
-            this.textContent = this.textContent === 'Follow' ? 'Unfollow' : 'Follow';
-            this.classList.toggle('bg-purple-600');
-            this.classList.toggle('bg-gray-600');
+        document.getElementById('likeBtn').addEventListener('click', function() {
+            this.classList.toggle('text-red-500');
+            this.querySelector('i').classList.toggle('fas');
+            this.querySelector('i').classList.toggle('far');
         });
 
-        document.getElementById('subscribeBtn').addEventListener('click', function() {
-            alert('Subscription functionality would be implemented here.');
+        document.getElementById('shareBtn').addEventListener('click', function() {
+            alert('Share functionality would be implemented here.');
+        });
+
+        document.getElementById('followBtn').addEventListener('click', function() {
+            this.textContent = this.textContent === 'Follow' ? 'Following' : 'Follow';
+            this.classList.toggle('bg-purple-600');
+            this.classList.toggle('bg-green-600');
         });
 
         // Chat input functionality
