@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const listIngestorsButton = document.getElementById('listIngestors');
     const selectIngestorButton = document.getElementById('selectIngestor');
     const streamInfoDiv = document.getElementById('streamInfo');
+    let videoPlayer;
 
     let streamId;
     let ingestorId;
@@ -16,7 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'POST',
             headers: {
                 'x-tva-sa-id': serviceAccountId,
-                'x-tva-sa-secret': serviceAccountSecret,                'Content-Type': 'application/json'
+                'x-tva-sa-secret': serviceAccountSecret,
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ name: 'demo' })
         })
@@ -64,6 +66,61 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             const { stream_server, stream_key } = data.body;
             streamInfoDiv.innerHTML = `Stream Server: ${stream_server}<br>Stream Key: ${stream_key}`;
+
+            // Inform the user to start streaming from OBS now
+            streamInfoDiv.innerHTML += '<br>Please start streaming from OBS using the above server and key.';
+
+            // Polling to check if the stream is live
+            const interval = setInterval(() => {
+                fetch(`${apiBaseUrl}/stream/${streamId}`, {
+                    method: 'GET',
+                    headers: {
+                        'x-tva-sa-id': serviceAccountId,
+                        'x-tva-sa-secret': serviceAccountSecret
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.body.status === 'on') {
+                        clearInterval(interval); // Stop polling
+
+                        // Retrieve and set the HLS URL from the stream details
+                        const hlsUrl = data.body.playback_uri; // Assuming playback_uri has the correct HLS URL
+                        console.log('HLS URL:', hlsUrl); // Log the HLS URL to verify
+
+                        // Initialize Video.js with Theta integration
+                        videoPlayer = videojs('my-player', {
+                            autoplay: true,
+                            muted: false,
+                            techOrder: ["theta_hlsjs", "html5"],
+                            sources: [{
+                                src: hlsUrl,
+                                type: "application/vnd.apple.mpegurl",
+                                label: "auto"
+                            }],
+                            theta_hlsjs: {
+                                streamId: streamId,
+                                userId: "", // Optionally add user ID if required
+                                walletUrl: "wss://api-wallet-service.thetatoken.org/theta/ws",
+                                onWalletAccessToken: null,
+                                hlsOpts: null
+                            }
+                        });
+
+                        videoPlayer.ready(function() {
+                            console.log('Video.js player is ready');
+                            videoPlayer.play().catch(error => {
+                                console.error('Error playing the video:', error);
+                            });
+                        });
+
+                        // Force a refresh on the video player source to ensure it's loaded correctly
+                        videoPlayer.src({ type: 'application/vnd.apple.mpegurl', src: hlsUrl });
+                        videoPlayer.load();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }, 5000); // Poll every 5 seconds
         })
         .catch(error => console.error('Error:', error));
     });
