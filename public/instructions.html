@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream Setup - ArtistStream</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+        h1, h2 {
+            margin-top: 0;
+            color: #4fc3f7;
+        }
+        .stream-info {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .stream-key {
+            font-family: monospace;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem;
+            border-radius: 3px;
+            user-select: all;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        .copy-icon {
+            cursor: pointer;
+            color: #4fc3f7;
+            transition: color 0.3s;
+        }
+        .copy-icon:hover {
+            color: #3ba8d9;
+        }
+        button {
+            background-color: #4fc3f7;
+            color: #ffffff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3ba8d9;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+        .tab {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        .tab.active {
+            border-bottom-color: #4fc3f7;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .step {
+            margin-bottom: 1rem;
+        }
+        a {
+            color: #4fc3f7;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .auto-load-message {
+            margin-top: 2rem;
+            font-style: italic;
+            text-align: center;
+            color: #a0cfee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stream Setup</h1>
+        <div class="stream-info">
+            <h2>Your Stream Information</h2>
+            <p>
+                <strong>Server URL:</strong> 
+                <span class="stream-key">rtmp://stream.artiststream.com/live</span>
+                <i class="fas fa-copy copy-icon" onclick="copyToClipboard('rtmp://stream.artiststream.com/live')"></i>
+            </p>
+            <p>
+                <strong>Stream Key:</strong> 
+                <span class="stream-key">xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx</span>
+                <i class="fas fa-copy copy-icon" onclick="copyToClipboard('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx')"></i>
+            </p>
+        </div>
+        <button id="learnHowToStream">Learn How to Stream</button>
+        <div id="streamInstructions" style="display: none;">
+            <div class="tabs">
+                <div class="tab active" data-tab="getStarted">Get Started</div>
+                <div class="tab" data-tab="streamSetup">Stream Setup</div>
+            </div>
+            <div id="getStarted" class="tab-content active">
+                <h2>Get Started with OBS</h2>
+                <div class="step">
+                    <h3>1. Download OBS</h3>
+                    <p>Visit the official OBS website to download the latest version:</p>
+                    <a href="https://obsproject.com/" target="_blank">https://obsproject.com/</a>
+                </div>
+                <div class="step">
+                    <h3>2. Install OBS</h3>
+                    <p>Run the installer and follow the on-screen instructions to complete the installation.</p>
+                </div>
+                <div class="step">
+                    <h3>3. Launch OBS</h3>
+                    <p>Once installed, launch OBS Studio to begin setting up your stream.</p>
+                </div>
+            </div>
+            <div id="streamSetup" class="tab-content">
+                <h2>Stream Using OBS</h2>
+                <div class="step">
+                    <h3>1. Open OBS Settings</h3>
+                    <p>Click on "Settings" in the bottom right corner of the OBS window.</p>
+                </div>
+                <div class="step">
+                    <h3>2. Configure Stream Settings</h3>
+                    <p>- In the Settings window, click on "Stream" in the left sidebar.</p>
+                    <p>- Select "Custom" from the Service dropdown menu.</p>
+                    <p>- Enter the Server URL and Stream Key provided above.</p>
+                    <p>- Click "Apply" then "OK" to save the settings.</p>
+                </div>
+                <div class="step">
+                    <h3>3. Set Up Your Scene</h3>
+                    <p>- In the main OBS window, click the "+" icon in the Scenes box to create a new scene.</p>
+                    <p>- Click the "+" icon in the Sources box to add your video and audio sources.</p>
+                </div>
+                <div class="step">
+                    <h3>4. Start Streaming</h3>
+                    <p>When you're ready, click the "Start Streaming" button in the main OBS window to go live!</p>
+                </div>
+            </div>
+        </div>
+        <p class="auto-load-message">
+            Once you click "Start Streaming" in OBS, your livestream page will automatically load. Get ready to showcase your artistry to the world!
+        </p>
+    </div>
+
+    <script>
+        document.getElementById('learnHowToStream').addEventListener('click', function() {
+            document.getElementById('streamInstructions').style.display = 'block';
+            this.style.display = 'none';
+        });
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+    </script>
+</body>
+</html>
