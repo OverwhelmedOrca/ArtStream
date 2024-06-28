@@ -6,10 +6,20 @@
     <title>Stream Setup - ArtistStream</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #4DB6AC;
+            --background-color: #1A1A2E;
+            --card-color: #16213E;
+            --text-color: #E0E0E0;
+        }
+
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: #ffffff;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
             margin: 0;
             padding: 0;
             display: flex;
@@ -17,86 +27,151 @@
             align-items: center;
             min-height: 100vh;
         }
+
         .container {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+            background-color: var(--card-color);
+            border-radius: 20px;
             padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             max-width: 800px;
             width: 100%;
+            transition: all 0.3s ease;
         }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
         h1, h2 {
+            color: var(--primary-color);
             margin-top: 0;
-            color: #4fc3f7;
         }
+
         .stream-info {
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            padding: 1rem;
-            margin-bottom: 1rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
         }
-        .stream-key {
-            font-family: monospace;
+
+        .stream-info:hover {
             background-color: rgba(255, 255, 255, 0.1);
-            padding: 0.5rem;
-            border-radius: 3px;
+        }
+
+        .stream-key {
+            font-family: 'Courier New', monospace;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
             user-select: all;
             display: inline-block;
             margin-right: 0.5rem;
+            transition: all 0.3s ease;
         }
+
+        .stream-key:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
         .copy-icon {
             cursor: pointer;
-            color: #4fc3f7;
+            color: var(--secondary-color);
             transition: color 0.3s;
         }
+
         .copy-icon:hover {
-            color: #3ba8d9;
+            color: var(--primary-color);
+            transform: scale(1.1);
         }
+
         button {
-            background-color: #4fc3f7;
-            color: #ffffff;
+            background-color: var(--primary-color);
+            color: white;
             border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
+
         button:hover {
-            background-color: #3ba8d9;
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
+
         .tabs {
             display: flex;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
         }
+
         .tab {
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1.5rem;
             cursor: pointer;
-            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 600;
         }
+
         .tab.active {
-            border-bottom-color: #4fc3f7;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
         }
+
         .tab-content {
             display: none;
+            animation: fadeIn 0.5s ease;
         }
+
         .tab-content.active {
             display: block;
         }
+
         .step {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: all 0.3s ease;
         }
+
+        .step:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
         a {
-            color: #4fc3f7;
+            color: var(--secondary-color);
             text-decoration: none;
+            transition: color 0.3s;
         }
+
         a:hover {
-            text-decoration: underline;
+            color: var(--primary-color);
         }
+
         .auto-load-message {
             margin-top: 2rem;
             font-style: italic;
             text-align: center;
-            color: #a0cfee;
+            color: var(--secondary-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
         }
     </style>
 </head>
