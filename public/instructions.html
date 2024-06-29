@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stream Setup - ArtistStream</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
@@ -182,13 +183,13 @@
             <h2>Your Stream Information</h2>
             <p>
                 <strong>Server URL:</strong> 
-                <span class="stream-key">rtmp://stream.artiststream.com/live</span>
-                <i class="fas fa-copy copy-icon" onclick="copyToClipboard('rtmp://stream.artiststream.com/live')"></i>
+                <span id="streamServer" class="stream-key"></span>
+                <i class="fas fa-copy copy-icon" onclick="copyToClipboard('streamServer')"></i>
             </p>
             <p>
                 <strong>Stream Key:</strong> 
-                <span class="stream-key">xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx</span>
-                <i class="fas fa-copy copy-icon" onclick="copyToClipboard('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx')"></i>
+                <span id="streamKey" class="stream-key"></span>
+                <i class="fas fa-copy copy-icon" onclick="copyToClipboard('streamKey')"></i>
             </p>
         </div>
         <button id="learnHowToStream">Learn How to Stream</button>
@@ -243,11 +244,58 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const streamServer = localStorage.getItem('streamServer');
+            const streamKey = localStorage.getItem('streamKey');
+            const streamId = localStorage.getItem('streamId');
+    
+            document.getElementById('streamServer').textContent = streamServer;
+            document.getElementById('streamKey').textContent = streamKey;
+    
+            // Function to check stream status
+            async function checkStreamStatus() {
+                try {
+                    const response = await axios.get(`https://api.thetavideoapi.com/stream/${streamId}`, {
+                        headers: {
+                            'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
+                            'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
+                        }
+                    });
+    
+                    console.log('Stream status response:', response.data);
+    
+                    if (response.data.body.status === 'on') {
+                        console.log('Stream is live! Redirecting to stream page...');
+                        clearInterval(statusCheckInterval);
+                        window.location.href = 'stream.html';
+                    }
+                } catch (error) {
+                    console.error('Error checking stream status:', error);
+                }
+            }
+    
+            // Check stream status every 2 seconds
+            const statusCheckInterval = setInterval(checkStreamStatus, 2000);
+    
+            // Initial check
+            checkStreamStatus();
+        });
+    
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+    
         document.getElementById('learnHowToStream').addEventListener('click', function() {
             document.getElementById('streamInstructions').style.display = 'block';
             this.style.display = 'none';
         });
-
+    
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -256,14 +304,14 @@
                 document.getElementById(this.dataset.tab).classList.add('active');
             });
         });
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Copied to clipboard!');
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-            });
-        }
+    
+        // Initialize tabs
+        document.addEventListener('DOMContentLoaded', () => {
+            const defaultTab = document.querySelector('.tab');
+            if (defaultTab) {
+                defaultTab.click();
+            }
+        });
     </script>
 </body>
 </html>
