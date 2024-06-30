@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
@@ -171,20 +172,18 @@
                 async init() {
                     await this.loadStreams();
                     this.filterStreams();
+                    // Set up a WebSocket connection for real-time updates
+                    this.initWebSocket();
                 },
                 async loadStreams() {
                     try {
-                        const response = await fetch('/streams');
-                        const responseText = await response.text(); // Get the response text
-                        console.log('Response text:', responseText); // Debugging: Log the response text
-
-                        if (!response.ok) {
-                            console.error('Error response text:', responseText); // Debugging: Log error response text
-                            throw new Error(`Failed to fetch streams: ${responseText}`);
-                        }
-
-                        this.streams = JSON.parse(responseText); // Parse the response text as JSON
-                        console.log('Streams data:', this.streams); // Debugging: Log streams data
+                        const token = localStorage.getItem('token');
+                        const response = await axios.get('/streams', {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        this.streams = response.data.filter(stream => !stream.isLive);
                         this.filteredStreams = this.streams;
                     } catch (error) {
                         console.error('Error loading streams:', error);
@@ -213,26 +212,55 @@
                         return;
                     }
                     try {
-                        const response = await fetch(`/streams/${streamId}/join`, {
-                            method: 'POST',
+                        const response = await axios.post(`/streams/${streamId}/join`, {}, {
                             headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}` // Ensure the token is correctly set
+                                'Authorization': `Bearer ${token}`
                             }
                         });
 
-                        if (!response.ok) {
-                            throw new Error('Failed to join stream');
+                        if (response.data) {
+                            alert(`Joining stream: ${response.data.name}. Redirecting to stream...`);
+                            // Store the stream ID in localStorage for use in the stream page
+                            localStorage.setItem('currentStreamId', streamId);
+                            window.location.href = `waiting.html`;
                         }
-
-                        const stream = await response.json();
-                        alert(`Joining stream: ${stream.name}. Redirecting to stream...`);
-                        // Here you would typically redirect to the actual stream page
-                        window.location.href = `live-stream.html?id=${streamId}`;
                     } catch (error) {
                         console.error('Error joining stream:', error);
                         alert('Failed to join stream. Please try again.');
                     }
+                },
+                initWebSocket() {
+                    const socket = new WebSocket('wss://your-websocket-server.com');
+
+                    socket.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        switch(data.type) {
+                            case 'newStream':
+                                this.streams.push(data.stream);
+                                this.filterStreams();
+                                break;
+                            case 'streamStarted':
+                                this.streams = this.streams.filter(stream => stream._id !== data.streamId);
+                                this.filterStreams();
+                                break;
+                            case 'streamUpdated':
+                                const index = this.streams.findIndex(stream => stream._id === data.stream._id);
+                                if (index !== -1) {
+                                    this.streams[index] = data.stream;
+                                    this.filterStreams();
+                                }
+                                break;
+                        }
+                    };
+
+                    socket.onerror = (error) => {
+                        console.error('WebSocket error:', error);
+                    };
+
+                    socket.onclose = () => {
+                        console.log('WebSocket connection closed');
+                        // Implement reconnection logic here if needed
+                    };
                 },
                 showLoginModal(streamId) {
                     const modal = document.getElementById('loginModal');
@@ -245,22 +273,17 @@
                         const password = document.getElementById('password').value;
 
                         try {
-                            const response = await fetch('/login', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ username, password })
-                            });
-
-                            const data = await response.json();
-                            if (response.ok) {
-                                localStorage.setItem('token', data.token);
+                            const response = await axios.post('/login', { username, password });
+                            if (response.data.token) {
+                                localStorage.setItem('token', response.data.token);
                                 modal.style.display = "none";
-                                this.joinStream(streamId); // Retry joining the stream after successful login
+                                this.joinStream(streamId);
                             } else {
-                                alert(data.message);
+                                alert(response.data.message || 'Login failed');
                             }
                         } catch (err) {
                             console.error('Login error:', err);
+                            alert('Login failed. Please try again.');
                         }
                     };
 
@@ -268,10 +291,6 @@
                     span.onclick = function() {
                         modal.style.display = "none";
                     };
-                },
-                toggleNotifications() {
-                    alert("Notifications toggled. You'll receive updates about new streams!");
-                    // Implement actual notification logic here
                 }
             }
         }

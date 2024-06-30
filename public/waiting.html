@@ -135,41 +135,31 @@
                 estimatedDuration: '',
                 chatEnabled: true,
                 streamId: '',
+                connectedArtists: [],
                 init() {
                     this.loadStreamData();
                     this.initEngagementChart();
+                    this.initWebSocket();
                 },
                 async loadStreamData() {
                     try {
                         const streamId = localStorage.getItem('currentStreamId');
-                        console.log('Stream ID:', streamId);
                         if (!streamId) {
                             throw new Error('No stream ID found');
                         }
                         this.streamId = streamId;
 
                         const token = localStorage.getItem('token');
-                        console.log('Token on load stream data:', token);
                         if (!token) {
                             throw new Error('No authentication token found');
                         }
-                        const response = await fetch(`/streams/${streamId}`, {
+                        const response = await axios.get(`/streams/${streamId}`, {
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             }
                         });
 
-                        const responseText = await response.text();
-                        console.log('Response text:', responseText);
-
-                        if (!response.ok) {
-                            console.error('Error response text:', responseText);
-                            throw new Error(`Failed to fetch stream data: ${responseText}`);
-                        }
-
-                        const streamData = JSON.parse(responseText);
-                        console.log('Stream data:', streamData);
-                        
+                        const streamData = response.data;
                         this.streamName = streamData.name;
                         this.streamCategory = streamData.category;
                         this.streamDescription = streamData.description;
@@ -177,6 +167,8 @@
                         this.estimatedDuration = streamData.estimatedDuration + ' minutes';
                         this.chatEnabled = streamData.chatEnabled;
                         this.currentArtists = streamData.participants.length;
+                        this.connectedArtists = streamData.participants;
+                        this.updateConnectedArtistsList();
                     } catch (error) {
                         console.error('Error loading stream data:', error);
                     }
@@ -205,14 +197,56 @@
                         }
                     });
                 },
+                initWebSocket() {
+                    const socket = new WebSocket('wss://your-websocket-server.com');
+
+                    socket.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        switch(data.type) {
+                            case 'artistJoined':
+                                this.connectedArtists.push(data.artist);
+                                this.currentArtists = this.connectedArtists.length;
+                                this.updateConnectedArtistsList();
+                                break;
+                            case 'artistLeft':
+                                this.connectedArtists = this.connectedArtists.filter(artist => artist.id !== data.artistId);
+                                this.currentArtists = this.connectedArtists.length;
+                                this.updateConnectedArtistsList();
+                                break;
+                        }
+                    };
+
+                    socket.onerror = (error) => {
+                        console.error('WebSocket error:', error);
+                    };
+
+                    socket.onclose = () => {
+                        console.log('WebSocket connection closed');
+                        // Implement reconnection logic here if needed
+                    };
+                },
+                updateConnectedArtistsList() {
+                    const artistsList = document.getElementById('connectedArtistsList');
+                    artistsList.innerHTML = '';
+                    this.connectedArtists.forEach(artist => {
+                        const li = document.createElement('li');
+                        li.className = 'flex items-center space-x-4 bg-gray-700 rounded-lg p-3 transform hover:scale-105 transition-transform';
+                        li.innerHTML = `
+                            <img src="${artist.avatar || 'https://via.placeholder.com/150'}" alt="${artist.username}" class="w-12 h-12 rounded-full border-2 border-cyan-400">
+                            <div>
+                                <span class="font-semibold">${artist.username}</span>
+                                <p class="text-sm text-gray-400">${artist.specialty || 'Artist'}</p>
+                            </div>
+                        `;
+                        artistsList.appendChild(li);
+                    });
+                },
                 async goLive() {
                     console.log('Go Live button clicked');
                     try {
                         const token = localStorage.getItem('token');
-                        console.log('Retrieved token:', token);
                         if (!token) {
-                            console.error('No authentication token found');
-                            return;
+                            throw new Error('No authentication token found');
                         }
 
                         console.log('Creating new livestream...');
@@ -265,7 +299,14 @@
                         localStorage.setItem('streamKey', stream_key);
                         console.log('Stream info saved to localStorage');
 
-                        console.log('Redirecting to instructions page...');
+                        // After successful creation of the livestream, update the stream status on your backend
+                        await axios.post(`/streams/${this.streamId}/start`, {}, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+
+                        // Redirect to the instructions page
                         window.location.href = 'instructions.html';
 
                     } catch (error) {
@@ -285,27 +326,6 @@
             }
         }
 
-        // Function to update connected artists list
-        function updateConnectedArtists(artists) {
-            const artistsList = document.getElementById('connectedArtistsList');
-            artistsList.innerHTML = ''; // Clear existing list
-            artists.forEach(artist => {
-                const li = document.createElement('li');
-                li.className = 'flex items-center space-x-4 bg-gray-700 rounded-lg p-3 transform hover:scale-105 transition-transform';
-                li.innerHTML = `
-                    <img src="${artist.avatar || 'https://via.placeholder.com/150'}" alt="${artist.username}" class="w-12 h-12 rounded-full border-2 border-cyan-400">
-                    <div>
-                        <span class="font-semibold">${artist.username}</span>
-                        <p class="text-sm text-gray-400">${artist.specialty || 'Artist'}</p>
-                    </div>
-                `;
-                artistsList.appendChild(li);
-            });
-        }
-
-        // Call this function when the stream data is loaded
-        // For example, add this line in the loadStreamData function:
-        // updateConnectedArtists(streamData.participants);
     </script>
 </body>
 </html>
