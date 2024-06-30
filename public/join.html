@@ -219,10 +219,9 @@
                         });
 
                         if (response.data) {
-                            alert(`Joining stream: ${response.data.name}. Redirecting to stream...`);
-                            // Store the stream ID in localStorage for use in the stream page
+                            // Store the stream ID in localStorage for use in the artist wait page
                             localStorage.setItem('currentStreamId', streamId);
-                            window.location.href = `waiting.html`;
+                            window.location.href = `artistWait.html`;
                         }
                     } catch (error) {
                         console.error('Error joining stream:', error);

@@ -22,13 +22,13 @@
         .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 min-h-screen" x-data="artistWaitingRoomData()" x-init="init()">
+<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 min-h-screen" x-data="artistWaitData()" x-init="init()">
     <div class="max-w-6xl mx-auto p-8 space-y-8">
         <header class="text-center">
             <h1 class="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
                 Artist Waiting Room
             </h1>
-            <p class="text-xl text-cyan-300">Get ready to collaborate and create!</p>
+            <p class="text-xl text-cyan-300" x-text="statusMessage"></p>
         </header>
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -69,7 +69,7 @@
                 <div class="bg-gray-700 p-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                     <div class="flex items-center space-x-2">
                         <span class="w-4 h-4 bg-yellow-500 rounded-full pulse"></span>
-                        <p class="text-yellow-400 text-lg">Waiting for host to start the stream</p>
+                        <p class="text-yellow-400 text-lg" x-text="waitingMessage"></p>
                     </div>
                 </div>
             </div>
@@ -80,7 +80,7 @@
                     <!-- Connected artists will be dynamically added here -->
                 </ul>
                 <div class="text-center" x-show="currentArtists < maxArtists">
-                    <p class="text-lg text-cyan-300 mb-2">Waiting for more artists to join...</p>
+                    <p class="text-lg text-cyan-300 mb-2">Waiting for more artists...</p>
                     <div class="inline-block">
                         <i class="fas fa-spinner fa-spin text-4xl text-cyan-400"></i>
                     </div>
@@ -88,44 +88,20 @@
             </div>
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-4">
-                <h3 class="text-2xl font-semibold text-cyan-300">Stream Host</h3>
-                <div class="flex items-center space-x-4 bg-gray-700 rounded-lg p-4">
-                    <img :src="hostAvatar" alt="Host Avatar" class="w-16 h-16 rounded-full border-2 border-cyan-400">
-                    <div>
-                        <h4 class="text-xl font-semibold" x-text="hostName"></h4>
-                        <p class="text-gray-400" x-text="hostBio"></p>
-                    </div>
+        <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-4">
+            <h3 class="text-2xl font-semibold text-cyan-300">Host Information</h3>
+            <div class="flex items-center space-x-4">
+                <img :src="hostAvatar" alt="Host Avatar" class="w-16 h-16 rounded-full border-2 border-cyan-400">
+                <div>
+                    <p class="text-xl font-semibold" x-text="hostName"></p>
+                    <p class="text-gray-400" x-text="hostBio"></p>
                 </div>
-            </div>
-            
-            <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-4">
-                <h3 class="text-2xl font-semibold text-cyan-300">Stream Preparation</h3>
-                <ul class="space-y-2">
-                    <li class="flex items-center space-x-2">
-                        <i class="fas fa-check-circle text-green-400"></i>
-                        <span>Ensure your equipment is set up and ready</span>
-                    </li>
-                    <li class="flex items-center space-x-2">
-                        <i class="fas fa-check-circle text-green-400"></i>
-                        <span>Test your audio and video</span>
-                    </li>
-                    <li class="flex items-center space-x-2">
-                        <i class="fas fa-check-circle text-green-400"></i>
-                        <span>Prepare your workspace for the stream</span>
-                    </li>
-                    <li class="flex items-center space-x-2">
-                        <i class="fas fa-check-circle text-green-400"></i>
-                        <span>Review the stream topic and plan</span>
-                    </li>
-                </ul>
             </div>
         </div>
     </div>
 
     <script>
-        function artistWaitingRoomData() {
+        function artistWaitData() {
             return {
                 streamName: '',
                 streamCategory: '',
@@ -135,40 +111,36 @@
                 estimatedDuration: '',
                 chatEnabled: true,
                 streamId: '',
+                connectedArtists: [],
                 hostName: '',
                 hostAvatar: '',
                 hostBio: '',
+                statusMessage: 'Waiting for host to start server',
+                waitingMessage: 'Waiting for host...',
                 init() {
                     this.loadStreamData();
-                    this.pollForStreamStart();
+                    this.initWebSocket();
+                    this.pollStreamStatus();
                 },
                 async loadStreamData() {
                     try {
                         const streamId = localStorage.getItem('currentStreamId');
-                        console.log('Stream ID:', streamId);
                         if (!streamId) {
                             throw new Error('No stream ID found');
                         }
                         this.streamId = streamId;
 
                         const token = localStorage.getItem('token');
-                        console.log('Token on load stream data:', token);
                         if (!token) {
                             throw new Error('No authentication token found');
                         }
-                        const response = await fetch(`/streams/${streamId}`, {
+                        const response = await axios.get(`/streams/${streamId}`, {
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             }
                         });
 
-                        if (!response.ok) {
-                            throw new Error(`Failed to fetch stream data: ${response.statusText}`);
-                        }
-
-                        const streamData = await response.json();
-                        console.log('Stream data:', streamData);
-                        
+                        const streamData = response.data;
                         this.streamName = streamData.name;
                         this.streamCategory = streamData.category;
                         this.streamDescription = streamData.description;
@@ -176,50 +148,85 @@
                         this.estimatedDuration = streamData.estimatedDuration + ' minutes';
                         this.chatEnabled = streamData.chatEnabled;
                         this.currentArtists = streamData.participants.length;
+                        this.connectedArtists = streamData.participants;
+                        this.updateConnectedArtistsList();
 
                         // Fetch host information
                         this.hostName = streamData.creator.username;
-                        this.hostAvatar = streamData.creator.avatar || 'https://via.placeholder.com/150';
-                        this.hostBio = streamData.creator.bio || 'Stream Host';
-
-                        this.updateConnectedArtists(streamData.participants);
+                        this.hostAvatar = `https://i.pravatar.cc/150?u=${streamData.creator.username}`;
+                        this.hostBio = "Passionate artist and stream host";
                     } catch (error) {
                         console.error('Error loading stream data:', error);
                     }
                 },
-                updateConnectedArtists(artists) {
+                initWebSocket() {
+                    const socket = new WebSocket('wss://your-websocket-server.com');
+
+                    socket.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        switch(data.type) {
+                            case 'artistJoined':
+                                this.connectedArtists.push(data.artist);
+                                this.currentArtists = this.connectedArtists.length;
+                                this.updateConnectedArtistsList();
+                                break;
+                            case 'artistLeft':
+                                this.connectedArtists = this.connectedArtists.filter(artist => artist.id !== data.artistId);
+                                this.currentArtists = this.connectedArtists.length;
+                                this.updateConnectedArtistsList();
+                                break;
+                            case 'streamStarted':
+                                this.statusMessage = 'Host has started the stream';
+                                this.waitingMessage = 'Preparing to join...';
+                                break;
+                            case 'streamLive':
+                                window.location.href = 'stream.html';
+                                break;
+                        }
+                    };
+
+                    socket.onerror = (error) => {
+                        console.error('WebSocket error:', error);
+                    };
+
+                    socket.onclose = () => {
+                        console.log('WebSocket connection closed');
+                        // Implement reconnection logic here if needed
+                    };
+                },
+                updateConnectedArtistsList() {
                     const artistsList = document.getElementById('connectedArtistsList');
-                    artistsList.innerHTML = ''; // Clear existing list
-                    artists.forEach(artist => {
+                    artistsList.innerHTML = '';
+                    this.connectedArtists.forEach((artist, index) => {
                         const li = document.createElement('li');
                         li.className = 'flex items-center space-x-4 bg-gray-700 rounded-lg p-3 transform hover:scale-105 transition-transform';
                         li.innerHTML = `
-                            <img src="${artist.avatar || 'https://via.placeholder.com/150'}" alt="${artist.username}" class="w-12 h-12 rounded-full border-2 border-cyan-400">
+                            <img src="https://i.pravatar.cc/150?img=${index + 1}" alt="${artist.username || 'Artist'}" class="w-12 h-12 rounded-full border-2 border-cyan-400">
                             <div>
-                                <span class="font-semibold">${artist.username}</span>
+                                <span class="font-semibold">${artist.username || 'Artist'}</span>
                                 <p class="text-sm text-gray-400">${artist.specialty || 'Artist'}</p>
                             </div>
                         `;
                         artistsList.appendChild(li);
                     });
                 },
-                pollForStreamStart() {
-                    const checkInterval = setInterval(async () => {
+                pollStreamStatus() {
+                    setInterval(async () => {
                         try {
-                            const response = await fetch(`/streams/${this.streamId}`, {
+                            const response = await axios.get(`https://api.thetavideoapi.com/stream/${this.streamId}`, {
                                 headers: {
-                                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                    'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
+                                    'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
                                 }
                             });
-                            const streamData = await response.json();
-                            if (streamData.isLive) {
-                                clearInterval(checkInterval);
-                                window.location.href = `stream.html?id=${this.streamId}`;
+                            
+                            if (response.data.body.status === 'on') {
+                                window.location.href = 'stream.html';
                             }
                         } catch (error) {
-                            console.error('Error checking stream status:', error);
+                            console.error('Error polling stream status:', error);
                         }
-                    }, 5000); // Check every 5 seconds
+                    }, 2000); // Poll every 2 seconds
                 }
             }
         }
