@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArtStream - Artist Waiting Room</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        .float { animation: float 6s ease-in-out infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 min-h-screen" x-data="artistWaitingRoomData()" x-init="init()">
+    <div class="max-w-6xl mx-auto p-8 space-y-8">
+        <header class="text-center">
+            <h1 class="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+                Artist Waiting Room
+            </h1>
+            <p class="text-xl text-cyan-300">Get ready to collaborate and create!</p>
+        </header>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg">
+                <div class="p-6 space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-3xl font-semibold text-cyan-300" x-text="streamName"></h2>
+                        <span class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full text-sm font-bold" x-text="streamCategory"></span>
+                    </div>
+                    
+                    <p class="text-gray-300 text-lg" x-text="streamDescription"></p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-gray-700 rounded-lg p-4 flex items-center transform hover:scale-105 transition-transform">
+                            <i class="fas fa-users text-3xl text-cyan-400 mr-3"></i>
+                            <div>
+                                <p class="text-sm text-gray-400">Artists</p>
+                                <p class="text-2xl font-semibold"><span x-text="currentArtists"></span>/<span x-text="maxArtists"></span></p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-700 rounded-lg p-4 flex items-center transform hover:scale-105 transition-transform">
+                            <i class="fas fa-clock text-3xl text-cyan-400 mr-3"></i>
+                            <div>
+                                <p class="text-sm text-gray-400">Estimated Duration</p>
+                                <p class="text-2xl font-semibold" x-text="estimatedDuration"></p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-700 rounded-lg p-4 flex items-center transform hover:scale-105 transition-transform">
+                            <i class="fas fa-comments text-3xl text-cyan-400 mr-3"></i>
+                            <div>
+                                <p class="text-sm text-gray-400">Chat</p>
+                                <p class="text-2xl font-semibold" x-text="chatEnabled ? 'Enabled' : 'Disabled'"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-700 p-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-4 h-4 bg-yellow-500 rounded-full pulse"></span>
+                        <p class="text-yellow-400 text-lg">Waiting for host to start the stream</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-6">
+                <h3 class="text-2xl font-semibold text-cyan-300">Connected Artists</h3>
+                <ul class="space-y-4" id="connectedArtistsList">
+                    <!-- Connected artists will be dynamically added here -->
+                </ul>
+                <div class="text-center" x-show="currentArtists < maxArtists">
+                    <p class="text-lg text-cyan-300 mb-2">Waiting for more artists to join...</p>
+                    <div class="inline-block">
+                        <i class="fas fa-spinner fa-spin text-4xl text-cyan-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-4">
+                <h3 class="text-2xl font-semibold text-cyan-300">Stream Host</h3>
+                <div class="flex items-center space-x-4 bg-gray-700 rounded-lg p-4">
+                    <img :src="hostAvatar" alt="Host Avatar" class="w-16 h-16 rounded-full border-2 border-cyan-400">
+                    <div>
+                        <h4 class="text-xl font-semibold" x-text="hostName"></h4>
+                        <p class="text-gray-400" x-text="hostBio"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-4">
+                <h3 class="text-2xl font-semibold text-cyan-300">Stream Preparation</h3>
+                <ul class="space-y-2">
+                    <li class="flex items-center space-x-2">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        <span>Ensure your equipment is set up and ready</span>
+                    </li>
+                    <li class="flex items-center space-x-2">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        <span>Test your audio and video</span>
+                    </li>
+                    <li class="flex items-center space-x-2">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        <span>Prepare your workspace for the stream</span>
+                    </li>
+                    <li class="flex items-center space-x-2">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        <span>Review the stream topic and plan</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function artistWaitingRoomData() {
+            return {
+                streamName: '',
+                streamCategory: '',
+                streamDescription: '',
+                currentArtists: 1,
+                maxArtists: 0,
+                estimatedDuration: '',
+                chatEnabled: true,
+                streamId: '',
+                hostName: '',
+                hostAvatar: '',
+                hostBio: '',
+                init() {
+                    this.loadStreamData();
+                    this.pollForStreamStart();
+                },
+                async loadStreamData() {
+                    try {
+                        const streamId = localStorage.getItem('currentStreamId');
+                        console.log('Stream ID:', streamId);
+                        if (!streamId) {
+                            throw new Error('No stream ID found');
+                        }
+                        this.streamId = streamId;
+
+                        const token = localStorage.getItem('token');
+                        console.log('Token on load stream data:', token);
+                        if (!token) {
+                            throw new Error('No authentication token found');
+                        }
+                        const response = await fetch(`/streams/${streamId}`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch stream data: ${response.statusText}`);
+                        }
+
+                        const streamData = await response.json();
+                        console.log('Stream data:', streamData);
+                        
+                        this.streamName = streamData.name;
+                        this.streamCategory = streamData.category;
+                        this.streamDescription = streamData.description;
+                        this.maxArtists = streamData.maxArtists;
+                        this.estimatedDuration = streamData.estimatedDuration + ' minutes';
+                        this.chatEnabled = streamData.chatEnabled;
+                        this.currentArtists = streamData.participants.length;
+
+                        // Fetch host information
+                        this.hostName = streamData.creator.username;
+                        this.hostAvatar = streamData.creator.avatar || 'https://via.placeholder.com/150';
+                        this.hostBio = streamData.creator.bio || 'Stream Host';
+
+                        this.updateConnectedArtists(streamData.participants);
+                    } catch (error) {
+                        console.error('Error loading stream data:', error);
+                    }
+                },
+                updateConnectedArtists(artists) {
+                    const artistsList = document.getElementById('connectedArtistsList');
+                    artistsList.innerHTML = ''; // Clear existing list
+                    artists.forEach(artist => {
+                        const li = document.createElement('li');
+                        li.className = 'flex items-center space-x-4 bg-gray-700 rounded-lg p-3 transform hover:scale-105 transition-transform';
+                        li.innerHTML = `
+                            <img src="${artist.avatar || 'https://via.placeholder.com/150'}" alt="${artist.username}" class="w-12 h-12 rounded-full border-2 border-cyan-400">
+                            <div>
+                                <span class="font-semibold">${artist.username}</span>
+                                <p class="text-sm text-gray-400">${artist.specialty || 'Artist'}</p>
+                            </div>
+                        `;
+                        artistsList.appendChild(li);
+                    });
+                },
+                pollForStreamStart() {
+                    const checkInterval = setInterval(async () => {
+                        try {
+                            const response = await fetch(`/streams/${this.streamId}`, {
+                                headers: {
+                                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                }
+                            });
+                            const streamData = await response.json();
+                            if (streamData.isLive) {
+                                clearInterval(checkInterval);
+                                window.location.href = `stream.html?id=${this.streamId}`;
+                            }
+                        } catch (error) {
+                            console.error('Error checking stream status:', error);
+                        }
+                    }, 5000); // Check every 5 seconds
+                }
+            }
+        }
+    </script>
+</body>
+</html>

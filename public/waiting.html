@@ -232,9 +232,9 @@
                         const li = document.createElement('li');
                         li.className = 'flex items-center space-x-4 bg-gray-700 rounded-lg p-3 transform hover:scale-105 transition-transform';
                         li.innerHTML = `
-                            <img src="${artist.avatar || 'https://via.placeholder.com/150'}" alt="${artist.username}" class="w-12 h-12 rounded-full border-2 border-cyan-400">
+                            <img src="https://i.pravatar.cc/150?img=${index + 1}" alt="${artist.username || 'Artist'}" class="w-12 h-12 rounded-full border-2 border-cyan-400">
                             <div>
-                                <span class="font-semibold">${artist.username}</span>
+                                <span class="font-semibold">${artist.username || 'Artist'}</span>
                                 <p class="text-sm text-gray-400">${artist.specialty || 'Artist'}</p>
                             </div>
                         `;
