@@ -2,6 +2,9 @@ const topVideos = document.getElementById('topVideos');
 const mainVideo = document.getElementById('mainVideo');
 const chatMessages = document.getElementById('chat-messages');
 const chatInput = document.getElementById('chat-input');
+const chatContainer = document.getElementById('chatContainer');
+const addStreamBtn = document.getElementById('addStreamBtn');
+const toggleChatBtn = document.getElementById('toggleChatBtn');
 
 // Sample video URLs (replace with actual HLS streams for production)
 const sampleVideos = [
@@ -55,11 +58,17 @@ function createVideoWrapper(url, index) {
     
     const playPauseBtn = document.createElement('button');
     playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-    playPauseBtn.onclick = () => togglePlayPause(video, playPauseBtn);
+    playPauseBtn.onclick = (e) => {
+        e.stopPropagation();
+        togglePlayPause(video, playPauseBtn);
+    };
 
     const maximizeBtn = document.createElement('button');
     maximizeBtn.innerHTML = '<i class="fas fa-expand"></i>';
-    maximizeBtn.onclick = () => switchMainVideo(index);
+    maximizeBtn.onclick = (e) => {
+        e.stopPropagation();
+        switchMainVideo(index);
+    };
 
     controls.appendChild(playPauseBtn);
     controls.appendChild(maximizeBtn);
@@ -123,3 +132,13 @@ setInterval(() => {
     const randomMessage = messages[Math.floor(Math.random() * messages.length)];
     addChatMessage(randomUser, randomMessage);
 }, 5000);
+
+// Navbar button functionality
+addStreamBtn.addEventListener('click', () => {
+    const url = prompt("Enter the stream URL:");
+    if (url) addStream(url);
+});
+
+toggleChatBtn.addEventListener('click', () => {
+    chatContainer.style.display = chatContainer.style.display === 'none' ? 'flex' : 'none';
+});
