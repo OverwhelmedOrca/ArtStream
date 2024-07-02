@@ -142,3 +142,25 @@ addStreamBtn.addEventListener('click', () => {
 toggleChatBtn.addEventListener('click', () => {
     chatContainer.style.display = chatContainer.style.display === 'none' ? 'flex' : 'none';
 });
+
+// Creator data
+const creatorData = {
+    Creator1: "Creator1 is known for their unique style in digital art and interactive streaming sessions.",
+    Creator2: "Creator2 specializes in traditional painting techniques adapted for the digital medium.",
+    Creator3: "Creator3 pushes the boundaries with innovative 3D modeling and animation in their streams."
+};
+
+// Function to update creator description
+function updateCreatorDescription(creatorName) {
+    document.getElementById('creatorName').textContent = creatorName;
+    document.getElementById('creatorBio').textContent = creatorData[creatorName] || "No description available.";
+}
+
+// Event listener for stream switching (assuming you have a way to switch streams)
+// This is a placeholder - you'll need to integrate this with your stream switching logic
+function onStreamSwitch(newCreatorName) {
+    updateCreatorDescription(newCreatorName);
+}
+
+// Initial creator description setup
+updateCreatorDescription('Creator1');
