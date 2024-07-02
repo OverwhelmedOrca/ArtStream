@@ -1,4 +1,5 @@
-const videoContainer = document.getElementById('videoContainer');
+const topVideos = document.getElementById('topVideos');
+const mainVideo = document.getElementById('mainVideo');
 const chatMessages = document.getElementById('chat-messages');
 const chatInput = document.getElementById('chat-input');
 
@@ -10,6 +11,7 @@ const sampleVideos = [
 ];
 
 let streamUrls = [];
+let mainVideoIndex = 0;
 
 function addStream(url) {
     if (streamUrls.length >= 3) return;
@@ -26,41 +28,54 @@ function removeStream(url) {
 }
 
 function updateStreams() {
-    videoContainer.innerHTML = '';
+    topVideos.innerHTML = '';
+    mainVideo.innerHTML = '';
+    
     streamUrls.forEach((url, index) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'video-wrapper';
-        
-        const video = document.createElement('video');
-        video.id = `video-${index}`;
-        video.controls = false; // We'll use custom controls
-
-        const controls = document.createElement('div');
-        controls.className = 'video-controls';
-        
-        const playPauseBtn = document.createElement('button');
-        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-        playPauseBtn.onclick = () => togglePlayPause(video, playPauseBtn);
-
-        const maximizeBtn = document.createElement('button');
-        maximizeBtn.innerHTML = '<i class="fas fa-expand"></i>';
-        maximizeBtn.onclick = () => toggleMaximize(wrapper, maximizeBtn);
-
-        controls.appendChild(playPauseBtn);
-        controls.appendChild(maximizeBtn);
-
-        wrapper.appendChild(video);
-        wrapper.appendChild(controls);
-        videoContainer.appendChild(wrapper);
-
-        if (Hls.isSupported()) {
-            const hls = new Hls();
-            hls.loadSource(url);
-            hls.attachMedia(video);
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = url;
+        const wrapper = createVideoWrapper(url, index);
+        if (index === mainVideoIndex) {
+            mainVideo.appendChild(wrapper);
+        } else {
+            wrapper.classList.add('small');
+            topVideos.appendChild(wrapper);
         }
     });
+}
+
+function createVideoWrapper(url, index) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'video-wrapper';
+    
+    const video = document.createElement('video');
+    video.id = `video-${index}`;
+    video.controls = false;
+
+    const controls = document.createElement('div');
+    controls.className = 'video-controls';
+    
+    const playPauseBtn = document.createElement('button');
+    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+    playPauseBtn.onclick = () => togglePlayPause(video, playPauseBtn);
+
+    const maximizeBtn = document.createElement('button');
+    maximizeBtn.innerHTML = '<i class="fas fa-expand"></i>';
+    maximizeBtn.onclick = () => switchMainVideo(index);
+
+    controls.appendChild(playPauseBtn);
+    controls.appendChild(maximizeBtn);
+
+    wrapper.appendChild(video);
+    wrapper.appendChild(controls);
+
+    if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(video);
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = url;
+    }
+
+    return wrapper;
 }
 
 function togglePlayPause(video, btn) {
@@ -73,14 +88,9 @@ function togglePlayPause(video, btn) {
     }
 }
 
-function toggleMaximize(wrapper, btn) {
-    if (wrapper.classList.contains('maximized')) {
-        wrapper.classList.remove('maximized');
-        btn.innerHTML = '<i class="fas fa-expand"></i>';
-    } else {
-        wrapper.classList.add('maximized');
-        btn.innerHTML = '<i class="fas fa-compress"></i>';
-    }
+function switchMainVideo(index) {
+    mainVideoIndex = index;
+    updateStreams();
 }
 
 chatInput.addEventListener('keypress', function(e) {
