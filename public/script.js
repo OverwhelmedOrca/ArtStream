@@ -134,6 +134,7 @@ document.getElementById('login-form').onsubmit = async function(e) {
         });
         const data = await response.json();
         if (response.ok) {
+            localStorage.setItem('username', username); // Store username in local storage
             localStorage.setItem('token', data.token); // Store the token in local storage
             console.log('Token stored:', data.token); // Debugging: Log the stored token
             document.querySelector('.auth-buttons').innerHTML = `Welcome ${data.username}!`;
@@ -160,6 +161,7 @@ document.getElementById('signup-form').onsubmit = async function(e) {
         });
         const data = await response.json();
         if (response.ok) {
+            localStorage.setItem('username', username); // Store username in local storage
             document.querySelector('.auth-buttons').innerHTML = `Welcome ${data.username}!`;
             signupModal.style.display = "none";
             e.target.reset();
@@ -237,7 +239,12 @@ goLiveBtn.onclick = function() {
   
   // When the user clicks on Join Server, redirect to join.html
   joinServerBtn.onclick = function() {
-    window.location.href = 'join.html';
+    const username = localStorage.getItem('username');
+    if (username) {
+        window.location.href = 'join.html';
+    } else {
+        alert('Please sign up or log in before joining a server.');
+    }
   }
 
 // Initialize the featured artist carousel

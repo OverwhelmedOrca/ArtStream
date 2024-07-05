@@ -173,7 +173,7 @@
                     await this.loadStreams();
                     this.filterStreams();
                     // Set up a WebSocket connection for real-time updates
-                    this.initWebSocket();
+                    // this.initWebSocket();
                 },
                 async loadStreams() {
                     try {
@@ -207,27 +207,36 @@
                 },
                 async joinStream(streamId) {
                     const token = localStorage.getItem('token');
-                    if (!token) {
+                    const username = localStorage.getItem('username');
+                    if (!token || !username) {
                         this.showLoginModal(streamId);
                         return;
                     }
                     try {
-                        const response = await axios.post(`/streams/${streamId}/join`, {}, {
+                        console.log('Joining stream:', streamId);
+                        console.log('Username:', username);
+                        const response = await axios.post(`/streams/${streamId}/join`, { username }, {
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             }
                         });
 
+                        console.log('Join stream response:', response.data);
+
                         if (response.data) {
-                            // Store the stream ID in localStorage for use in the artist wait page
                             localStorage.setItem('currentStreamId', streamId);
                             window.location.href = `artistWait.html`;
                         }
                     } catch (error) {
                         console.error('Error joining stream:', error);
-                        alert('Failed to join stream. Please try again.');
+                        if (error.response) {
+                            console.error('Error response:', error.response.data);
+                            console.error('Error status:', error.response.status);
+                        }
+                        alert(`Failed to join stream: ${error.response?.data?.message || error.message}. Please try again.`);
                     }
                 },
+                /* commented out web socket for now
                 initWebSocket() {
                     const socket = new WebSocket('wss://your-websocket-server.com');
 
@@ -260,7 +269,8 @@
                         console.log('WebSocket connection closed');
                         // Implement reconnection logic here if needed
                     };
-                },
+                }, 
+                */
                 showLoginModal(streamId) {
                     const modal = document.getElementById('loginModal');
                     modal.style.display = "block";

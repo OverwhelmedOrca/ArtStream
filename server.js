@@ -33,7 +33,10 @@ const streamSchema = new mongoose.Schema({
     chatEnabled: { type: Boolean, default: true },
     currentArtists: { type: Number, default: 1 },
     creator: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    participants: [{
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        username: String
+    }],
     isLive: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now }
 });
@@ -135,6 +138,7 @@ app.get('/streams', async (req, res) => {
 });
 
 
+// Get stream details
 app.get('/streams/:id', verifyToken, async (req, res) => {
     try {
         const stream = await Stream.findById(req.params.id).populate('creator', 'username');
@@ -152,22 +156,40 @@ app.get('/streams/:id', verifyToken, async (req, res) => {
 // Join a stream
 app.post('/streams/:id/join', verifyToken, async (req, res) => {
   try {
-    const stream = await Stream.findById(req.params.id);
+    console.log('Joining stream with ID:', req.params.id);
+    console.log('User ID:', req.user.userId);
+    console.log('Request body:', req.body);
+
+    const stream = await Stream.findById(req.params.id).populate('creator', 'username');
     if (!stream) {
+      console.log('Stream not found');
       return res.status(404).json({ message: 'Stream not found' });
     }
+    console.log('Stream found:', stream);
+
     if (stream.participants.length >= stream.maxArtists) {
+      console.log('Stream is full');
       return res.status(400).json({ message: 'Stream is full' });
     }
-    if (!stream.participants.includes(req.user.userId)) {
-      stream.participants.push(req.user.userId);
+
+    const { username } = req.body;
+    console.log('Username from request:', username);
+
+    const participantIndex = stream.participants.findIndex(p => p.userId.toString() === req.user.userId);
+    if (participantIndex === -1) {
+      console.log('Adding new participant');
+      stream.participants.push({ userId: req.user.userId, username });
       stream.currentArtists = stream.participants.length;
       await stream.save();
+      console.log('Stream updated:', stream);
+    } else {
+      console.log('Participant already exists');
     }
-    res.json(stream);
+
+    res.json({ stream, username });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error joining stream' });
+    console.error('Error joining stream:', err);
+    res.status(500).json({ message: 'Error joining stream', error: err.message });
   }
 });
 
