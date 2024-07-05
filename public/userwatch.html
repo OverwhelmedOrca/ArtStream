@@ -1,30 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArtStream - Live Art Streaming</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-track {
             background: #2D3748;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: #4A5568;
             border-radius: 3px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #718096;
         }
+
         .gradient-bg {
             background: linear-gradient(45deg, #667eea, #764ba2);
         }
+
+        .video-wrapper {
+            position: relative;
+            border: 2px solid #3a3a3d;
+            border-radius: 12px;
+            overflow: hidden;
+            flex: 1;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .video-wrapper:hover {
+            transform: scale(1.02);
+        }
+
+        .video-wrapper.small {
+            max-width: 30%;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: opacity 0.3s;
+            opacity: 0;
+        }
+
+        .video-wrapper:hover .video-controls {
+            opacity: 1;
+        }
+
+        .video-controls button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s;
+        }
+
+        .video-controls button:hover {
+            color: #41a5f0;
+        }
     </style>
 </head>
+
 <body class="bg-gray-900 text-white">
     <div class="flex flex-col h-screen">
         <!-- Header -->
@@ -50,9 +113,10 @@
             <div class="w-3/4 flex flex-col overflow-y-auto custom-scrollbar">
                 <!-- Video Player -->
                 <div class="relative w-full h-full bg-black aspect-video max-h-[70vh]">
-                    <img src="https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8YXJ0fGVufDB8fDB8fHww" alt="Livestream placeholder" class="absolute top-0 left-0 w-full h-full object-cover">
+                    <div class="top-videos" id="topVideos"></div>
+                    <div class="main-video" id="mainVideo"></div>
                 </div>
-                
+
                 <!-- Stream Info and Buttons -->
                 <div class="bg-gray-800 p-4 shadow-md">
                     <div class="flex items-center justify-between">
@@ -60,7 +124,8 @@
                             <img src="https://i.pravatar.cc/100?img=3" alt="Channel Avatar" class="w-12 h-12 rounded-full border-2 border-purple-500">
                             <div>
                                 <h2 class="text-xl font-bold">CanvasRebel</h2>
-                                <p class="text-sm text-gray-400">Painting                             </div>
+                                <p class="text-sm text-gray-400">Painting
+                            </div>
                             <div class="flex space-x-2">
                                 <button id="likeBtn" class="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-full transition duration-300">
                                     <i class="far fa-heart"></i>
@@ -76,7 +141,7 @@
                         <div class="flex space-x-4 items-center text-sm">
                             <span class="bg-red-600 px-2 py-1 rounded-full">LIVE</span>
                             <span><i class="fas fa-user mr-1"></i>3,415</span>
-                            <span>                            <button class="text-gray-400 hover:text-white transition duration-300">
+                            <button class="text-gray-400 hover:text-white transition duration-300">
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                         </div>
@@ -88,7 +153,7 @@
                     <div class="flex space-x-4 text-sm">
                         <span class="bg-gray-700 px-2 py-1 rounded">VALORANT</span>
                         <span class="bg-gray-700 px-2 py-1 rounded">English</span>
-                        <span class="bg-gray-700 px-2 py-1 rounded">Digital Art</span>                      
+                        <span class="bg-gray-700 px-2 py-1 rounded">Digital Art</span>
                         <span class="bg-gray-700 px-2 py-1 rounded">Beginner-Friendly</span>
                     </div>
                 </div>
@@ -144,6 +209,108 @@
     </div>
 
     <script>
+        const topVideos = document.getElementById('topVideos');
+        const mainVideo = document.getElementById('mainVideo');
+
+        // Sample video URLs (replace with actual HLS streams for production)
+        const sampleVideos = [
+            'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+            'https://test-streams.mux.dev/test_001/stream.m3u8',
+            'https://test-streams.mux.dev/dai-discontinuity-deltatre/manifest.m3u8'
+        ];
+
+        let streamUrls = [];
+        let mainVideoIndex = 0;
+
+        function addStream(url) {
+            if (streamUrls.length >= 3) return;
+            streamUrls.push(url);
+            updateStreams();
+        }
+
+        function removeStream(url) {
+            const index = streamUrls.indexOf(url);
+            if (index > -1) {
+                streamUrls.splice(index, 1);
+                updateStreams();
+            }
+        }
+
+        function updateStreams() {
+            topVideos.innerHTML = '';
+            mainVideo.innerHTML = '';
+
+            streamUrls.forEach((url, index) => {
+                const wrapper = createVideoWrapper(url, index);
+                if (index === mainVideoIndex) {
+                    mainVideo.appendChild(wrapper);
+                } else {
+                    wrapper.classList.add('small');
+                    topVideos.appendChild(wrapper);
+                }
+            });
+        }
+
+        function createVideoWrapper(url, index) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'video-wrapper';
+
+            const video = document.createElement('video');
+            video.id = `video-${index}`;
+            video.controls = false;
+
+            const controls = document.createElement('div');
+            controls.className = 'video-controls';
+
+            const playPauseBtn = document.createElement('button');
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            playPauseBtn.onclick = (e) => {
+                e.stopPropagation();
+                togglePlayPause(video, playPauseBtn);
+            };
+
+            const maximizeBtn = document.createElement('button');
+            maximizeBtn.innerHTML = '<i class="fas fa-expand"></i>';
+            maximizeBtn.onclick = (e) => {
+                e.stopPropagation();
+                switchMainVideo(index);
+            };
+
+            controls.appendChild(playPauseBtn);
+            controls.appendChild(maximizeBtn);
+
+            wrapper.appendChild(video);
+            wrapper.appendChild(controls);
+
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+            }
+
+            return wrapper;
+        }
+
+        function togglePlayPause(video, btn) {
+            if (video.paused) {
+                video.play();
+                btn.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                video.pause();
+                btn.innerHTML = '<i class="fas fa-play"></i>';
+            }
+        }
+
+        function switchMainVideo(index) {
+            mainVideoIndex = index;
+            updateStreams();
+        }
+
+        // Add sample streams
+        sampleVideos.forEach(url => addStream(url));
+
         // Simulated chat messages
         const chatMessages = [
             { user: 'ArtLover99', message: 'This stream is amazing!' },
@@ -165,17 +332,17 @@
         chatMessages.forEach(msg => addChatMessage(msg.user, msg.message));
 
         // Event listeners for buttons
-        document.getElementById('likeBtn').addEventListener('click', function() {
+        document.getElementById('likeBtn').addEventListener('click', function () {
             this.querySelector('i').classList.toggle('fas');
             this.querySelector('i').classList.toggle('far');
             this.querySelector('i').classList.toggle('text-red-500');
         });
 
-        document.querySelector('button i.fa-share').parentElement.addEventListener('click', function() {
+        document.querySelector('button i.fa-share').parentElement.addEventListener('click', function () {
             alert('Share functionality would be implemented here.');
         });
 
-        document.getElementById('followBtn').addEventListener('click', function() {
+        document.getElementById('followBtn').addEventListener('click', function () {
             if (this.textContent === 'Follow') {
                 this.textContent = 'Following';
                 this.classList.add('bg-purple-600');
@@ -188,7 +355,7 @@
         });
 
         // Chat input functionality
-        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+        document.getElementById('chatInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 const message = this.value.trim();
                 if (message) {
@@ -199,4 +366,5 @@
         });
     </script>
 </body>
+
 </html>
