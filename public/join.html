@@ -101,6 +101,11 @@
             <input type="text" placeholder="Search streams..." class="px-4 py-2 rounded-l-lg bg-purple-900 border-2 border-cyan-500 text-white focus:outline-none focus:border-cyan-300" x-model="searchTerm" @input="filterStreams">
             <button class="btn-gradient px-4 py-2 rounded-r-lg text-white" @click="filterStreams">Search</button>
         </div>
+        <div class="mb-8 flex justify-center">
+            <button @click="openPrivateStreamModal" class="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-full shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
+                <i class="fas fa-key mr-2"></i> Join Private Stream
+            </button>
+        </div>
         <div class="mb-8 flex justify-center space-x-4">
             <button class="px-4 py-2 rounded-full bg-purple-700 text-white hover:bg-purple-600 transition" @click="filterByCategory('all')">All</button>
             <button class="px-4 py-2 rounded-full bg-purple-700 text-white hover:bg-purple-600 transition" @click="filterByCategory('digital-art')">Digital Art</button>
@@ -163,17 +168,88 @@
         </div>
     </div>
 
+    <!-- private key modal -->
+    <div x-show="showPrivateStreamModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-cloak>
+        <div class="bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4" @click.away="showPrivateStreamModal = false">
+            <h2 class="text-2xl font-bold text-cyan-300 mb-4">Join Private Stream</h2>
+            <input type="text" x-model="privateStreamKey" placeholder="Enter stream key" class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 mb-4">
+            <button @click="verifyPrivateStream" class="w-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-lg hover:from-cyan-600 hover:to-blue-600 transition duration-300">
+                Verify Key
+            </button>
+            
+            <div x-show="privateStreamInfo" class="mt-6 bg-gray-700 rounded-lg p-4">
+                <h3 class="text-xl font-semibold text-cyan-300 mb-2" x-text="privateStreamInfo.name"></h3>
+                <p class="text-gray-300 mb-2" x-text="privateStreamInfo.description"></p>
+                <div class="flex justify-between text-sm text-gray-400 mb-4">
+                    <span><i class="fas fa-users mr-1"></i> <span x-text="privateStreamInfo.currentArtists"></span>/<span x-text="privateStreamInfo.maxArtists"></span></span>
+                    <span><i class="fas fa-clock mr-1"></i> <span x-text="privateStreamInfo.estimatedDuration"></span> min</span>
+                </div>
+                <button @click="joinPrivateStream" class="w-full px-4 py-2 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition duration-300">
+                    Join Stream
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function joinStreamData() {
             return {
                 streams: [],
                 filteredStreams: [],
                 searchTerm: '',
+                streamKey: '',
+                privateStreams: [],
+                showPrivateStreamModal: false,
+                privateStreamKey: '',
+                privateStreamInfo: null,
                 async init() {
                     await this.loadStreams();
                     this.filterStreams();
                     // Set up a WebSocket connection for real-time updates
                     // this.initWebSocket();
+                },
+                openPrivateStreamModal() {
+                    this.showPrivateStreamModal = true;
+                    this.privateStreamKey = '';
+                    this.privateStreamInfo = null;
+                },
+
+                async verifyPrivateStream() {
+                    if (!this.privateStreamKey) {
+                        alert('Please enter a stream key');
+                        return;
+                    }
+                    try {
+                        const response = await axios.post('/verify-private-stream', { streamKey: this.privateStreamKey }, {
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                        });
+                        if (response.data.stream) {
+                            this.privateStreamInfo = response.data.stream;
+                        } else {
+                            alert('Invalid stream key');
+                        }
+                    } catch (error) {
+                        console.error('Error verifying private stream:', error);
+                        alert('Error verifying stream key');
+                    }
+                },
+
+                async joinPrivateStream() {
+                    if (!this.privateStreamInfo) return;
+                    try {
+                        const response = await axios.post(`/streams/${this.privateStreamInfo._id}/join`, {
+                            username: localStorage.getItem('username')
+                        }, {
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                        });
+                        if (response.data) {
+                            localStorage.setItem('currentStreamId', this.privateStreamInfo._id);
+                            window.location.href = 'artistWait.html';
+                        }
+                    } catch (error) {
+                        console.error('Error joining private stream:', error);
+                        alert('Unable to join the stream');
+                    }
                 },
                 async loadStreams() {
                     try {
@@ -183,8 +259,8 @@
                                 'Authorization': `Bearer ${token}`
                             }
                         });
-                        this.streams = response.data.filter(stream => !stream.isLive);
-                        this.filteredStreams = this.streams;
+                        this.streams = response.data.filter(stream => !stream.isPrivate);
+                        this.privateStreams = response.data.filter(stream => stream.isPrivate);
                     } catch (error) {
                         console.error('Error loading streams:', error);
                         alert('Failed to load streams. Please try again later.');

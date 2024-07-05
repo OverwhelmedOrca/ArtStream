@@ -90,6 +90,33 @@
                     </div>
                 </div>
             </div>
+
+            <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-6">
+                <h3 class="text-2xl font-semibold text-cyan-300">Stream Access</h3>
+                <div class="flex items-center justify-between">
+                    <span>Stream Key:</span>
+                    <div class="flex items-center">
+                        <input type="text" x-model="streamKey" readonly class="bg-gray-700 rounded px-3 py-2 mr-2">
+                        <button @click="copyStreamKey" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-2 rounded transition duration-300">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span>Private Stream:</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" x-model="isPrivate" @change="updatePrivacy" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+                    </label>
+                </div>
+                <p class="text-sm text-gray-400" x-show="isPrivate">
+                    Your stream is private. Only artists with the stream key can join.
+                </p>
+                <p class="text-sm text-gray-400" x-show="!isPrivate">
+                    Your stream is public. Anyone can join.
+                </p>
+            </div>
+
         </div>
         
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -136,10 +163,33 @@
                 chatEnabled: true,
                 streamId: '',
                 connectedArtists: [],
-                init() {
+                streamKey: '',
+                isPrivate: false,
+                async init() {
                     this.loadStreamData();
                     this.initEngagementChart();
                     this.initWebSocket();
+                },
+                async generateStreamKey() {
+                    // Generate a random stream key (you might want to do this on the server)
+                    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                },
+                copyStreamKey() {
+                    navigator.clipboard.writeText(this.streamKey);
+                    alert('Stream key copied to clipboard');
+                },
+                async updatePrivacy() {
+                    try {
+                        const token = localStorage.getItem('token');
+                        await axios.put(`/streams/${this.streamId}/privacy`, { isPrivate: this.isPrivate }, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        alert(this.isPrivate ? 'Stream set to private' : 'Stream set to public');
+                    } catch (error) {
+                        console.error('Error updating stream privacy:', error);
+                        alert('Failed to update stream privacy');
+                        this.isPrivate = !this.isPrivate; // Revert the toggle if the update failed
+                    }
                 },
                 async loadStreamData() {
                     try {
@@ -172,6 +222,8 @@
                             username: participant.username,
                             specialty: 'Artist'
                         }));
+                        this.streamKey = streamData.streamKey;
+                        this.isPrivate = streamData.isPrivate;
                         this.updateConnectedArtistsList();
                     } catch (error) {
                         console.error('Error loading stream data:', error);

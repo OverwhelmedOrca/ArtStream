@@ -39,7 +39,9 @@ const streamSchema = new mongoose.Schema({
         username: String
     }],
     isLive: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+    isPrivate: { type: Boolean, default: false },
+    streamKey: { type: String, unique: true }
 });
 
 const Stream = mongoose.model('Stream', streamSchema, 'Streams');
@@ -100,10 +102,11 @@ const verifyToken = (req, res, next) => {
 
 // Create a new stream
 app.post('/streams', verifyToken, async (req, res) => {
-    const { name, category, description, maxArtists, estimatedDuration, chatEnabled, hostName } = req.body;
+    const { name, category, description, maxArtists, estimatedDuration, chatEnabled, hostName, isPrivate } = req.body;
     console.log('Received stream data:', req.body);
     
     try {
+      const streamKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
       const stream = new Stream({
         name,
         category,
@@ -113,6 +116,8 @@ app.post('/streams', verifyToken, async (req, res) => {
         chatEnabled,
         creator: req.user.userId,
         hostName,
+        isPrivate,
+        streamKey,
         participants: [{ userId: req.user.userId, username: hostName }] // Add the creator as the first participant
       });
   
@@ -131,9 +136,10 @@ app.post('/streams', verifyToken, async (req, res) => {
     }
 });
 
+// Update the get streams route to exclude private streams
 app.get('/streams', async (req, res) => {
     try {
-        const streams = await Stream.find({ isLive: false }); // Fetch streams that are waiting to go live
+        const streams = await Stream.find({ isLive: false, isPrivate: false });
         res.json(streams);
     } catch (err) {
         console.error(err);
@@ -141,16 +147,81 @@ app.get('/streams', async (req, res) => {
     }
 });
 
+// Add a route to join private streams
+app.post('/join-private-stream', verifyToken, async (req, res) => {
+  const { streamKey } = req.body;
+  try {
+      const stream = await Stream.findOne({ streamKey, isPrivate: true });
+      if (!stream) {
+          return res.status(404).json({ message: 'Stream not found or is not private' });
+      }
+      // Add logic to join the stream similar to the existing join route
+      res.json({ stream });
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Error joining private stream' });
+  }
+});
 
-// Get stream details
+// Add a route to update stream privacy
+app.put('/streams/:id/privacy', verifyToken, async (req, res) => {
+  const { isPrivate } = req.body;
+  try {
+      const stream = await Stream.findById(req.params.id);
+      if (!stream) {
+          return res.status(404).json({ message: 'Stream not found' });
+      }
+      if (stream.creator.toString() !== req.user.userId) {
+          return res.status(403).json({ message: 'Not authorized' });
+      }
+      stream.isPrivate = isPrivate;
+      await stream.save();
+      res.json(stream);
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Error updating stream privacy' });
+  }
+});
+
+// Add this new route to verify private streams
+app.post('/verify-private-stream', verifyToken, async (req, res) => {
+  const { streamKey } = req.body;
+  try {
+      const stream = await Stream.findOne({ streamKey });
+      if (!stream) {
+          return res.status(404).json({ message: 'Stream not found' });
+      }
+      // Return limited information about the stream
+      res.json({
+          stream: {
+              _id: stream._id,
+              name: stream.name,
+              description: stream.description,
+              currentArtists: stream.participants.length,
+              maxArtists: stream.maxArtists,
+              estimatedDuration: stream.estimatedDuration,
+              isPrivate: stream.isPrivate
+          }
+      });
+  } catch (err) {
+      console.error('Error verifying private stream:', err);
+      res.status(500).json({ message: 'Error verifying private stream' });
+  }
+});
+
+// Update the get stream details route to include the streamKey for the creator
 app.get('/streams/:id', verifyToken, async (req, res) => {
     try {
         const stream = await Stream.findById(req.params.id).populate('creator', 'username');
         if (!stream) {
             return res.status(404).json({ message: 'Stream not found' });
         }
-        console.log('Retrieved stream:', stream);
-        res.json(stream);
+        const streamData = stream.toObject();
+        // Only include the streamKey if the requester is the creator
+        if (stream.creator._id.toString() === req.user.userId) {
+            streamData.streamKey = stream.streamKey;
+        }
+        res.json(streamData);
     } catch (err) {
         console.error('Error fetching stream data:', err);
         res.status(500).json({ message: 'Error fetching stream data' });
