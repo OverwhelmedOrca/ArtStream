@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Stream Viewer</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #18181b;
+            --primary-color: #9147ff;
+            --secondary-color: #41a5f0;
+            --text-color: #efeff1;
+            --border-color: #3a3a3d;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .navbar {
+            background-color: #0e0e10;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .nav-buttons button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .nav-buttons button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .container {
+            display: flex;
+            height: calc(100% - 60px);
+        }
+
+        .video-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .top-videos {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            height: 25%;
+            min-height: 120px;
+        }
+
+        .main-video {
+            flex: 1;
+            margin-top: 20px;
+        }
+
+        .video-wrapper {
+            position: relative;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            flex: 1;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .video-wrapper:hover {
+            transform: scale(1.02);
+        }
+
+        .video-wrapper.small {
+            max-width: 30%;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: opacity 0.3s;
+            opacity: 0;
+        }
+
+        .video-wrapper:hover .video-controls {
+            opacity: 1;
+        }
+
+        .video-controls button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s;
+        }
+
+        .video-controls button:hover {
+            color: var(--secondary-color);
+        }
+
+        .chat-container {
+            width: 300px;
+            padding: 20px;
+            background: #0e0e10;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border-color);
+        }
+
+        #chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #1f1f23;
+            border-radius: 8px;
+        }
+
+        #chat-input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            background: #2c2c2e;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+            word-wrap: break-word;
+            background: #2c2c2e;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .chat-username {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">PalletePals</div>
+        <div class="nav-buttons">
+            <button id="addStreamBtn">Add Stream</button>
+            <button id="toggleChatBtn">Toggle Chat</button>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="video-container">
+            <div class="top-videos" id="topVideos"></div>
+            <div class="main-video" id="mainVideo"></div>
+        </div>
+        <div class="chat-container" id="chatContainer">
+            <div id="chat-messages"></div>
+            <input type="text" id="chat-input" placeholder="Type a message...">
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <!-- Creator Description -->
+<div id="creatorDescription" class="bg-gray-800 p-6 mt-4 rounded-lg shadow-md">
+    <h3 class="text-2xl font-bold mb-4 text-purple-400">About <span id="creatorName">Current Creator</span></h3>
+    <p id="creatorBio" class="text-gray-300 leading-relaxed">
+        Creator bio will be displayed here.
+    </p>
+</div>
+
+<!-- Collaboration Details -->
+<div class="bg-gray-800 p-6 mt-4 rounded-lg shadow-md">
+    <h3 class="text-2xl font-bold mb-4 text-purple-400">Collaboration Spotlight</h3>
+    <p class="text-gray-300 leading-relaxed">
+        This stream features a special collaboration between multiple talented artists. They've come together to create unique content that blends their distinct styles. Watch as they combine their skills to produce extraordinary artwork live!
+    </p>
+</div>
+</body>
+</html>
