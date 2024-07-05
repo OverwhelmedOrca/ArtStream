@@ -232,8 +232,15 @@ goLiveBtn.onclick = function() {
   // When the user clicks on Start Server, redirect to setup.html
   startServerBtn.onclick = function() {
     const token = localStorage.getItem('token');
-    console.log('Token before navigating to setup:', token); // Debugging: Log the token before navigation
-    window.location.href = 'setup.html';
+    const username = localStorage.getItem('username');
+    console.log('Token before navigating to setup:', token);
+    console.log('Username before navigating to setup:', username);
+    if (token && username) {
+        localStorage.setItem('isHost', 'true');
+        window.location.href = 'setup.html';
+    } else {
+        alert('Please log in before starting a server.');
+    }
   }
 
   

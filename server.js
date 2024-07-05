@@ -33,6 +33,7 @@ const streamSchema = new mongoose.Schema({
     chatEnabled: { type: Boolean, default: true },
     currentArtists: { type: Number, default: 1 },
     creator: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    hostName: { type: String, required: true }, // Make sure this line is present
     participants: [{
         userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         username: String
@@ -99,7 +100,7 @@ const verifyToken = (req, res, next) => {
 
 // Create a new stream
 app.post('/streams', verifyToken, async (req, res) => {
-    const { name, category, description, maxArtists, estimatedDuration, chatEnabled } = req.body;
+    const { name, category, description, maxArtists, estimatedDuration, chatEnabled, hostName } = req.body;
     console.log('Received stream data:', req.body);
     
     try {
@@ -110,7 +111,9 @@ app.post('/streams', verifyToken, async (req, res) => {
         maxArtists,
         estimatedDuration,
         chatEnabled,
-        creator: req.user.userId
+        creator: req.user.userId,
+        hostName,
+        participants: [{ userId: req.user.userId, username: hostName }] // Add the creator as the first participant
       });
   
       const validationError = stream.validateSync();
@@ -120,6 +123,7 @@ app.post('/streams', verifyToken, async (req, res) => {
       }
   
       await stream.save();
+      console.log('Saved stream:', stream);
       res.status(201).json(stream);
     } catch (err) {
       console.error('Error creating stream:', err);
@@ -145,9 +149,10 @@ app.get('/streams/:id', verifyToken, async (req, res) => {
         if (!stream) {
             return res.status(404).json({ message: 'Stream not found' });
         }
+        console.log('Retrieved stream:', stream);
         res.json(stream);
     } catch (err) {
-        console.error(err);
+        console.error('Error fetching stream data:', err);
         res.status(500).json({ message: 'Error fetching stream data' });
     }
 });

@@ -151,16 +151,20 @@
                         this.chatEnabled = streamData.chatEnabled;
                         this.currentArtists = streamData.participants.length;
                         this.connectedArtists = streamData.participants.map(participant => ({
-                            id: participant._id,
+                            id: participant.userId,
                             username: participant.username,
-                            specialty: 'Artist'  // You can add a specialty field to your User model if needed
+                            specialty: 'Artist'
                         }));
                         this.updateConnectedArtistsList();
 
-                        // Fetch host information
-                        this.hostName = streamData.creator.username;
-                        this.hostAvatar = `https://i.pravatar.cc/150?u=${streamData.creator.username}`;
+                        // Update host information
+                        this.hostName = streamData.hostName || streamData.participants[0]?.username || 'BrushNinja';
+                        this.hostAvatar = `https://i.pravatar.cc/150?u=${this.hostName}`;
                         this.hostBio = "Passionate artist and stream host";
+
+                        console.log('Host Name:', this.hostName);
+                        console.log('Stream Data:', streamData);
+
                     } catch (error) {
                         console.error('Error loading stream data:', error);
                     }
@@ -207,7 +211,7 @@
                         const li = document.createElement('li');
                         li.className = 'flex items-center space-x-4 bg-gray-700 rounded-lg p-3 transform hover:scale-105 transition-transform';
                         li.innerHTML = `
-                            <img src="https://i.pravatar.cc/150?img=${index + 1}" alt="${artist.username}" class="w-12 h-12 rounded-full border-2 border-cyan-400">
+                            <img src="https://i.pravatar.cc/150?u=${artist.username}" alt="${artist.username}" class="w-12 h-12 rounded-full border-2 border-cyan-400">
                             <div>
                                 <span class="font-semibold">${artist.username}</span>
                                 <p class="text-sm text-gray-400">${artist.specialty}</p>

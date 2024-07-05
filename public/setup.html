@@ -233,6 +233,7 @@
                 recordStream: false,
                 enableNotifications: false,
                 async submitForm() {
+                    const hostName = localStorage.getItem('username');
                     const formData = {
                         name: this.streamName,
                         description: this.streamDescription,
@@ -240,21 +241,22 @@
                         maxArtists: parseInt(this.maxArtists),
                         estimatedDuration: this.estimatedDuration,
                         chatEnabled: this.enableChat,
+                        hostName: hostName
                     };
 
                     try {
                         const token = localStorage.getItem('token');
-                        console.log('Retrieved token in submitForm:', token); // Debugging: Log the retrieved token
+                        console.log('Retrieved token in submitForm:', token);
+                        console.log('Sending data:', formData);
                         if (!token) {
                             throw new Error('No authentication token found');
                         }
 
-                        console.log('Sending data:', formData);
                         const response = await fetch('http://localhost:3000/streams', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}` // Ensure the token is correctly set
+                                'Authorization': `Bearer ${token}`
                             },
                             body: JSON.stringify(formData)
                         });
