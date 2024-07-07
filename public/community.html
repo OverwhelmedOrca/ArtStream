@@ -3,426 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Artist Community Forum</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+    <title>ArtStream Retro Community</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&family=Roboto:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono:wght@400;700&display=swap');
 
         :root {
-            --primary-color: #00a8cc;
-            --secondary-color: #005073;
-            --background-color: #001f3f;
-            --text-color: #f0f0f0;
-            --accent-color: #ffd700;
+            --bg-color: #1a1a2e;
+            --text-color: #e1e1e6;
+            --accent-color: #00ff99;
+            --secondary-color: #ff00ff;
         }
 
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--background-color);
+            font-family: 'Roboto Mono', monospace;
+            background-color: var(--bg-color);
             color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            cursor: none;
         }
 
-        #cursor {
-            width: 20px;
-            height: 20px;
+        .retro-container {
+            background-image: 
+                linear-gradient(rgba(26, 26, 46, 0.9), rgba(26, 26, 46, 0.9)),
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300ff99' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .retro-header {
+            font-family: 'Press Start 2P', cursive;
+            text-shadow: 2px 2px 0px var(--accent-color);
+        }
+
+        .retro-border {
             border: 2px solid var(--accent-color);
-            border-radius: 50%;
-            position: fixed;
-            pointer-events: none;
-            z-index: 9999;
+            box-shadow: 4px 4px 0px var(--secondary-color);
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            position: relative;
-            z-index: 1;
-        }
-
-        header {
-            background-color: rgba(0, 80, 115, 0.8);
-            padding: 20px 0;
-            text-align: center;
-            position: relative;
-        }
-
-        h1, h2, h3 {
-            font-family: 'Comfortaa', cursive;
-            color: var(--accent-color);
-        }
-
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .forum-categories {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            margin-top: 30px;
-        }
-
-        .category {
-            background-color: rgba(0, 80, 115, 0.6);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            width: calc(33% - 20px);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
-        }
-
-        .category:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 10px 20px rgba(0, 168, 204, 0.2);
-        }
-
-        .category h2 {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-        }
-
-        .category-icon {
-            font-size: 2em;
-            margin-bottom: 10px;
-            color: var(--primary-color);
-        }
-
-        .post-form {
-            background-color: rgba(0, 80, 115, 0.6);
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 30px;
-        }
-
-        .post-form h2 {
-            font-size: 1.8em;
-            margin-bottom: 20px;
-        }
-
-        .post-form input, .post-form textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: none;
-            border-radius: 5px;
-            background-color: rgba(0, 31, 63, 0.8);
-            color: var(--text-color);
-            font-family: 'Roboto', sans-serif;
-        }
-
-        .post-form button {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-        }
-
-        .post-form button:hover {
+        .retro-button {
             background-color: var(--accent-color);
-            color: var(--secondary-color);
-            transform: scale(1.05);
-        }
-
-        .recent-posts {
-            margin-top: 30px;
-        }
-
-        .recent-posts h2 {
-            font-size: 1.8em;
-            margin-bottom: 20px;
-        }
-
-        .post {
-            background-color: rgba(0, 80, 115, 0.6);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .post:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 168, 204, 0.2);
-        }
-
-        .post h3 {
-            color: var(--primary-color);
-            font-size: 1.3em;
-            margin-bottom: 10px;
-        }
-
-        .post-meta {
-            font-size: 0.9em;
-            color: var(--text-color);
-            margin-bottom: 10px;
-        }
-
-        .post-content {
-            line-height: 1.6;
-        }
-
-        .post-actions {
-            margin-top: 15px;
-        }
-
-        .post-actions button {
-            background-color: transparent;
+            color: var(--bg-color);
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            padding: 0.5rem 1rem;
             border: none;
-            color: var(--primary-color);
-            cursor: pointer;
-            margin-right: 15px;
-            transition: color 0.3s ease, transform 0.3s ease;
+            box-shadow: 3px 3px 0px var(--secondary-color);
+            transition: all 0.1s ease;
         }
 
-        .post-actions button:hover {
-            color: var(--accent-color);
-            transform: scale(1.1);
+        .retro-button:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px var(--secondary-color);
         }
 
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-        }
-
-        .floating-menu {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        .floating-button {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-        }
-
-        .floating-button:hover {
-            background-color: var(--accent-color);
-            transform: scale(1.1);
-        }
-
-        .menu-items {
-            position: absolute;
-            bottom: 70px;
-            right: 0;
-            background-color: rgba(0, 80, 115, 0.9);
-            border-radius: 5px;
-            padding: 10px;
+        .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }
 
-        .menu-items button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 5px;
-            background-color: transparent;
-            border: none;
-            color: var(--text-color);
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .menu-items button:hover {
-            background-color: rgba(0, 168, 204, 0.3);
-        }
-
-        @media (max-width: 768px) {
-            .category {
-                width: 100%;
-            }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
-<body>
-    <div id="cursor"></div>
-    <div id="canvas-container"></div>
-    
-    <header>
-        <h1>Artist Community Forum</h1>
-        <p>Connect, Share, and Inspire</p>
+<body class="retro-container" x-data="retroCommunity()">
+    <header class="p-4 flex justify-between items-center border-b-2 border-accent-color">
+        <h1 class="retro-header text-2xl">Community Feed</h1>
+        <div class="flex items-center space-x-4">
+            <div class="relative" x-data="{ open: false }">
+                <img @click="open = !open" src="https://i.pravatar.cc/150?u=username" alt="User" class="w-10 h-10 rounded-full cursor-pointer retro-border">
+                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 retro-border">
+                    <div class="py-1" role="menu">
+                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Profile</a>
+                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Community</a>
+                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">FAQs</a>
+                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem" id="logout-button">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </header>
 
-    <div class="container">
-        <section class="forum-categories">
-            <div class="category">
-                <div class="category-icon"><i class="fas fa-paint-brush"></i></div>
-                <h2>Digital Art</h2>
-                <p>Discuss techniques, tools, and showcase your digital masterpieces.</p>
-            </div>
-            <div class="category">
-                <div class="category-icon"><i class="fas fa-video"></i></div>
-                <h2>Streaming Tips</h2>
-                <p>Share your streaming setup, engage viewers, and grow your audience.</p>
-            </div>
-            <div class="category">
-                <div class="category-icon"><i class="fas fa-lightbulb"></i></div>
-                <h2>Creative Inspiration</h2>
-                <p>Find and share inspiration for your next artistic project.</p>
+    <main class="flex h-[calc(100vh-80px)]">
+        <section class="w-2/3 p-6 overflow-y-auto scrollbar-hide">
+            <h2 class="retro-header text-xl mb-6">Art Transmissions</h2>
+            <div class="space-y-6">
+                <template x-for="post in posts" :key="post.id">
+                    <article class="bg-gray-800 p-4 rounded-lg retro-border">
+                        <div class="flex items-center space-x-4 mb-4">
+                            <img :src="post.avatar" :alt="post.username" class="w-12 h-12 rounded-full retro-border">
+                            <div>
+                                <h3 x-text="post.username" class="font-bold"></h3>
+                                <p x-text="post.timeAgo" class="text-sm text-gray-400"></p>
+                            </div>
+                        </div>
+                        <p x-text="post.content" class="mb-4"></p>
+                        <img x-show="post.imageUrl" :src="post.imageUrl" :alt="post.username + '\'s artwork'" class="w-full mb-4 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <div class="space-x-4">
+                                <button class="retro-button">
+                                    <span x-text="post.likes"></span> Likes
+                                </button>
+                                <button class="retro-button">
+                                    <span x-text="post.comments"></span> Comments
+                                </button>
+                            </div>
+                            <button class="retro-button">Share</button>
+                        </div>
+                    </article>
+                </template>
             </div>
         </section>
 
-        <section class="post-form">
-            <h2>Start a Discussion</h2>
-            <form id="new-post-form">
-                <input type="text" id="post-title" placeholder="Title" required>
-                <textarea id="post-content" placeholder="Share your thoughts..." required></textarea>
-                <button type="submit">Post</button>
-            </form>
-        </section>
+        <aside class="w-1/3 p-6 border-l-2 border-accent-color overflow-y-auto scrollbar-hide">
+            <div class="space-y-6">
+                <div class="bg-gray-800 p-4 rounded-lg retro-border">
+                    <h2 class="retro-header text-lg mb-4">Trending Tags</h2>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="tag in trendingTags" :key="tag">
+                            <span x-text="tag" class="bg-accent-color text-bg-color px-2 py-1 rounded text-xs"></span>
+                        </template>
+                    </div>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-lg retro-border">
+                    <h2 class="retro-header text-lg mb-4">Pixel Masters</h2>
+                    <ul class="space-y-4">
+                        <template x-for="artist in featuredArtists" :key="artist.id">
+                            <li class="flex items-center space-x-2">
+                                <img :src="artist.avatar" :alt="artist.name" class="w-10 h-10 rounded-full retro-border">
+                                <div>
+                                    <p x-text="artist.name" class="font-bold"></p>
+                                    <p x-text="artist.specialty" class="text-sm text-gray-400"></p>
+                                </div>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-lg retro-border">
+                    <h2 class="retro-header text-lg mb-4">Upcoming Quests</h2>
+                    <ul class="space-y-4">
+                        <template x-for="event in upcomingEvents" :key="event.id">
+                            <li>
+                                <h3 x-text="event.title" class="font-bold"></h3>
+                                <p x-text="event.date" class="text-sm text-gray-400"></p>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+            </div>
+        </aside>
 
-        <section class="recent-posts">
-            <h2>Recent Discussions</h2>
-            <div id="posts-container"></div>
-        </section>
-    </div>
+        <!-- Create Post Button -->
+        <button id="createPostBtn" class="fixed bottom-6 right-6 bg-accent-color text-bg-color rounded-full p-4 shadow-lg hover:bg-secondary-color transition-colors duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+        </button>
 
-    <div class="floating-menu">
-        <div class="floating-button" id="floating-menu-button">
-            <i class="fas fa-plus"></i>
+        <!-- Create Post Modal -->
+        <div id="createPostModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50">
+            <div class="bg-gray-800 p-6 rounded-lg retro-border w-full max-w-md">
+                <h2 class="retro-header text-xl mb-4">Create New Post</h2>
+                <textarea id="postContent" class="w-full bg-gray-700 text-white rounded p-2 mb-4 retro-border" rows="4" placeholder="What's on your mind?"></textarea>
+                <div class="flex justify-between items-center mb-4">
+                    <label for="postImage" class="retro-button cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Add Image
+                    </label>
+                    <input type="file" id="postImage" class="hidden" accept="image/*">
+                    <button id="submitPost" class="retro-button">Post</button>
+                </div>
+                <div id="imagePreview" class="hidden mb-4">
+                    <img id="previewImage" src="" alt="Preview" class="w-full rounded-lg">
+                </div>
+                <button id="closeModal" class="retro-button w-full">Cancel</button>
+            </div>
         </div>
-        <div class="menu-items">
-            <button id="new-post-button"><i class="fas fa-pen"></i> New Post</button>
-            <button id="art-prompt-button"><i class="fas fa-magic"></i> Art Prompt</button>
-            <button id="events-button"><i class="fas fa-calendar-alt"></i> Events</button>
-        </div>
-    </div>
+        
+    </main>
 
     <script>
-        // Three.js background animation
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-        const geometry = new THREE.BufferGeometry();
-        const vertices = [];
-        for (let i = 0; i < 10000; i++) {
-            vertices.push(
-                THREE.MathUtils.randFloatSpread(2000),
-                THREE.MathUtils.randFloatSpread(2000),
-                THREE.MathUtils.randFloatSpread(2000)
-            );
+        function retroCommunity() {
+            return {
+                posts: [
+                    {
+                        id: 1,
+                        username: 'PixelPioneer',
+                        avatar: 'https://i.pravatar.cc/150?u=PixelPioneer',
+                        timeAgo: '2 hours ago',
+                        content: 'Just finished this pixelated mouse design! What do you think?',
+                        imageUrl: 'https://images.unsplash.com/flagged/photo-1562599838-8cc871c241a5?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8cGl4ZWxzfGVufDB8fDB8fHww',
+                        likes: 120,
+                        comments: 25
+                    },
+                    {
+                        id: 2,
+                        username: 'SynthWaveSurfer',
+                        avatar: 'https://i.pravatar.cc/150?u=SynthWaveSurfer',
+                        timeAgo: '4 hours ago',
+                        content: 'Working on a new synthwave album cover. Sketches coming soon!',
+                        likes: 45,
+                        comments: 12
+                    },
+                    {
+                        id: 3,
+                        username: 'VaporArtist',
+                        avatar: 'https://i.pravatar.cc/150?u=VaporArtist',
+                        timeAgo: '6 hours ago',
+                        content: 'Check out my latest vaporwave-inspired piece!',
+                        imageUrl: 'https://plus.unsplash.com/premium_photo-1685148902854-9b9bb49fff08?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8c3ludGh3YXZlfGVufDB8fDB8fHww',
+                        likes: 89,
+                        comments: 23
+                    }
+                ],
+                trendingTags: ['#PixelArt', '#Synthwave', '#VaporwaveAesthetics', '#RetroGaming', '#CyberPunk'],
+                featuredArtists: [
+                    { id: 1, name: 'NeonNinja', specialty: 'Cyberpunk Illustrator', avatar: 'https://i.pravatar.cc/150?u=NeonNinja' },
+                    { id: 2, name: 'RetroRascal', specialty: 'Pixel Art Animator', avatar: 'https://i.pravatar.cc/150?u=RetroRascal' },
+                    { id: 3, name: 'SynthSorcerer', specialty: 'Vaporwave Designer', avatar: 'https://i.pravatar.cc/150?u=SynthSorcerer' }
+                ],
+                upcomingEvents: [
+                    { id: 1, title: 'Retro Game Art Workshop', date: 'July 15, 2024 - 20:00' },
+                    { id: 2, title: 'Synthwave Poster Challenge', date: 'July 20-27, 2024' },
+                    { id: 3, title: 'Pixel Art Portfolio Review', date: 'August 5, 2024 - 15:00' }
+                ]
+            }
         }
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        const particles = new THREE.Points(
-            geometry,
-            new THREE.PointsMaterial({ color: 0x00a8cc, size: 3 })
-        );
-        scene.add(particles);
-
-        camera.position.z = 1000;
-
-        function animate() {
-            requestAnimationFrame(animate);
-            particles.rotation.x += 0.0001;
-            particles.rotation.y += 0.0001;
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // Custom cursor
-        const cursor = document.getElementById('cursor');
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-        });
-
-        // Floating menu
-        const floatingMenuButton = document.getElementById('floating-menu-button');
-        const menuItems = document.querySelector('.menu-items');
-        let menuOpen = false;
-
-        floatingMenuButton.addEventListener('click', () => {
-            menuOpen = !menuOpen;
-            menuItems.style.display = menuOpen ? 'block' : 'none';
-        });
-
-        // Forum functionality
-        const postForm = document.getElementById('new-post-form');
-        const postsContainer = document.getElementById('posts-container');
-
-        postForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const title = document.getElementById('post-title').value;
-            const content = document.getElementById('post-content').value;
-            addPost(title, content);
-            postForm.reset();
-        });
-
-        function addPost(title, content) {
-            const post = document.createElement('div');
-            post.className = 'post';
-            post.innerHTML = `
-                <h3>${title}</h3>
-                <div class="post-meta">Posted by You | Just now</div>
-                <div class="post-content">${content}</div>
-                <div class="post-actions">
-                    <button class="like-btn"><i class="fas fa-heart"></i> Like</button>
-                    <button class="comment-btn"><i class="fas fa-comment"></i> Comment</button>
-                    <button class="share-btn"><i class="fas fa-share"></i> Share</button>
-                </div>
-            `;
-            postsContainer.prepend(post);
-
-            const likeBtn = post.querySelector('.like-btn');
-            likeBtn.addEventListener('click', () => {
-                likeBtn.classList.toggle('liked');
-                likeBtn.innerHTML = likeBtn.classList.contains('liked') ? 
-                    '<i class="fas fa-heart"></i> Liked' : 
-                    '<i class="fas fa-heart"></i> Like';
-            });
-        }
-
-        // Add some initial posts
-        addPost('Best Digital Drawing Tablets for Beginners', 'I\'m new to digital art and looking for recommendations on affordable drawing tablets. Any suggestions?');
-        addPost('How to Increase Viewer Engagement During Art Streams', 'Share your tips and tricks for keeping your audience engaged during long drawing sessions!');
-
-        // Art prompt generator
-        const artPromptButton = document.getElementById('art-prompt-button');
-        artPromptButton.addEventListener('click', () => {
-            const prompts = [
-                "A futuristic cityscape with floating gardens",
-                "A steampunk-inspired animal hybrid",
-                "An underwater civilization hidden in a coral reef",
-                "A surreal self-portrait incorporating elements of nature",
-                "A magical library where books come to life"
-            ];
-            const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
-            alert(`Art Prompt: ${randomPrompt}`);
-        });
     </script>
 </body>
 </html>
