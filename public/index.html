@@ -3,85 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArtStream - Live Art Streaming Platform</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>ArtStream - Immersive Live Art Streaming</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f0f1a;
+            color: #e0e0e0;
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(45deg, #ff00cc, #3333ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(255, 0, 204, 0.2);
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .custom-shape-divider-bottom-1678933911 {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+            transform: rotate(180deg);
+        }
+
+        .custom-shape-divider-bottom-1678933911 svg {
+            position: relative;
+            display: block;
+            width: calc(185% + 1.3px);
+            height: 144px;
+        }
+
+        .custom-shape-divider-bottom-1678933911 .shape-fill {
+            fill: #0F0F1A;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: #1a1a2e;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 10px;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+    </style>
 </head>
-<body>
-    <header>
-        <h1>ArtStream</h1>
-        <div class="auth-buttons">
-            <button id="login-btn" class="auth-btn">Login</button>
-            <button id="signup-btn" class="auth-btn">Sign Up</button>
-        </div>
-    </header>
-    <main>
-        <div id="search-bar">
-            <input type="text" id="search-input" placeholder="Search artists, streams, or videos...">
-        </div>
-        <div id="featured-artist">
-            <div id="featured-artist-carousel">
-                <button class="carousel-btn" id="prev-featured">&lt;</button>
-                <div>
-                    <img src="images/artist.jpg" alt="Featured Artist">
-                    <div>
-                        <h3>NeonDreamer</h3>
-                        <p>Cyberpunk-inspired digital art</p>
-                        <button class="follow-btn">Follow</button>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 to-black text-gray-100">
+    <header class="fixed w-full z-50 bg-opacity-90 bg-gray-900 backdrop-filter backdrop-blur-lg">
+        <nav class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <img src="/api/placeholder/40/40" alt="ArtStream Logo" class="h-10 w-10 mr-3">
+                    <a href="#" class="text-2xl font-bold gradient-text">ArtStream</a>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="text-gray-300 hover:text-white transition duration-300">Discover</a>
+                    <a href="#" class="text-gray-300 hover:text-white transition duration-300">Categories</a>
+                    <a href="#" class="text-gray-300 hover:text-white transition duration-300">About</a>
+                    <div class="auth-buttons">
+                        <button id="login-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300">Login</button>
+                        <button id="signup-btn" class="bg-transparent hover:bg-purple-600 text-purple-600 hover:text-white font-bold py-2 px-4 rounded border border-purple-600 transition duration-300 ml-2">Sign Up</button>
                     </div>
                 </div>
-                <button class="carousel-btn" id="next-featured">&gt;</button>
+                <button class="md:hidden focus:outline-none">
+                    <svg class="h-6 w-6 fill-current" viewBox="0 0 24 24">
+                        <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
             </div>
-        </div>
-        <div id="categories">
-            <div class="category">Digital Art</div>
-            <div class="category">Traditional</div>
-            <div class="category">3D Modeling</div>
-            <div class="category">Animation</div>
-        </div>
-        <section id="currently-streaming">
-            <h2>Live Now</h2>
-            <div class="carousel" id="live-streams-container">
-                <!-- Live streams will be dynamically added here -->
-            </div>
-        </section>
-        <section id="popular-videos">
-            <h2>Popular Videos</h2>
-            <div class="carousel" id="popular-videos-container">
-                <!-- Popular videos will be dynamically added here -->
-            </div>
-        </section>
-        <section id="upcoming-streams">
-            <h2>Upcoming Streams</h2>
-            <div class="carousel" id="upcoming-streams-container">
-                <!-- Upcoming streams will be dynamically added here -->
-            </div>
-        </section>
-        <div id="notifications">Enable notifications for live streams</div>
-    </main>
-    <footer>
-        <p>&copy; 2024 ArtStream. All rights reserved.</p>
-    </footer>
-    <button id="go-live">Go Live</button>
+        </nav>
+    </header>
 
-    <!-- Live Options Modal -->
-    <div id="live-options-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Go Live</h2>
-            <button id="start-server-btn" class="live-option-btn">Start Server</button>
-            <button id="join-server-btn" class="live-option-btn">Join Server</button>
+    <main class="pt-20">
+        <section class="relative h-screen flex items-center justify-center overflow-hidden">
+            <div class="container mx-auto px-6 relative z-10">
+                <h1 class="text-5xl md:text-7xl font-bold mb-8 text-center gradient-text animate-float">Discover Live Art <br> Like Never Before</h1>
+                <p class="text-xl md:text-2xl text-center mb-12 text-gray-300">Join talented artists from around the world in real-time creative sessions</p>
+                <div class="flex justify-center">
+                    <input type="text" id="search-input" placeholder="Search artists, streams, or techniques..." class="w-full max-w-md px-6 py-3 rounded-l-full bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-purple-600">
+                    <button class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-r-full transition duration-300">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="absolute inset-0 z-0">
+                <video autoplay loop muted class="w-full h-full object-cover opacity-30">
+                    <source src="https://assets.mixkit.co/videos/41996/41996-720.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <div class="custom-shape-divider-bottom-1678933911">
+                <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                    <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path>
+                </svg>
+            </div>
+        </section>
+
+        <section class="py-20 bg-gray-900">
+            <div class="container mx-auto px-6">
+                <h2 class="text-4xl font-bold mb-12 text-center gradient-text">Featured Artists</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                    <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300">
+                        <img src="https://plus.unsplash.com/premium_photo-1682125075526-deb1a9653df6?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bmVvbiUyMHBlb3BsZXxlbnwwfHwwfHx8MA%3D%3D" alt="NeonDreamer" class="w-full h-48 object-cover rounded-lg mb-6">
+                        <h3 class="font-bold text-xl mb-2 text-purple-400">NeonDreamer</h3>
+                        <p class="text-gray-400 mb-4">Cyberpunk-inspired digital art</p>
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300">Follow</button>
+                    </div>
+                    <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300">
+                        <img src="https://plus.unsplash.com/premium_photo-1677130461825-a6af681e401b?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8cGFpbnRlcnxlbnwwfHwwfHx8MA%3D%3D" alt="BrushMaster" class="w-full h-48 object-cover rounded-lg mb-6">
+                        <h3 class="font-bold text-xl mb-2 text-purple-400">BrushMaster</h3>
+                        <p class="text-gray-400 mb-4">Traditional oil painting techniques</p>
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300">Follow</button>
+                    </div>
+                    <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300">
+                        <img src="https://images.unsplash.com/photo-1633524411211-b682455441f5?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fHBpeGVsJTIwYXJ0fGVufDB8fDB8fHww" alt="PixelPerfect" class="w-full h-48 object-cover rounded-lg mb-6">
+                        <h3 class="font-bold text-xl mb-2 text-purple-400">PixelPerfect</h3>
+                        <p class="text-gray-400 mb-4">Pixel art and retro game design</p>
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300">Follow</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-20 bg-black">
+            <div class="container mx-auto px-6">
+                <h2 class="text-4xl font-bold mb-12 text-center gradient-text">Live Now</h2>
+                <div id="live-streams-container" class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                    <!-- Live streams will be dynamically added here -->
+                </div>
+            </div>
+        </section>
+
+        <section class="py-20 bg-gray-900">
+            <div class="container mx-auto px-6">
+                <h2 class="text-4xl font-bold mb-12 text-center gradient-text">Popular Videos</h2>
+                <div id="popular-videos-container" class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                    <!-- Popular videos will be dynamically added here -->
+                </div>
+            </div>
+        </section>
+
+        <section class="py-20 bg-black">
+            <div class="container mx-auto px-6">
+                <h2 class="text-4xl font-bold mb-12 text-center gradient-text">Upcoming Streams</h2>
+                <div id="upcoming-streams-container" class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                    <!-- Upcoming streams will be dynamically added here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-wrap justify-between">
+                <div class="w-full md:w-1/4 mb-6 md:mb-0">
+                    <h3 class="text-2xl font-bold mb-4 gradient-text">ArtStream</h3>
+                    <p class="text-gray-400">Connecting artists and art enthusiasts worldwide</p>
+                </div>
+                <div class="w-full md:w-1/4 mb-6 md:mb-0">
+                    <h4 class="text-lg font-semibold mb-4 text-purple-400">Quick Links</h4>
+                    <ul class="text-gray-400">
+                        <li class="mb-2"><a href="#" class="hover:text-white transition duration-300">About Us</a></li>
+                        <li class="mb-2"><a href="#" class="hover:text-white transition duration-300">FAQs</a></li>
+                        <li class="mb-2"><a href="#" class="hover:text-white transition duration-300">Privacy Policy</a></li>
+                        <li class="mb-2"><a href="#" class="hover:text-white transition duration-300">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="w-full md:w-1/4 mb-6 md:mb-0">
+                    <h4 class="text-lg font-semibold mb-4 text-purple-400">Connect With Us</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="w-full md:w-1/4">
+                    <h4 class="text-lg font-semibold mb-4 text-purple-400">Newsletter</h4>
+                    <form>
+                        <input type="email" placeholder="Enter your email" class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white mb-2 focus:outline-none focus:ring-2 focus:ring-purple-600">
+                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-sm text-center text-gray-400">
+                <p>&copy; 2024 ArtStream. All rights reserved.</p>
+            </div>
         </div>
-    </div>
+    </footer>
+
+    <button id="go-live" class="fixed bottom-4 right-4 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 animate-pulse">
+        <i class="fas fa-video mr-2"></i> Go Live
+    </button>
 
     <!-- Login Modal -->
     <div id="login-modal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Login</h2>
-            <form id="login-form">
-                <input type="text" placeholder="Username" required>
-                <input type="password" placeholder="Password" required>
-                <button type="submit">Login</button>
+            <span class="close text-2xl font-bold cursor-pointer float-right text-gray-400 hover:text-white">&times;</span>
+            <h2 class="text-2xl font-bold mb-4 text-purple-400">Login to ArtStream</h2>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="login-username" class="block text-sm font-medium text-gray-400">Username</label>
+                    <input type="text" id="login-username" name="username" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-white">
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-medium text-gray-400">Password</label>
+                    <input type="password" id="login-password" name="password" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-white">
+                </div>
+                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300">Login</button>
             </form>
         </div>
     </div>
@@ -89,49 +259,247 @@
     <!-- Sign Up Modal -->
     <div id="signup-modal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Sign Up</h2>
-            <form id="signup-form">
-                <input type="text" placeholder="Username" required>
-                <input type="email" placeholder="Email" required>
-                <input type="password" placeholder="Password" required>
-                <button type="submit">Sign Up</button>
+            <span class="close text-2xl font-bold cursor-pointer float-right text-gray-400 hover:text-white">&times;</span>
+            <h2 class="text-2xl font-bold mb-4 text-purple-400">Sign Up for ArtStream</h2>
+            <form id="signup-form" class="space-y-4">
+                <div>
+                    <label for="signup-username" class="block text-sm font-medium text-gray-400">Username</label>
+                    <input type="text" id="signup-username" name="username" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-white">
+                </div>
+                <div>
+                    <label for="signup-email" class="block text-sm font-medium text-gray-400">Email</label>
+                    <input type="email" id="signup-email" name="email" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-white">
+                </div>
+                <div>
+                    <label for="signup-password" class="block text-sm font-medium text-gray-400">Password</label>
+                    <input type="password" id="signup-password" name="password" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-white">
+                </div>
+                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300">Sign Up</button>
             </form>
         </div>
     </div>
-    <script src="script.js"></script>
+
+    <!-- Live Options Modal -->
+    <div id="live-options-modal" class="modal">
+        <div class="modal-content">
+            <span class="close text-2xl font-bold cursor-pointer float-right text-gray-400 hover:text-white">&times;</span>
+            <h2 class="text-2xl font-bold mb-4 text-purple-400">Go Live</h2>
+            <button id="start-server-btn" class="w-full mb-4 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white font-bold py-3 px-4 rounded transition duration-300">
+                <i class="fas fa-video mr-2"></i> Start Server
+            </button>
+            <button id="join-server-btn" class="w-full bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white font-bold py-3 px-4 rounded transition duration-300">
+                <i class="fas fa-sign-in-alt mr-2"></i> Join Server
+            </button>
+        </div>
+    </div>
+
     <script>
-        async function fetchLiveStreams() {
-            try {
-                const response = await axios.get('https://api.thetavideoapi.com/stream', {
-                    headers: {
-                        'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
-                        'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
-                    }
-                });
+        // Function to create a stream element
+        function createStreamElement(stream, type) {
+            const streamElement = document.createElement('div');
+            streamElement.className = 'glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300';
+            streamElement.innerHTML = `
+                <img src="${stream.img || '/api/placeholder/400/225'}" alt="${stream.title}" class="w-full h-48 object-cover rounded-lg mb-6">
+                <h3 class="font-bold text-xl mb-2 text-purple-400">${stream.title}</h3>
+                <p class="text-gray-400 mb-4">${stream.artist}</p>
+                ${type === 'live' ? '<span class="bg-red-500 text-white px-2 py-1 rounded-full text-sm">LIVE</span>' : ''}
+                ${type === 'upcoming' ? `<p class="text-gray-400 text-sm mb-2"><i class="far fa-clock mr-1"></i>${stream.time}</p>` : ''}
+                <button class="mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                    ${type === 'live' ? 'Watch Now' : type === 'upcoming' ? 'Set Reminder' : 'Watch Video'}
+                </button>
+            `;
+            return streamElement;
+        }
 
-                const liveStreams = response.data.body.streams.filter(stream => stream.status === 'on');
-                const liveStreamsContainer = document.getElementById('live-streams-container');
-                liveStreamsContainer.innerHTML = '';
+        // Sample data with images
+        const sampleLiveStreams = [
+            { title: "Neon Cityscape Digital Painting", artist: "CyberArtist42", img: "https://images.unsplash.com/photo-1601042879364-f3947d3f9c16?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxleHBsb3JlLWZlZWR8Mnx8fGVufDB8fHx8fA%3D%3D" },
+            { title: "Sculpting Alien Lifeforms", artist: "GalacticSculptor", img: "https://images.unsplash.com/photo-1643531522806-2fb7c49aa509?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            { title: "Holographic Portrait Session", artist: "FuturePortraits", img: "https://images.unsplash.com/photo-1497296805880-3b37686c87ea?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8aG9sb2dyYXBoaWN8ZW58MHx8MHx8fDA%3D" },
+        ];
 
-                liveStreams.forEach(stream => {
-                    const streamElement = createStreamElement({
-                        title: stream.name,
-                        artist: 'Live Artist', // You may want to fetch this information from your own backend
-                        thumbnailUrl: `/api/placeholder/300/200?text=${encodeURIComponent(stream.name)}` // Using a placeholder image
-                    });
-                    liveStreamsContainer.appendChild(streamElement);
-                });
-            } catch (error) {
-                console.error('Error fetching live streams:', error);
+        const samplePopularVideos = [
+            { title: "Quantum Canvas Masterclass", artist: "QuantumArtist", img: "https://images.unsplash.com/photo-1658989044880-2871105f4ec6?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8aG9sb2dyYW18ZW58MHx8MHx8fDA%3D" },
+            { title: "3D Printed Sculpture Timelapse", artist: "PrintMaster3000", img: "https://images.unsplash.com/photo-1518728719028-71e4966950e4?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8M2QlMjBwcmludGVkfGVufDB8fDB8fHww" },
+            { title: "Virtual Reality Mural Creation", artist: "VRMuralPro", img: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dmlydHVhbCUyMHJlYWxpdHl8ZW58MHx8MHx8fDA%3D" },
+        ];
+
+        const sampleUpcomingStreams = [
+            { title: "Digital Painting Techniques", artist: "PixelPainter", time: "3:00 PM", img: "https://images.unsplash.com/photo-1593073862407-a3ce22748763?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZGlnaXRhbCUyMGFydHxlbnwwfHwwfHx8MA%3D%3D" },
+            { title: "3D Modeling for Beginners", artist: "ModelMaster", time: "5:00 PM", img: "https://images.unsplash.com/photo-1681034575307-6a5a130f6176?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8M2QlMjBtb2RlbHxlbnwwfHwwfHx8MA%3D%3D" },
+            { title: "Advanced Animation Tips", artist: "AnimPro", time: "7:00 PM", img: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8M2QlMjBhbmltYXRpb258ZW58MHx8MHx8fDA%3D" },
+        ];
+
+        // Populate stream containers
+        const liveStreamsContainer = document.getElementById('live-streams-container');
+        const popularVideosContainer = document.getElementById('popular-videos-container');
+        const upcomingStreamsContainer = document.getElementById('upcoming-streams-container');
+
+        sampleLiveStreams.forEach(stream => {
+            liveStreamsContainer.appendChild(createStreamElement(stream, 'live'));
+        });
+
+        samplePopularVideos.forEach(video => {
+            popularVideosContainer.appendChild(createStreamElement(video, 'video'));
+        });
+
+        sampleUpcomingStreams.forEach(stream => {
+            upcomingStreamsContainer.appendChild(createStreamElement(stream, 'upcoming'));
+        });
+
+        // Modal functionality
+        const loginBtn = document.getElementById('login-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const loginModal = document.getElementById('login-modal');
+        const signupModal = document.getElementById('signup-modal');
+        const liveOptionsModal = document.getElementById('live-options-modal');
+        const closeBtns = document.getElementsByClassName('close');
+        const goLiveBtn = document.getElementById('go-live');
+
+        function openModal(modal) {
+            modal.style.display = 'block';
+        }
+
+        function closeModal(modal) {
+            modal.style.display = 'none';
+        }
+
+        loginBtn.onclick = () => openModal(loginModal);
+        signupBtn.onclick = () => openModal(signupModal);
+        goLiveBtn.onclick = () => openModal(liveOptionsModal);
+
+        Array.from(closeBtns).forEach(btn => {
+            btn.onclick = function() {
+                closeModal(this.closest('.modal'));
+            }
+        });
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal(event.target);
             }
         }
 
-        // Fetch live streams every 10 seconds
-        setInterval(fetchLiveStreams, 10000);
+        // Function to update header after login
+        function updateHeaderAfterLogin(username) {
+            const authButtons = document.querySelector('.auth-buttons');
+            authButtons.innerHTML = `
+                <div class="relative">
+                    <img src="https://i.pravatar.cc/150?u=${username}" alt="${username}" class="w-10 h-10 rounded-full cursor-pointer" id="user-menu-button">
+                    <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                        <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Profile</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Community</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">FAQs</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" id="logout-button">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            `;
 
-        // Initial fetch
-        fetchLiveStreams();
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userDropdown = document.getElementById('user-dropdown');
+
+            userMenuButton.addEventListener('click', () => {
+                userDropdown.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!userMenuButton.contains(event.target) && !userDropdown.contains(event.target)) {
+                    userDropdown.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('logout-button').addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('username');
+                localStorage.removeItem('token');
+                window.location.reload();
+            });
+        }
+
+        // Form submissions
+        document.getElementById('login-form').onsubmit = async function(e) {
+            e.preventDefault();
+            const username = e.target.username.value;
+            const password = e.target.password.value;
+            try {
+                const response = await fetch('http://localhost:3000/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('username', username);
+                    localStorage.setItem('token', data.token);
+                    console.log('Token stored:', data.token); // For debugging
+                    closeModal(loginModal);
+                    updateHeaderAfterLogin(username);
+                } else {
+                    alert(data.message || 'Login failed');
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                alert('Login failed. Please try again.');
+            }
+        }
+
+        document.getElementById('signup-form').onsubmit = async function(e) {
+            e.preventDefault();
+            const username = e.target.username.value;
+            const email = e.target.email.value;
+            const password = e.target.password.value;
+            try {
+                const response = await fetch('http://localhost:3000/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('username', username);
+                    localStorage.setItem('token', data.token);
+                    console.log('Token stored:', data.token); // For debugging
+                    closeModal(signupModal);
+                    updateHeaderAfterLogin(username);
+                } else {
+                    alert(data.message || 'Sign up failed');
+                }
+            } catch (err) {
+                console.error('Sign up error:', err);
+                alert('Sign up failed. Please try again.');
+            }
+        }
+
+        // Go Live options
+        document.getElementById('start-server-btn').onclick = function() {
+            const token = localStorage.getItem('token');
+            const username = localStorage.getItem('username');
+            if (token && username) {
+                localStorage.setItem('isHost', 'true');
+                window.location.href = 'setup.html';
+            } else {
+                alert('Please log in before starting a server.');
+            }
+        }
+
+        document.getElementById('join-server-btn').onclick = function() {
+            const username = localStorage.getItem('username');
+            if (username) {
+                window.location.href = 'join.html';
+            } else {
+                alert('Please sign up or log in before joining a server.');
+            }
+        }
+
+        // GSAP Animations
+        gsap.from(".gradient-text", {duration: 1, opacity: 0, y: 50, stagger: 0.2});
+        gsap.from(".glassmorphism", {duration: 1, opacity: 0, y: 50, stagger: 0.1, scrollTrigger: {
+            trigger: ".glassmorphism",
+            start: "top 80%",
+        }});
     </script>
+    <script> src="script.js" </script>
 </body>
 </html>
