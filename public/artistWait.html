@@ -72,10 +72,86 @@
             height: 100%;
             z-index: -1;
         }
+
+        .quote-container {
+            background: linear-gradient(45deg, rgba(0,255,255,0.1), rgba(255,0,255,0.1));
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .quote-container::before {
+            content: '\201C';
+            font-size: 100px;
+            font-family: serif;
+            color: rgba(255,255,255,0.1);
+            position: absolute;
+            top: -20px;
+            left: 10px;
+        }
+        .cool-graphic {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .equipment-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        .equipment-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--accent-primary);
+        }
+        .quote-container {
+            background: linear-gradient(45deg, rgba(0,255,255,0.2), rgba(255,0,255,0.2));
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .close-preview {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .close-preview:hover {
+            background: rgba(255, 0, 0, 0.8);
+        }
     </style>
 </head>
-<body class="min-h-screen overflow-hidden" x-data="artistWaitData()" x-init="init()">
+<body class="min-h-screen overflow-auto" x-data="artistWaitData()" x-init="init()">
     <canvas id="artistCanvas"></canvas>
+
+    <!-- Cool Graphics -->
+    <svg class="cool-graphic top-0 left-0" width="300" height="300" viewBox="0 0 300 300">
+        <circle cx="150" cy="150" r="100" fill="none" stroke="rgba(0,255,255,0.2)" stroke-width="2">
+            <animate attributeName="r" from="100" to="120" dur="4s" repeatCount="indefinite" />
+        </circle>
+        <circle cx="150" cy="150" r="80" fill="none" stroke="rgba(255,0,255,0.2)" stroke-width="2">
+            <animate attributeName="r" from="80" to="100" dur="4s" repeatCount="indefinite" />
+        </circle>
+    </svg>
+
+    <svg class="cool-graphic bottom-0 right-0" width="200" height="200" viewBox="0 0 200 200">
+        <polygon points="100,10 40,180 190,60 10,60 160,180" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2">
+            <animate attributeName="points" 
+                     dur="10s" 
+                     repeatCount="indefinite"
+                     values="100,10 40,180 190,60 10,60 160,180;
+                             100,40 160,180 190,10 10,10 40,180;
+                             100,10 40,180 190,60 10,60 160,180" />
+        </polygon>
+    </svg>
 
     <div class="relative z-10 flex flex-col h-screen p-8">
         <header class="text-center mb-8">
@@ -117,11 +193,38 @@
 
                 <div class="bg-opacity-30 bg-gray-800 rounded-lg p-6 backdrop-filter backdrop-blur-md">
                     <h2 class="text-2xl font-semibold mb-4 orbitron">Artistic Inspiration</h2>
-                    <div class="text-center" id="inspirationQuote">
-                        <p class="text-xl italic" x-text="inspirationQuote"></p>
-                        <p class="mt-2 text-gray-400" x-text="inspirationAuthor"></p>
+                    <div class="quote-container text-center p-6 rounded-lg" id="inspirationQuote">
+                        <p class="text-2xl italic mb-4 neon-text" x-text="inspirationQuote"></p>
+                        <p class="text-lg text-gray-400" x-text="'- ' + inspirationAuthor"></p>
                     </div>
                 </div>
+
+                <div class="bg-opacity-30 bg-gray-800 rounded-lg p-6 backdrop-filter backdrop-blur-md">
+                    <h2 class="text-2xl font-semibold mb-4 orbitron">Artist Resources</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-opacity-50 bg-gray-700 rounded-lg">
+                            <h3 class="text-lg font-semibold mb-2">Color Palette Generator</h3>
+                            <p class="text-sm text-gray-400 mb-2">Generate harmonious color schemes for your artwork.</p>
+                            <button @click="generateColorPalette" class="w-full bg-opacity-30 bg-blue-500 hover:bg-opacity-50 text-white font-bold py-2 px-4 rounded transition duration-300">
+                                Generate Palette
+                            </button>
+                            <div x-show="colorPalette.length > 0" class="mt-2 flex justify-between">
+                                <template x-for="color in colorPalette">
+                                    <div :style="'background-color: ' + color" class="w-8 h-8 rounded"></div>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-opacity-50 bg-gray-700 rounded-lg">
+                            <h3 class="text-lg font-semibold mb-2">Art Prompt Generator</h3>
+                            <p class="text-sm text-gray-400 mb-2">Get inspired with random art prompts.</p>
+                            <button @click="generateArtPrompt" class="w-full bg-opacity-30 bg-purple-500 hover:bg-opacity-50 text-white font-bold py-2 px-4 rounded transition duration-300">
+                                Generate Prompt
+                            </button>
+                            <p x-show="artPrompt" x-text="artPrompt" class="mt-2 text-sm italic"></p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Side Panel -->
@@ -145,15 +248,29 @@
                 </div>
 
                 <div class="bg-opacity-30 bg-gray-800 rounded-lg p-6 backdrop-filter backdrop-blur-md">
-                    <h2 class="text-2xl font-semibold mb-4 orbitron">Pre-Stream Checklist</h2>
-                    <ul class="space-y-2">
-                        <template x-for="(item, index) in checklist" :key="index">
-                            <li class="flex items-center">
-                                <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600" :id="'check'+index" x-model="item.checked">
-                                <label :for="'check'+index" class="ml-2 text-gray-400" x-text="item.text"></label>
-                            </li>
-                        </template>
-                    </ul>
+                    <h2 class="text-2xl font-semibold mb-4 orbitron">Equipment Check</h2>
+                    <div class="space-y-4">
+                        <div class="relative">
+                            <button @click="testCamera" class="w-full equipment-btn py-2 px-4 rounded transition duration-300">
+                                Test Camera
+                            </button>
+                            <div x-show="showCameraPreview" class="mt-2 relative">
+                                <video id="cameraPreview" class="w-full rounded-lg" autoplay playsinline></video>
+                                <button @click="closeCameraPreview" class="close-preview">&times;</button>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <button @click="testMicrophone" class="w-full equipment-btn py-2 px-4 rounded transition duration-300">
+                                Test Microphone
+                            </button>
+                            <div x-show="showMicrophoneTest" class="mt-2 relative">
+                                <div id="microphoneMeter" class="w-full h-4 bg-gray-700 rounded-full overflow-hidden">
+                                    <div id="microphoneLevel" class="h-full bg-green-500 transition-all duration-100"></div>
+                                </div>
+                                <button @click="closeMicrophoneTest" class="close-preview">&times;</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="text-center">
@@ -185,13 +302,10 @@
                 estimatedStart: '5 minutes',
                 inspirationQuote: '',
                 inspirationAuthor: '',
-                checklist: [
-                    { text: 'Test camera and microphone', checked: false },
-                    { text: 'Prepare art supplies', checked: false },
-                    { text: 'Set up lighting', checked: false },
-                    { text: 'Have a glass of water ready', checked: false },
-                    { text: 'Clear your workspace', checked: false }
-                ],
+                showCameraPreview: false,
+                showMicrophoneTest: false,
+                colorPalette: [],
+                artPrompt: '',
                 async init() {
                     await this.loadStreamData();
                     this.initBackgroundAnimation();
@@ -326,6 +440,65 @@
                         duration: 0.5,
                         ease: "power2.out"
                     });
+                },
+                async testCamera() {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        const video = document.getElementById('cameraPreview');
+                        video.srcObject = stream;
+                        this.showCameraPreview = true;
+                    } catch (error) {
+                        console.error('Error accessing camera:', error);
+                        alert('Unable to access camera. Please check your permissions.');
+                    }
+                },
+                async testMicrophone() {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        const analyser = audioContext.createAnalyser();
+                        const microphone = audioContext.createMediaStreamSource(stream);
+                        microphone.connect(analyser);
+                        analyser.fftSize = 256;
+                        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                        this.showMicrophoneTest = true;
+
+                        const updateMicrophoneMeter = () => {
+                            analyser.getByteFrequencyData(dataArray);
+                            const volume = dataArray.reduce((acc, val) => acc + val) / dataArray.length;
+                            const level = Math.min(100, Math.max(0, volume * 2)); // Scale volume to 0-100%
+                            document.getElementById('microphoneLevel').style.width = `${level}%`;
+                            if (this.showMicrophoneTest) {
+                                requestAnimationFrame(updateMicrophoneMeter);
+                            }
+                        };
+                        updateMicrophoneMeter();
+                    } catch (error) {
+                        console.error('Error accessing microphone:', error);
+                        alert('Unable to access microphone. Please check your permissions.');
+                    }
+                },
+                closeCameraPreview() {
+                    this.showCameraPreview = false;
+                    const video = document.getElementById('cameraPreview');
+                    if (video.srcObject) {
+                        video.srcObject.getTracks().forEach(track => track.stop());
+                    }
+                },
+                closeMicrophoneTest() {
+                    this.showMicrophoneTest = false;
+                    // Stop any ongoing audio processing here if needed
+                },
+                generateColorPalette() {
+                    this.colorPalette = Array.from({length: 5}, () => 
+                        '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')
+                    );
+                },
+                generateArtPrompt() {
+                    const subjects = ['portrait', 'landscape', 'still life', 'abstract composition'];
+                    const styles = ['impressionist', 'surrealist', 'minimalist', 'expressionist'];
+                    const elements = ['water', 'fire', 'earth', 'air'];
+                    this.artPrompt = `Create a ${styles[Math.floor(Math.random() * styles.length)]} ${subjects[Math.floor(Math.random() * subjects.length)]} incorporating the element of ${elements[Math.floor(Math.random() * elements.length)]}.`;
                 },
                 getInspirationQuote() {
                     const quotes = [
