@@ -3,180 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArtStream Dashboard</title>
+    <title>ArtStream Dashboard - Immersive Experience</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Pacifico&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #0f0f1f;
+            color: #ffffff;
+            overflow-x: hidden;
         }
-        .float { animation: float 3s ease-in-out infinite; }
-        .modal {
-            display: none;
+
+        .pacifico {
+            font-family: 'Pacifico', cursive;
+        }
+
+        #canvas-container {
             position: fixed;
-            z-index: 1000;
-            left: 0;
             top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
+            z-index: -1;
         }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 90%;
-            max-width: 800px;
-            border-radius: 10px;
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .neon-border {
+            box-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff, 0 0 15px #ff00ff, 0 0 20px #ff00ff;
+        }
+
+        .neon-text {
+            text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff, 0 0 20px #00ffff;
+        }
+
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0% { transform: translate(0, 0px); }
+            50% { transform: translate(0, 15px); }
+            100% { transform: translate(0, -0px); }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
         }
     </style>
 </head>
-<body class="bg-gradient-to-r from-purple-500 to-pink-500 min-h-screen">
-    <div class="container mx-auto p-6">
-        <header class="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <div class="flex items-center justify-between">
-                <h1 class="text-3xl font-bold text-purple-600">ArtStream Dashboard</h1>
-                <button id="customizeBtn" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition">Customize Theme</button>
-            </div>
-            <div class="mt-4 flex items-center space-x-4">
-                <div class="relative">
-                    <img id="artistAvatar" src="https://i.pravatar.cc/150?img=3" alt="Artist Avatar" class="w-20 h-20 rounded-full border-4 border-purple-500">
-                    <button id="changeAvatarBtn" class="absolute bottom-0 right-0 bg-purple-500 text-white rounded-full p-2 hover:bg-purple-600 transition">
-                        <i class="fas fa-camera"></i>
-                    </button>
+<body class="min-h-screen overflow-x-hidden">
+    <div id="canvas-container"></div>
+
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-12">
+            <h1 class="text-6xl font-bold mb-2 pacifico neon-text">ArtStream Dashboard</h1>
+            <p class="text-xl text-cyan-300">Your Creative Hub</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Quick Stats -->
+            <div class="glass-card p-6 floating">
+                <h2 class="text-2xl font-bold mb-4 text-purple-300">Quick Stats</h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-cyan-300"><i class="fas fa-clock mr-2"></i>Total Stream Hours</span>
+                        <span class="font-bold text-2xl">120</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-cyan-300"><i class="fas fa-users mr-2"></i>Total Viewers</span>
+                        <span class="font-bold text-2xl">15,000</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-cyan-300"><i class="fas fa-heart mr-2"></i>Overall Likes</span>
+                        <span class="font-bold text-2xl">45,000</span>
+                    </div>
                 </div>
-                <div class="flex-grow">
-                    <h2 class="text-2xl font-semibold" id="artistName"> Digital Dreamer</h2>
-                    <div class="flex items-center">
-                        <p id="artistBio" class="text-gray-600 mr-2">Digital artist passionate about collaborative creation!</p>
-                        <button id="editBioBtn" class="text-purple-500 hover:text-purple-600 transition">
-                            <i class="fas fa-edit"></i>
+            </div>
+
+            <!-- Upcoming Streams -->
+            <div class="glass-card p-6 floating" style="animation-delay: 0.2s;">
+                <h2 class="text-2xl font-bold mb-4 text-purple-300">Upcoming Streams</h2>
+                <ul class="space-y-4">
+                    <li class="flex justify-between items-center">
+                        <span class="text-cyan-300">Futuristic Cityscape</span>
+                        <span class="text-sm bg-purple-600 px-2 py-1 rounded-full">Tomorrow, 3 PM</span>
+                    </li>
+                    <li class="flex justify-between items-center">
+                        <span class="text-cyan-300">Character Design Workshop</span>
+                        <span class="text-sm bg-purple-600 px-2 py-1 rounded-full">Friday, 7 PM</span>
+                    </li>
+                </ul>
+                <button class="mt-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-4 rounded-full hover:from-purple-600 hover:to-pink-600 transition duration-300 w-full">
+                    Schedule New Stream
+                </button>
+            </div>
+
+            <!-- Achievements -->
+            <div class="glass-card p-6 floating" style="animation-delay: 0.4s;">
+                <h2 class="text-2xl font-bold mb-4 text-purple-300">Achievements</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-4">
+                        <i class="fas fa-trophy text-yellow-400 text-3xl"></i>
+                        <div>
+                            <h3 class="font-semibold text-cyan-300">Top Streamer</h3>
+                            <p class="text-sm text-gray-300">Reached #1 in your category</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <i class="fas fa-users text-blue-400 text-3xl"></i>
+                        <div>
+                            <h3 class="font-semibold text-cyan-300">10k Followers</h3>
+                            <p class="text-sm text-gray-300">Gained 10,000 followers</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Viewer Engagement Chart -->
+            <div class="glass-card p-6 col-span-full">
+                <h2 class="text-2xl font-bold mb-4 text-purple-300">Viewer Engagement</h2>
+                <canvas id="engagementChart" height="150"></canvas>
+            </div>
+
+            <!-- Stream Highlights -->
+            <div class="glass-card p-6 col-span-full">
+                <h2 class="text-2xl font-bold mb-4 text-purple-300">Stream Highlights</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg p-4">
+                        <h3 class="font-semibold text-lg mb-2 text-white">Futuristic Cityscape Collab</h3>
+                        <div class="grid grid-cols-2 gap-2 text-sm text-gray-200">
+                            <div><i class="fas fa-users text-cyan-300 mr-1"></i> Artists: 4</div>
+                            <div><i class="fas fa-eye text-cyan-300 mr-1"></i> Viewers: 1,200</div>
+                            <div><i class="fas fa-clock text-cyan-300 mr-1"></i> Duration: 2h 30m</div>
+                            <div><i class="fas fa-heart text-cyan-300 mr-1"></i> Likes: 3,500</div>
+                        </div>
+                        <button class="mt-4 bg-white text-purple-600 px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition duration-300">
+                            View Details
+                        </button>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-600 to-teal-600 rounded-lg p-4">
+                        <h3 class="font-semibold text-lg mb-2 text-white">Character Design Workshop</h3>
+                        <div class="grid grid-cols-2 gap-2 text-sm text-gray-200">
+                            <div><i class="fas fa-users text-cyan-300 mr-1"></i> Artists: 2</div>
+                            <div><i class="fas fa-eye text-cyan-300 mr-1"></i> Viewers: 1,500</div>
+                            <div><i class="fas fa-clock text-cyan-300 mr-1"></i> Duration: 3h 15m</div>
+                            <div><i class="fas fa-heart text-cyan-300 mr-1"></i> Likes: 4,100</div>
+                        </div>
+                        <button class="mt-4 bg-white text-blue-600 px-4 py-2 rounded-full font-semibold hover:bg-gray-100 transition duration-300">
+                            View Details
                         </button>
                     </div>
                 </div>
             </div>
-        </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h3 class="text-xl font-semibold mb-4">Quick Stats</h3>
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between float">
-                        <span class="flex items-center"><i class="fas fa-clock text-purple-500 mr-2"></i> Total Stream Hours</span>
-                        <span class="font-bold">120</span>
+            <!-- Artist Collaboration -->
+            <div class="glass-card p-6 col-span-full">
+                <h2 class="text-2xl font-bold mb-4 text-purple-300">Friends</h2>
+                <div class="flex flex-wrap justify-center gap-6">
+                    <div class="text-center">
+                        <img src="https://i.pravatar.cc/150?img=1" alt="Artist 1" class="w-24 h-24 rounded-full mx-auto mb-2 neon-border">
+                        <p class="font-semibold text-cyan-300">PixelMaster</p>
                     </div>
-                    <div class="flex items-center justify-between float" style="animation-delay: 0.2s;">
-                        <span class="flex items-center"><i class="fas fa-users text-purple-500 mr-2"></i> Total Viewers</span>
-                        <span class="font-bold">15,000</span>
+                    <div class="text-center">
+                        <img src="https://i.pravatar.cc/150?img=2" alt="Artist 2" class="w-24 h-24 rounded-full mx-auto mb-2 neon-border">
+                        <p class="font-semibold text-cyan-300">BrushWizard</p>
                     </div>
-                    <div class="flex items-center justify-between float" style="animation-delay: 0.4s;">
-                        <span class="flex items-center"><i class="fas fa-thumbs-up text-purple-500 mr-2"></i> Overall Likes</span>
-                        <span class="font-bold">45,000</span>
+                    <div class="text-center">
+                        <img src="https://i.pravatar.cc/150?img=3" alt="Artist 3" class="w-24 h-24 rounded-full mx-auto mb-2 neon-border">
+                        <p class="font-semibold text-cyan-300">SculptMaster</p>
+                    </div>
+                    <div class="text-center">
+                        <button class="w-24 h-24 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-4xl hover:from-purple-600 hover:to-pink-600 transition duration-300">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <p class="font-semibold text-cyan-300 mt-2">Invite Artist</p>
                     </div>
                 </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h3 class="text-xl font-semibold mb-4">Upcoming Streams</h3>
-                <ul class="space-y-2">
-                    <li class="flex items-center justify-between">
-                        <span>Futuristic Cityscape</span>
-                        <span class="text-sm text-gray-500">Tomorrow, 3 PM</span>
-                    </li>
-                    <li class="flex items-center justify-between">
-                        <span>Character Design Workshop</span>
-                        <span class="text-sm text-gray-500">Friday, 7 PM</span>
-                    </li>
-                </ul>
-                <button class="mt-4 bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition w-full">Schedule New Stream</button>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h3 class="text-xl font-semibold mb-4">Achievements</h3>
-                <div class="space-y-4">
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-award text-yellow-500 text-2xl"></i>
-                        <div>
-                            <h4 class="font-semibold">Top Streamer</h4>
-                            <p class="text-sm text-gray-600">Reached #1 in your category</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-users text-blue-500 text-2xl"></i>
-                        <div>
-                            <h4 class="font-semibold">10k Followers</h4>
-                            <p class="text-sm text-gray-600">Gained 10,000 followers</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="mt-6 bg-white rounded-lg shadow-lg p-6">
-            <h3 class="text-xl font-semibold mb-4">Viewer Engagement</h3>
-            <canvas id="engagementChart"></canvas>
-        </div>
-
-        <div class="mt-6 bg-white rounded-lg shadow-lg p-6">
-            <h3 class="text-xl font-semibold mb-4">Stream Highlights</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-gray-100 rounded-lg p-4">
-                    <h4 class="font-semibold text-lg mb-2">Futuristic Cityscape Collab</h4>
-                    <div class="grid grid-cols-2 gap-2 text-sm">
-                        <div><i class="fas fa-users text-purple-500 mr-1"></i> Artists: 4</div>
-                        <div><i class="fas fa-eye text-purple-500 mr-1"></i> Viewers: 1,200</div>
-                        <div><i class="fas fa-clock text-purple-500 mr-1"></i> Duration: 2h 30m</div>
-                        <div><i class="fas fa-thumbs-up text-purple-500 mr-1"></i> Likes: 3,500</div>
-                    </div>
-                    <button class="mt-3 bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 transition text-sm" onclick="openStreamModal('Futuristic Cityscape Collab')">Show More</button>
-                </div>
-                <div class="bg-gray-100 rounded-lg p-4">
-                    <h4 class="font-semibold text-lg mb-2">Character Design Workshop</h4>
-                    <div class="grid grid-cols-2 gap-2 text-sm">
-                        <div><i class="fas fa-users text-purple-500 mr-1"></i> Artists: 2</div>
-                        <div><i class="fas fa-eye text-purple-500 mr-1"></i> Viewers: 1,500</div>
-                        <div><i class="fas fa-clock text-purple-500 mr-1"></i> Duration: 3h 15m</div>
-                        <div><i class="fas fa-thumbs-up text-purple-500 mr-1"></i> Likes: 4,100</div>
-                    </div>
-                    <button class="mt-3 bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 transition text-sm" onclick="openStreamModal('Character Design Workshop')">Show More</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Stream Details Modal -->
-    <div id="streamModal" class="modal">
-        <div class="modal-content">
-            <span class="close text-2xl font-bold cursor-pointer float-right">&times;</span>
-            <h2 id="modalTitle" class="text-2xl font-bold mb-4"></h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <h3 class="text-xl font-semibold mb-2">Stream Metrics</h3>
-                    <canvas id="streamMetricsChart"></canvas>
-                </div>
-                <div>
-                    <h3 class="text-xl font-semibold mb-2">Viewer Engagement</h3>
-                    <canvas id="viewerEngagementChart"></canvas>
-                </div>
-            </div>
-            <div class="mt-6">
-                <h3 class="text-xl font-semibold mb-2">Top Comments</h3>
-                <ul id="topComments" class="space-y-2"></ul>
-            </div>
-            <div class="mt-6">
-                <h3 class="text-xl font-semibold mb-2">Additional Metrics</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="additionalMetrics"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // Engagement Chart
+        // Three.js background animation
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const geometry = new THREE.BufferGeometry();
+        const vertices = [];
+        for (let i = 0; i < 10000; i++) {
+            vertices.push(
+                THREE.MathUtils.randFloatSpread(2000),
+                THREE.MathUtils.randFloatSpread(2000),
+                THREE.MathUtils.randFloatSpread(2000)
+            );
+        }
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        const particles = new THREE.Points(
+            geometry,
+            new THREE.PointsMaterial({ color: 0x00ffff, size: 3 })
+        );
+        scene.add(particles);
+
+        camera.position.z = 1000;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particles.rotation.x += 0.0001;
+            particles.rotation.y += 0.0001;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Chart.js
         const ctx = document.getElementById('engagementChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
@@ -186,198 +263,53 @@
                     label: 'Viewer Engagement',
                     data: [1000, 1500, 2000, 1800, 2500, 3000],
                     borderColor: 'rgb(147, 51, 234)',
-                    tension: 0.1
+                    backgroundColor: 'rgba(147, 51, 234, 0.2)',
+                    tension: 0.4,
+                    fill: true
                 }]
             },
             options: {
                 responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
                 scales: {
                     y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Customize Theme
-        const customizeBtn = document.getElementById('customizeBtn');
-        customizeBtn.addEventListener('click', () => {
-            const newColor = prompt('Enter a new theme color (e.g., #FF5733):');
-            if (newColor) {
-                document.body.style.background = `linear-gradient(to right, ${newColor}, #FFC300)`;
-            }
-        });
-
-        // Change Avatar
-        const changeAvatarBtn = document.getElementById('changeAvatarBtn');
-        const artistAvatar = document.getElementById('artistAvatar');
-        changeAvatarBtn.addEventListener('click', () => {
-            const avatarNum = Math.floor(Math.random() * 50) + 1;
-            artistAvatar.src = `https://i.pravatar.cc/150?img=${avatarNum}`;
-        });
-
-        // Edit Bio
-        const editBioBtn = document.getElementById('editBioBtn');
-        const artistBio = document.getElementById('artistBio');
-        editBioBtn.addEventListener('click', () => {
-            const newBio = prompt('Enter your new bio:', artistBio.textContent);
-            if (newBio) {
-                artistBio.textContent = newBio;
-            }
-        });
-
-        // Stream Modal
-        const modal = document.getElementById('streamModal');
-        const closeBtn = document.getElementsByClassName('close')[0];
-
-        function openStreamModal(streamTitle) {
-            modal.style.display = 'block';
-            document.getElementById('modalTitle').textContent = streamTitle;
-            
-            // Generate random data for charts
-            const streamMetrics = generateRandomData(6);
-            const viewerEngagement = generateRandomData(6);
-            
-            // Create charts
-            createChart('streamMetricsChart', 'Stream Metrics', streamMetrics);
-            createChart('viewerEngagementChart', 'Viewer Engagement', viewerEngagement);
-            
-            // Add top comments
-            const topComments = [
-                'This was an amazing stream!',
-                'I learned so much, thank you!',
-                "Can't wait for the next one!"
-            ];
-            const commentsList = document.getElementById('topComments');
-            commentsList.innerHTML = topComments.map(comment => `<li class="bg-gray-100 p-2 rounded">${comment}</li>`).join('');
-            
-            // Add additional metrics
-            const additionalMetrics = [
-                { label: 'Peak Viewers', value: '2,500' },
-                { label: 'New Followers', value: '350' },
-                { label: 'Super Chats', value: '$500' },
-                { label: 'Avg. Watch Time', value: '45 min' }
-            ];
-            const metricsContainer = document.getElementById('additionalMetrics');
-            metricsContainer.innerHTML = additionalMetrics.map(metric => `
-                <div class="bg-gray-100 p-3 rounded">
-                    <h4 class="font-semibold">${metric.label}</h4>
-                    <p class="text-2xl font-bold text-purple-600">${metric.value}</p>
-                </div>
-            `).join('');
-        }
-
-        closeBtn.onclick = function() {
-            modal.style.display = 'none';
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = 'none';
-            }
-        }
-
-        function generateRandomData(count) {
-            return Array.from({length: count}, () => Math.floor(Math.random() * 1000) + 500);
-        }
-
-        function createChart(canvasId, label, data) {
-            const ctx = document.getElementById(canvasId).getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['0:00', '0:30', '1:00', '1:30', '2:00', '2:30'],
-                    datasets: [{
-                        label: label,
-                        data: data,
-                        borderColor: 'rgb(147, 51, 234)',
-                        backgroundColor: 'rgba(147, 51, 234, 0.1)',
-                        tension: 0.1,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
                         }
                     }
                 }
-            });
-        }
-
-        // Add confetti effect for achievements
-        function showConfetti() {
-            const confettiCount = 200;
-            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
-
-            for (let i = 0; i < confettiCount; i++) {
-                const confetti = document.createElement('div');
-                confetti.style.position = 'fixed';
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.top = -20 + 'px';
-                confetti.style.width = '10px';
-                confetti.style.height = '10px';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.borderRadius = '50%';
-                confetti.style.zIndex = '1000';
-                document.body.appendChild(confetti);
-
-                const animation = confetti.animate([
-                    { transform: 'translate3d(0, 0, 0)', opacity: 1 },
-                    { transform: `translate3d(${Math.random() * 100 - 50}px, 100vh, 0)`, opacity: 0 }
-                ], {
-                    duration: Math.random() * 3000 + 2000,
-                    easing: 'cubic-bezier(0, .9, .57, 1)',
-                    delay: Math.random() * 2000
-                });
-
-                animation.onfinish = () => confetti.remove();
             }
-        }
-
-        // Trigger confetti effect when clicking on an achievement
-        document.querySelectorAll('.achievements .flex').forEach(achievement => {
-            achievement.addEventListener('click', showConfetti);
         });
 
-        // Add a subtle hover effect to stream highlight cards
-        document.querySelectorAll('.stream-highlights .bg-gray-100').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'scale(1.05)';
-                card.style.transition = 'transform 0.3s ease';
-            });
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'scale(1)';
-            });
-        });
-
-        // Add a pulsing effect to the "Schedule New Stream" button
-        const scheduleBtn = document.querySelector('button:contains("Schedule New Stream")');
-        setInterval(() => {
-            scheduleBtn.classList.add('animate-pulse');
-            setTimeout(() => scheduleBtn.classList.remove('animate-pulse'), 1000);
-        }, 3000);
-
-        // Add a real-time clock to the dashboard
+        // Real-time clock
         function updateClock() {
             const now = new Date();
             const timeString = now.toLocaleTimeString();
+            const dateString = now.toLocaleDateString();
             const clockElement = document.getElementById('realTimeClock');
             if (!clockElement) {
                 const header = document.querySelector('header');
                 const clock = document.createElement('div');
                 clock.id = 'realTimeClock';
-                clock.className = 'text-xl font-semibold text-purple-600 mt-2';
+                clock.className = 'text-xl font-semibold text-cyan-300 mt-2';
                 header.appendChild(clock);
             }
-            document.getElementById('realTimeClock').textContent = timeString;
+            document.getElementById('realTimeClock').textContent = `${dateString} ${timeString}`;
         }
         setInterval(updateClock, 1000);
         updateClock(); // Initial call to display time immediately
 
-        // Add a motivational quote
+        // Motivational quote
         const quotes = [
             "Creativity is intelligence having fun. - Albert Einstein",
             "Art enables us to find ourselves and lose ourselves at the same time. - Thomas Merton",
@@ -385,11 +317,87 @@
             "Imagination is the beginning of creation. - George Bernard Shaw",
             "The aim of art is to represent not the outward appearance of things, but their inward significance. - Aristotle"
         ];
-        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-        const quoteElement = document.createElement('div');
-        quoteElement.className = 'bg-white rounded-lg shadow-lg p-6 mt-6 text-center italic text-gray-600';
-        quoteElement.textContent = randomQuote;
-        document.querySelector('.container').appendChild(quoteElement);
+        function displayRandomQuote() {
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            const quoteElement = document.createElement('div');
+            quoteElement.className = 'glass-card p-6 col-span-full text-center italic text-cyan-600 text-lg';
+            quoteElement.textContent = randomQuote;
+            document.querySelector('.container').appendChild(quoteElement);
+        }
+        displayRandomQuote();
+
+        // Hover effects for glass cards
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'scale(1.05) translateY(-10px)';
+                card.style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.3)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = '';
+                card.style.boxShadow = '';
+            });
+        });
+
+        // Interactive achievement unlocking
+        document.querySelectorAll('.fas.fa-trophy, .fas.fa-users').forEach(icon => {
+            icon.addEventListener('click', (e) => {
+                const achievement = e.target.nextElementSibling;
+                achievement.style.transform = 'scale(1.1)';
+                achievement.style.color = '#ffd700';
+                setTimeout(() => {
+                    achievement.style.transform = '';
+                    achievement.style.color = '';
+                }, 1000);
+            });
+        });
+
+        // Simulate real-time updates
+        function simulateRealtimeUpdates() {
+            const stats = document.querySelectorAll('.glass-card:first-child .font-bold');
+            stats.forEach(stat => {
+                const currentValue = parseInt(stat.textContent);
+                const newValue = currentValue + Math.floor(Math.random() * 10);
+                stat.textContent = newValue;
+                stat.style.transition = 'color 0.3s ease';
+                stat.style.color = '#00ffff';
+                setTimeout(() => {
+                    stat.style.color = '';
+                }, 300);
+            });
+        }
+        setInterval(simulateRealtimeUpdates, 5000);
+
+
+        // Add a floating action button for quick actions
+        const fab = document.createElement('button');
+        fab.className = 'fixed bottom-8 right-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full w-16 h-16 flex items-center justify-center text-3xl shadow-lg hover:from-purple-600 hover:to-pink-600 transition duration-300 z-50';
+        fab.innerHTML = '<i class="fas fa-plus"></i>';
+        document.body.appendChild(fab);
+
+        fab.addEventListener('click', () => {
+            const actions = [
+                { icon: 'fa-video', text: 'New Stream' },
+                { icon: 'fa-paint-brush', text: 'Create Artwork' },
+                { icon: 'fa-users', text: 'Collaborate' }
+            ];
+            const menu = document.createElement('div');
+            menu.className = 'fixed bottom-28 right-8 bg-white rounded-lg shadow-xl z-50';
+            actions.forEach(action => {
+                const button = document.createElement('button');
+                button.className = 'block w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-300';
+                button.innerHTML = `<i class="fas ${action.icon} mr-2"></i>${action.text}`;
+                menu.appendChild(button);
+            });
+            document.body.appendChild(menu);
+            
+            const closeMenu = (e) => {
+                if (!menu.contains(e.target) && e.target !== fab) {
+                    menu.remove();
+                    document.removeEventListener('click', closeMenu);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', closeMenu), 0);
+        });
 
         // Initialize tooltips for better UX
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
