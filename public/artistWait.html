@@ -7,94 +7,277 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Raleway:wght@300;400;600;700&display=swap');
+
+        :root {
+            --bg-primary: #050814;
+            --bg-secondary: #0a0e24;
+            --accent-primary: #00ffff;
+            --accent-secondary: #ff00ff;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
         }
-        .float { animation: float 6s ease-in-out infinite; }
+
+        body {
+            font-family: 'Raleway', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .neon-border {
+            box-shadow: 0 0 5px var(--accent-primary),
+                        0 0 10px var(--accent-primary),
+                        0 0 15px var(--accent-primary),
+                        0 0 20px var(--accent-primary);
+        }
+
+        .neon-text {
+            text-shadow: 0 0 5px var(--accent-primary),
+                         0 0 10px var(--accent-primary),
+                         0 0 15px var(--accent-primary),
+                         0 0 20px var(--accent-primary);
+        }
+
+        .artist-avatar {
+            transition: all 0.3s ease;
+        }
+
+        .artist-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px var(--accent-secondary);
+        }
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        #artistCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .quote-container {
+            background: linear-gradient(45deg, rgba(0,255,255,0.1), rgba(255,0,255,0.1));
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .quote-container::before {
+            content: '\201C';
+            font-size: 100px;
+            font-family: serif;
+            color: rgba(255,255,255,0.1);
+            position: absolute;
+            top: -20px;
+            left: 10px;
+        }
+        .cool-graphic {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .equipment-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        .equipment-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--accent-primary);
+        }
+        .quote-container {
+            background: linear-gradient(45deg, rgba(0,255,255,0.2), rgba(255,0,255,0.2));
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .close-preview {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .close-preview:hover {
+            background: rgba(255, 0, 0, 0.8);
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 min-h-screen" x-data="artistWaitData()" x-init="init()">
-    <div class="max-w-6xl mx-auto p-8 space-y-8">
-        <header class="text-center">
-            <h1 class="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
-                Artist Waiting Room
-            </h1>
-            <p class="text-xl text-cyan-300" x-text="statusMessage"></p>
+<body class="min-h-screen overflow-auto" x-data="artistWaitData()" x-init="init()">
+    <canvas id="artistCanvas"></canvas>
+
+    <!-- Cool Graphics -->
+    <svg class="cool-graphic top-0 left-0" width="300" height="300" viewBox="0 0 300 300">
+        <circle cx="150" cy="150" r="100" fill="none" stroke="rgba(0,255,255,0.2)" stroke-width="2">
+            <animate attributeName="r" from="100" to="120" dur="4s" repeatCount="indefinite" />
+        </circle>
+        <circle cx="150" cy="150" r="80" fill="none" stroke="rgba(255,0,255,0.2)" stroke-width="2">
+            <animate attributeName="r" from="80" to="100" dur="4s" repeatCount="indefinite" />
+        </circle>
+    </svg>
+
+    <svg class="cool-graphic bottom-0 right-0" width="200" height="200" viewBox="0 0 200 200">
+        <polygon points="100,10 40,180 190,60 10,60 160,180" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2">
+            <animate attributeName="points" 
+                     dur="10s" 
+                     repeatCount="indefinite"
+                     values="100,10 40,180 190,60 10,60 160,180;
+                             100,40 160,180 190,10 10,10 40,180;
+                             100,10 40,180 190,60 10,60 160,180" />
+        </polygon>
+    </svg>
+
+    <div class="relative z-10 flex flex-col h-screen p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-bold mb-2 orbitron neon-text" x-text="streamName"></h1>
+            <p class="text-xl text-gray-400" x-text="streamCategory + ' - ' + estimatedDuration"></p>
         </header>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2 bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg">
-                <div class="p-6 space-y-6">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-3xl font-semibold text-cyan-300" x-text="streamName"></h2>
-                        <span class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full text-sm font-bold" x-text="streamCategory"></span>
-                    </div>
-                    
-                    <p class="text-gray-300 text-lg" x-text="streamDescription"></p>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-gray-700 rounded-lg p-4 flex items-center transform hover:scale-105 transition-transform">
-                            <i class="fas fa-users text-3xl text-cyan-400 mr-3"></i>
-                            <div>
-                                <p class="text-sm text-gray-400">Artists</p>
-                                <p class="text-2xl font-semibold"><span x-text="currentArtists"></span>/<span x-text="maxArtists"></span></p>
-                            </div>
+
+        <div class="flex-grow flex space-x-8">
+            <!-- Main Content -->
+            <div class="w-2/3 space-y-8">
+                <div class="bg-opacity-30 bg-gray-800 rounded-lg p-6 backdrop-filter backdrop-blur-md">
+                    <h2 class="text-2xl font-semibold mb-4 orbitron">Stream Details</h2>
+                    <p class="text-gray-300 text-lg mb-4" x-text="streamDescription"></p>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-opacity-50 bg-gray-700 rounded-lg p-4 text-center">
+                            <i class="fas fa-users text-3xl text-blue-400 mb-2"></i>
+                            <p class="text-sm text-gray-400">Artists</p>
+                            <p class="text-2xl font-semibold"><span x-text="currentArtists"></span>/<span x-text="maxArtists"></span></p>
                         </div>
-                        <div class="bg-gray-700 rounded-lg p-4 flex items-center transform hover:scale-105 transition-transform">
-                            <i class="fas fa-clock text-3xl text-cyan-400 mr-3"></i>
-                            <div>
-                                <p class="text-sm text-gray-400">Estimated Duration</p>
-                                <p class="text-2xl font-semibold" x-text="estimatedDuration"></p>
-                            </div>
+                        <div class="bg-opacity-50 bg-gray-700 rounded-lg p-4 text-center">
+                            <i class="fas fa-comments text-3xl text-green-400 mb-2"></i>
+                            <p class="text-sm text-gray-400">Chat</p>
+                            <p class="text-2xl font-semibold" x-text="chatEnabled ? 'Enabled' : 'Disabled'"></p>
                         </div>
-                        <div class="bg-gray-700 rounded-lg p-4 flex items-center transform hover:scale-105 transition-transform">
-                            <i class="fas fa-comments text-3xl text-cyan-400 mr-3"></i>
-                            <div>
-                                <p class="text-sm text-gray-400">Chat</p>
-                                <p class="text-2xl font-semibold" x-text="chatEnabled ? 'Enabled' : 'Disabled'"></p>
-                            </div>
+                        <div class="bg-opacity-50 bg-gray-700 rounded-lg p-4 text-center">
+                            <i class="fas fa-clock text-3xl text-yellow-400 mb-2"></i>
+                            <p class="text-sm text-gray-400">Estimated Start</p>
+                            <p class="text-2xl font-semibold" x-text="estimatedStart"></p>
                         </div>
                     </div>
                 </div>
-                
-                <div class="bg-gray-700 p-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                    <div class="flex items-center space-x-2">
+
+                <div class="bg-opacity-30 bg-gray-800 rounded-lg p-6 backdrop-filter backdrop-blur-md">
+                    <h2 class="text-2xl font-semibold mb-4 orbitron">Connected Artists</h2>
+                    <div class="grid grid-cols-3 gap-4" id="connectedArtistsList">
+                        <!-- Connected artists will be dynamically added here -->
+                    </div>
+                </div>
+
+                <div class="bg-opacity-30 bg-gray-800 rounded-lg p-6 backdrop-filter backdrop-blur-md">
+                    <h2 class="text-2xl font-semibold mb-4 orbitron">Artistic Inspiration</h2>
+                    <div class="quote-container text-center p-6 rounded-lg" id="inspirationQuote">
+                        <p class="text-2xl italic mb-4 neon-text" x-text="inspirationQuote"></p>
+                        <p class="text-lg text-gray-400" x-text="'- ' + inspirationAuthor"></p>
+                    </div>
+                </div>
+
+                <div class="bg-opacity-30 bg-gray-800 rounded-lg p-6 backdrop-filter backdrop-blur-md">
+                    <h2 class="text-2xl font-semibold mb-4 orbitron">Artist Resources</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-opacity-50 bg-gray-700 rounded-lg">
+                            <h3 class="text-lg font-semibold mb-2">Color Palette Generator</h3>
+                            <p class="text-sm text-gray-400 mb-2">Generate harmonious color schemes for your artwork.</p>
+                            <button @click="generateColorPalette" class="w-full bg-opacity-30 bg-blue-500 hover:bg-opacity-50 text-white font-bold py-2 px-4 rounded transition duration-300">
+                                Generate Palette
+                            </button>
+                            <div x-show="colorPalette.length > 0" class="mt-2 flex justify-between">
+                                <template x-for="color in colorPalette">
+                                    <div :style="'background-color: ' + color" class="w-8 h-8 rounded"></div>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-opacity-50 bg-gray-700 rounded-lg">
+                            <h3 class="text-lg font-semibold mb-2">Art Prompt Generator</h3>
+                            <p class="text-sm text-gray-400 mb-2">Get inspired with random art prompts.</p>
+                            <button @click="generateArtPrompt" class="w-full bg-opacity-30 bg-purple-500 hover:bg-opacity-50 text-white font-bold py-2 px-4 rounded transition duration-300">
+                                Generate Prompt
+                            </button>
+                            <p x-show="artPrompt" x-text="artPrompt" class="mt-2 text-sm italic"></p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Side Panel -->
+            <div class="w-1/3 space-y-8">
+                <div class="bg-opacity-30 bg-gray-800 rounded-lg p-6 backdrop-filter backdrop-blur-md">
+                    <h2 class="text-2xl font-semibold mb-4 orbitron">Stream Status</h2>
+                    <div class="flex items-center space-x-2 mb-4">
                         <span class="w-4 h-4 bg-yellow-500 rounded-full pulse"></span>
-                        <p class="text-yellow-400 text-lg" x-text="waitingMessage"></p>
+                        <p class="text-yellow-400 text-lg" x-text="statusMessage"></p>
+                    </div>
+                    <div class="bg-opacity-50 bg-gray-700 rounded-lg p-4">
+                        <p class="text-sm text-gray-400 mb-2">Hosted by</p>
+                        <div class="flex items-center space-x-3">
+                            <img :src="hostAvatar" alt="Host Avatar" class="w-12 h-12 rounded-full">
+                            <div>
+                                <p class="font-semibold" x-text="hostName"></p>
+                                <p class="text-sm text-gray-400" x-text="hostBio"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-6">
-                <h3 class="text-2xl font-semibold text-cyan-300">Connected Artists</h3>
-                <ul class="space-y-4" id="connectedArtistsList">
-                    <!-- Connected artists will be dynamically added here -->
-                </ul>
-                <div class="text-center" x-show="currentArtists < maxArtists">
-                    <p class="text-lg text-cyan-300 mb-2">Waiting for more artists...</p>
+
+                <div class="bg-opacity-30 bg-gray-800 rounded-lg p-6 backdrop-filter backdrop-blur-md">
+                    <h2 class="text-2xl font-semibold mb-4 orbitron">Equipment Check</h2>
+                    <div class="space-y-4">
+                        <div class="relative">
+                            <button @click="testCamera" class="w-full equipment-btn py-2 px-4 rounded transition duration-300">
+                                Test Camera
+                            </button>
+                            <div x-show="showCameraPreview" class="mt-2 relative">
+                                <video id="cameraPreview" class="w-full rounded-lg" autoplay playsinline></video>
+                                <button @click="closeCameraPreview" class="close-preview">&times;</button>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <button @click="testMicrophone" class="w-full equipment-btn py-2 px-4 rounded transition duration-300">
+                                Test Microphone
+                            </button>
+                            <div x-show="showMicrophoneTest" class="mt-2 relative">
+                                <div id="microphoneMeter" class="w-full h-4 bg-gray-700 rounded-full overflow-hidden">
+                                    <div id="microphoneLevel" class="h-full bg-green-500 transition-all duration-100"></div>
+                                </div>
+                                <button @click="closeMicrophoneTest" class="close-preview">&times;</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <p class="text-lg text-gray-400 mb-4">Stream will begin automatically when the host is ready</p>
                     <div class="inline-block">
-                        <i class="fas fa-spinner fa-spin text-4xl text-cyan-400"></i>
+                        <i class="fas fa-palette text-6xl text-blue-400 animate-bounce"></i>
                     </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-4">
-            <h3 class="text-2xl font-semibold text-cyan-300">Host Information</h3>
-            <div class="flex items-center space-x-4">
-                <img :src="hostAvatar" alt="Host Avatar" class="w-16 h-16 rounded-full border-2 border-cyan-400">
-                <div>
-                    <p class="text-xl font-semibold" x-text="hostName"></p>
-                    <p class="text-gray-400" x-text="hostBio"></p>
                 </div>
             </div>
         </div>
@@ -115,14 +298,19 @@
                 hostName: '',
                 hostAvatar: '',
                 hostBio: '',
-                statusMessage: 'Waiting for host to start server',
-                waitingMessage: 'Waiting for host...',
-                currentUsername: '',
-                init() {
-                    this.currentUsername = localStorage.getItem('username') || 'Unknown Artist';
-                    this.loadStreamData();
+                statusMessage: 'Waiting for host to start the stream',
+                estimatedStart: '5 minutes',
+                inspirationQuote: '',
+                inspirationAuthor: '',
+                showCameraPreview: false,
+                showMicrophoneTest: false,
+                colorPalette: [],
+                artPrompt: '',
+                async init() {
+                    await this.loadStreamData();
+                    this.initBackgroundAnimation();
                     this.initWebSocket();
-                    this.pollStreamStatus();
+                    this.getInspirationQuote();
                 },
                 async loadStreamData() {
                     try {
@@ -153,21 +341,43 @@
                         this.connectedArtists = streamData.participants.map(participant => ({
                             id: participant.userId,
                             username: participant.username,
-                            specialty: 'Artist'
+                            avatar: `https://i.pravatar.cc/150?u=${participant.username}`
                         }));
-                        this.updateConnectedArtistsList();
-
-                        // Update host information
-                        this.hostName = streamData.hostName || streamData.participants[0]?.username || 'BrushNinja';
-                        this.hostAvatar = `https://i.pravatar.cc/150?u=${this.hostName}`;
+                        this.hostName = streamData.hostName;
+                        this.hostAvatar = `https://i.pravatar.cc/150?u=${streamData.hostName}`;
                         this.hostBio = "Passionate artist and stream host";
 
-                        console.log('Host Name:', this.hostName);
-                        console.log('Stream Data:', streamData);
-
+                        this.updateConnectedArtistsList();
                     } catch (error) {
                         console.error('Error loading stream data:', error);
                     }
+                },
+                initBackgroundAnimation() {
+                    const scene = new THREE.Scene();
+                    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    const renderer = new THREE.WebGLRenderer({canvas: document.getElementById('artistCanvas'), alpha: true});
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+
+                    const geometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
+                    const material = new THREE.MeshBasicMaterial({color: 0x00ffff, wireframe: true});
+                    const torusKnot = new THREE.Mesh(geometry, material);
+                    scene.add(torusKnot);
+
+                    camera.position.z = 30;
+
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        torusKnot.rotation.x += 0.01;
+                        torusKnot.rotation.y += 0.01;
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+
+                    window.addEventListener('resize', () => {
+                        camera.aspect = window.innerWidth / window.innerHeight;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(window.innerWidth, window.innerHeight);
+                    });
                 },
                 initWebSocket() {
                     const socket = new WebSocket('wss://your-websocket-server.com');
@@ -176,7 +386,11 @@
                         const data = JSON.parse(event.data);
                         switch(data.type) {
                             case 'artistJoined':
-                                this.connectedArtists.push(data.artist);
+                                this.connectedArtists.push({
+                                    id: data.artist.id,
+                                    username: data.artist.username,
+                                    avatar: `https://i.pravatar.cc/150?u=${data.artist.username}`
+                                });
                                 this.currentArtists = this.connectedArtists.length;
                                 this.updateConnectedArtistsList();
                                 break;
@@ -187,7 +401,6 @@
                                 break;
                             case 'streamStarted':
                                 this.statusMessage = 'Host has started the stream';
-                                this.waitingMessage = 'Preparing to join...';
                                 break;
                             case 'streamLive':
                                 window.location.href = 'stream.html';
@@ -201,23 +414,110 @@
 
                     socket.onclose = () => {
                         console.log('WebSocket connection closed');
-                        // Implement reconnection logic here if needed
                     };
                 },
                 updateConnectedArtistsList() {
                     const artistsList = document.getElementById('connectedArtistsList');
                     artistsList.innerHTML = '';
-                    this.connectedArtists.forEach((artist, index) => {
-                        const li = document.createElement('li');
-                        li.className = 'flex items-center space-x-4 bg-gray-700 rounded-lg p-3 transform hover:scale-105 transition-transform';
-                        li.innerHTML = `
-                            <img src="https://i.pravatar.cc/150?u=${artist.username}" alt="${artist.username}" class="w-12 h-12 rounded-full border-2 border-cyan-400">
+                    this.connectedArtists.forEach(artist => {
+                        const artistEl = document.createElement('div');
+                        artistEl.className = 'bg-opacity-50 bg-gray-700 rounded-lg p-4 flex items-center space-x-3 artist-avatar';
+                        artistEl.innerHTML = `
+                            <img src="${artist.avatar}" alt="${artist.username}" class="w-12 h-12 rounded-full">
                             <div>
-                                <span class="font-semibold">${artist.username}</span>
-                                <p class="text-sm text-gray-400">${artist.specialty}</p>
+                                <p class="font-semibold">${artist.username}</p>
+                                <p class="text-sm text-gray-400">Artist</p>
                             </div>
                         `;
-                        artistsList.appendChild(li);
+                        artistsList.appendChild(artistEl);
+                    });
+
+                    // Animate new artists joining
+                    gsap.from('.artist-avatar', {
+                        opacity: 0,
+                        y: 20,
+                        stagger: 0.1,
+                        duration: 0.5,
+                        ease: "power2.out"
+                    });
+                },
+                async testCamera() {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        const video = document.getElementById('cameraPreview');
+                        video.srcObject = stream;
+                        this.showCameraPreview = true;
+                    } catch (error) {
+                        console.error('Error accessing camera:', error);
+                        alert('Unable to access camera. Please check your permissions.');
+                    }
+                },
+                async testMicrophone() {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        const analyser = audioContext.createAnalyser();
+                        const microphone = audioContext.createMediaStreamSource(stream);
+                        microphone.connect(analyser);
+                        analyser.fftSize = 256;
+                        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                        this.showMicrophoneTest = true;
+
+                        const updateMicrophoneMeter = () => {
+                            analyser.getByteFrequencyData(dataArray);
+                            const volume = dataArray.reduce((acc, val) => acc + val) / dataArray.length;
+                            const level = Math.min(100, Math.max(0, volume * 2)); // Scale volume to 0-100%
+                            document.getElementById('microphoneLevel').style.width = `${level}%`;
+                            if (this.showMicrophoneTest) {
+                                requestAnimationFrame(updateMicrophoneMeter);
+                            }
+                        };
+                        updateMicrophoneMeter();
+                    } catch (error) {
+                        console.error('Error accessing microphone:', error);
+                        alert('Unable to access microphone. Please check your permissions.');
+                    }
+                },
+                closeCameraPreview() {
+                    this.showCameraPreview = false;
+                    const video = document.getElementById('cameraPreview');
+                    if (video.srcObject) {
+                        video.srcObject.getTracks().forEach(track => track.stop());
+                    }
+                },
+                closeMicrophoneTest() {
+                    this.showMicrophoneTest = false;
+                    // Stop any ongoing audio processing here if needed
+                },
+                generateColorPalette() {
+                    this.colorPalette = Array.from({length: 5}, () => 
+                        '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')
+                    );
+                },
+                generateArtPrompt() {
+                    const subjects = ['portrait', 'landscape', 'still life', 'abstract composition'];
+                    const styles = ['impressionist', 'surrealist', 'minimalist', 'expressionist'];
+                    const elements = ['water', 'fire', 'earth', 'air'];
+                    this.artPrompt = `Create a ${styles[Math.floor(Math.random() * styles.length)]} ${subjects[Math.floor(Math.random() * subjects.length)]} incorporating the element of ${elements[Math.floor(Math.random() * elements.length)]}.`;
+                },
+                getInspirationQuote() {
+                    const quotes = [
+                        { text: "Every artist was first an amateur.", author: "Ralph Waldo Emerson" },
+                        { text: "Creativity takes courage.", author: "Henri Matisse" },
+                        { text: "Art enables us to find ourselves and lose ourselves at the same time.", author: "Thomas Merton" },
+                        { text: "The painter has the Universe in his mind and hands.", author: "Leonardo da Vinci" },
+                        { text: "To be an artist is to believe in life.", author: "Henry Moore" }
+                    ];
+                    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                    this.inspirationQuote = randomQuote.text;
+                    this.inspirationAuthor = randomQuote.author;
+
+                    // Animate quote change
+                    gsap.from('#inspirationQuote', {
+                        opacity: 0,
+                        y: 10,
+                        duration: 1,
+                        ease: "power2.out"
                     });
                 },
                 pollStreamStatus() {
@@ -236,10 +536,15 @@
                         } catch (error) {
                             console.error('Error polling stream status:', error);
                         }
-                    }, 2000); // Poll every 2 seconds
+                    }, 5000); // Poll every 5 seconds
                 }
             }
         }
+
+        // Initialize Alpine.js
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('artistWaitData', artistWaitData);
+        });
     </script>
 </body>
 </html>

@@ -3,150 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArtStream - Waiting Room</title>
+    <title>ArtStream - Immersive Waiting Room</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Raleway:wght@300;400;600;700&display=swap');
+
+        :root {
+            --bg-primary: #050814;
+            --bg-secondary: #0a0e24;
+            --accent-primary: #00ffff;
+            --accent-secondary: #ff00ff;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
         }
-        .float { animation: float 6s ease-in-out infinite; }
+
+        body {
+            font-family: 'Raleway', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .neon-border {
+            box-shadow: 0 0 5px var(--accent-primary),
+                        0 0 10px var(--accent-primary),
+                        0 0 15px var(--accent-primary),
+                        0 0 20px var(--accent-primary);
+        }
+
+        .neon-text {
+            text-shadow: 0 0 5px var(--accent-primary),
+                         0 0 10px var(--accent-primary),
+                         0 0 15px var(--accent-primary),
+                         0 0 20px var(--accent-primary);
+        }
+
+        .artist-card {
+            transition: all 0.3s ease;
+        }
+
+        .artist-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 0 15px var(--accent-secondary);
+        }
+
+        #artistShowcase {
+            transition: transform 0.5s ease;
+        }
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 min-h-screen" x-data="waitingRoomData()" x-init="init()">
-    <div class="max-w-6xl mx-auto p-8 space-y-8">
-        <header class="text-center">
-            <h1 class="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
-                Waiting Room
-            </h1>
-            <p class="text-xl text-cyan-300">Get ready to create something amazing!</p>
+<body class="overflow-auto" x-data="waitingRoomData()" x-init="init()">
+    <div id="background-canvas" class="fixed top-0 left-0 w-full h-full z-0"></div>
+
+    <div class="relative z-10 flex flex-col h-screen p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-bold mb-2 orbitron neon-text" x-text="streamName"></h1>
+            <p class="text-xl text-gray-400" x-text="streamCategory + ' - ' + estimatedDuration"></p>
         </header>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2 bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg">
-                <div class="p-6 space-y-6">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-3xl font-semibold text-cyan-300" x-text="streamName"></h2>
-                        <span class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full text-sm font-bold" x-text="streamCategory"></span>
-                    </div>
-                    
-                    <p class="text-gray-300 text-lg" x-text="streamDescription"></p>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-gray-700 rounded-lg p-4 flex items-center transform hover:scale-105 transition-transform">
-                            <i class="fas fa-users text-3xl text-cyan-400 mr-3"></i>
-                            <div>
-                                <p class="text-sm text-gray-400">Artists</p>
-                                <p class="text-2xl font-semibold"><span x-text="currentArtists"></span>/<span x-text="maxArtists"></span></p>
-                            </div>
+
+        <div class="flex-grow flex space-x-8">
+            <!-- Main Content -->
+            <div class="w-2/3 space-y-8">
+                <div class="bg-opacity-30 bg-gray-800 rounded-lg p-6 backdrop-filter backdrop-blur-md">
+                    <h2 class="text-2xl font-semibold mb-4 orbitron">Stream Details</h2>
+                    <p class="text-gray-300 text-lg mb-4" x-text="streamDescription"></p>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-opacity-50 bg-gray-700 rounded-lg p-4 text-center">
+                            <i class="fas fa-users text-3xl text-blue-400 mb-2"></i>
+                            <p class="text-sm text-gray-400">Artists</p>
+                            <p class="text-2xl font-semibold"><span x-text="currentArtists"></span>/<span x-text="maxArtists"></span></p>
                         </div>
-                        <div class="bg-gray-700 rounded-lg p-4 flex items-center transform hover:scale-105 transition-transform">
-                            <i class="fas fa-clock text-3xl text-cyan-400 mr-3"></i>
-                            <div>
-                                <p class="text-sm text-gray-400">Estimated Duration</p>
-                                <p class="text-2xl font-semibold" x-text="estimatedDuration"></p>
-                            </div>
+                        <div class="bg-opacity-50 bg-gray-700 rounded-lg p-4 text-center">
+                            <i class="fas fa-comments text-3xl text-green-400 mb-2"></i>
+                            <p class="text-sm text-gray-400">Chat</p>
+                            <p class="text-2xl font-semibold" x-text="chatEnabled ? 'Enabled' : 'Disabled'"></p>
                         </div>
-                        <div class="bg-gray-700 rounded-lg p-4 flex items-center transform hover:scale-105 transition-transform">
-                            <i class="fas fa-comments text-3xl text-cyan-400 mr-3"></i>
-                            <div>
-                                <p class="text-sm text-gray-400">Chat</p>
-                                <p class="text-2xl font-semibold" x-text="chatEnabled ? 'Enabled' : 'Disabled'"></p>
-                            </div>
+                        <div class="bg-opacity-50 bg-gray-700 rounded-lg p-4 text-center">
+                            <i class="fas fa-lock text-3xl text-yellow-400 mb-2"></i>
+                            <p class="text-sm text-gray-400">Privacy</p>
+                            <p class="text-2xl font-semibold" x-text="isPrivate ? 'Private' : 'Public'"></p>
                         </div>
                     </div>
                 </div>
-                
-                <div class="bg-gray-700 p-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                    <div class="flex items-center space-x-2">
-                        <span class="w-4 h-4 bg-green-500 rounded-full pulse"></span>
-                        <p class="text-green-400 text-lg">Ready to go live</p>
-                    </div>
-                    <button @click="goLive" class="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white text-xl font-bold rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50">
-                        Go Live
-                    </button>
-                </div>
-            </div>
-            
-            <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-6">
-                <h3 class="text-2xl font-semibold text-cyan-300">Connected Artists</h3>
-                <ul class="space-y-4" id="connectedArtistsList">
-                    <!-- Connected artists will be dynamically added here -->
-                </ul>
-                <div class="text-center" x-show="currentArtists < maxArtists">
-                    <p class="text-lg text-cyan-300 mb-2">Waiting for more artists...</p>
-                    <div class="inline-block">
-                        <i class="fas fa-spinner fa-spin text-4xl text-cyan-400"></i>
+
+                <div class="bg-opacity-30 bg-gray-800 rounded-lg p-6 backdrop-filter backdrop-blur-md">
+                    <h2 class="text-2xl font-semibold mb-4 orbitron">Connected Artists</h2>
+                    <div class="relative overflow-hidden h-64" @mouseenter="startShowcase" @mouseleave="stopShowcase">
+                        <div id="artistShowcase" class="flex space-x-4 absolute left-0 transition-transform duration-500 ease-in-out">
+                            <template x-for="artist in connectedArtists" :key="artist.id">
+                                <div class="artist-card bg-opacity-50 bg-gray-700 rounded-lg p-4 w-48 flex flex-col items-center">
+                                    <img :src="artist.avatar" :alt="artist.username" class="w-24 h-24 rounded-full mb-2">
+                                    <p class="font-semibold text-center" x-text="artist.username"></p>
+                                    <p class="text-sm text-gray-400 text-center" x-text="artist.specialty"></p>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                 </div>
+
+                <div class="bg-opacity-30 bg-gray-800 rounded-lg p-6 backdrop-filter backdrop-blur-md mt-8">
+                    <h2 class="text-2xl font-semibold mb-4 orbitron">Viewer Engagement</h2>
+                    <canvas id="engagementChart" width="400" height="200"></canvas>
+                </div>
+
             </div>
 
-            <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-6">
-                <h3 class="text-2xl font-semibold text-cyan-300">Stream Access</h3>
-                <div class="flex items-center justify-between">
-                    <span>Stream Key:</span>
-                    <div class="flex items-center">
-                        <input type="text" x-model="streamKey" readonly class="bg-gray-700 rounded px-3 py-2 mr-2">
-                        <button @click="copyStreamKey" class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-2 rounded transition duration-300">
-                            <i class="fas fa-copy"></i>
-                        </button>
+            <!-- Side Panel -->
+            <div class="w-1/3 space-y-8">
+                <div class="bg-opacity-30 bg-gray-800 rounded-lg p-6 backdrop-filter backdrop-blur-md">
+                    <h2 class="text-2xl font-semibold mb-4 orbitron">Stream Access</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">Stream Key</label>
+                            <div class="flex items-center">
+                                <input type="text" x-model="streamKey" readonly class="flex-1 bg-opacity-50 bg-gray-700 text-white rounded-l-md p-2 focus:outline-none">
+                                <button @click="copyStreamKey" class="bg-blue-500 text-white px-4 py-2 rounded-r-md hover:bg-blue-600 focus:outline-none">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Private Stream</span>
+                            <label class="switch">
+                                <input type="checkbox" x-model="isPrivate" @change="updatePrivacy">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <p class="text-sm text-gray-500" x-text="isPrivate ? 'Only artists with the stream key can join.' : 'Anyone can join this stream.'"></p>
                     </div>
                 </div>
-                <div class="flex items-center justify-between">
-                    <span>Private Stream:</span>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" x-model="isPrivate" @change="updatePrivacy" class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-400 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
-                    </label>
-                </div>
-                <p class="text-sm text-gray-400" x-show="isPrivate">
-                    Your stream is private. Only artists with the stream key can join.
-                </p>
-                <p class="text-sm text-gray-400" x-show="!isPrivate">
-                    Your stream is public. Anyone can join.
-                </p>
-            </div>
 
-        </div>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-4">
-                <h3 class="text-2xl font-semibold text-cyan-300">Stream Settings</h3>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span>Video Quality</span>
-                        <select class="bg-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                            <option>720p</option>
-                            <option>1080p</option>
-                            <option>1440p</option>
-                        </select>
+                <div class="bg-opacity-30 bg-gray-800 rounded-lg p-6 backdrop-filter backdrop-blur-md">
+                    <h2 class="text-2xl font-semibold mb-4 orbitron">Stream Stats</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-opacity-50 bg-gray-700 rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-400">Total Streams</p>
+                            <p class="text-2xl font-semibold text-blue-400">24</p>
+                        </div>
+                        <div class="bg-opacity-50 bg-gray-700 rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-400">Followers</p>
+                            <p class="text-2xl font-semibold text-purple-400">1.2K</p>
+                        </div>
+                        <div class="bg-opacity-50 bg-gray-700 rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-400">Avg. Viewers</p>
+                            <p class="text-2xl font-semibold text-green-400">150</p>
+                        </div>
+                        <div class="bg-opacity-50 bg-gray-700 rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-400">Stream Time</p>
+                            <p class="text-2xl font-semibold text-red-400">48h</p>
+                        </div>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span>Audio Input</span>
-                        <select class="bg-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                            <option>Default Microphone</option>
-                            <option>External Mic</option>
-                        </select>
-                    </div>
-                    <button class="w-full mt-4 px-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50">
-                        Check Stream Health
-                    </button>
                 </div>
-            </div>
-            
-            <div class="bg-gray-800 bg-opacity-50 rounded-lg shadow-lg overflow-hidden backdrop-filter backdrop-blur-lg p-6 space-y-4">
-                <h3 class="text-2xl font-semibold text-cyan-300">Audience Engagement</h3>
-                <canvas id="engagementChart" width="400" height="200"></canvas>
+
+                <button @click="goLive" class="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white text-xl font-bold rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 neon-border">
+                    Go Live
+                </button>
             </div>
         </div>
     </div>
@@ -165,31 +193,12 @@
                 connectedArtists: [],
                 streamKey: '',
                 isPrivate: false,
+                showcaseInterval: null,
                 async init() {
                     this.loadStreamData();
-                    this.initEngagementChart();
+                    this.initBackgroundAnimation();
                     this.initWebSocket();
-                },
-                async generateStreamKey() {
-                    // Generate a random stream key (you might want to do this on the server)
-                    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-                },
-                copyStreamKey() {
-                    navigator.clipboard.writeText(this.streamKey);
-                    alert('Stream key copied to clipboard');
-                },
-                async updatePrivacy() {
-                    try {
-                        const token = localStorage.getItem('token');
-                        await axios.put(`/streams/${this.streamId}/privacy`, { isPrivate: this.isPrivate }, {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        });
-                        alert(this.isPrivate ? 'Stream set to private' : 'Stream set to public');
-                    } catch (error) {
-                        console.error('Error updating stream privacy:', error);
-                        alert('Failed to update stream privacy');
-                        this.isPrivate = !this.isPrivate; // Revert the toggle if the update failed
-                    }
+                    this.initEngagementChart();
                 },
                 async loadStreamData() {
                     try {
@@ -220,37 +229,52 @@
                         this.connectedArtists = streamData.participants.map(participant => ({
                             id: participant.userId,
                             username: participant.username,
-                            specialty: 'Artist'
+                            specialty: 'Artist',
+                            avatar: `https://i.pravatar.cc/150?u=${participant.username}`
                         }));
                         this.streamKey = streamData.streamKey;
                         this.isPrivate = streamData.isPrivate;
-                        this.updateConnectedArtistsList();
                     } catch (error) {
                         console.error('Error loading stream data:', error);
                     }
                 },
-                initEngagementChart() {
-                    const ctx = document.getElementById('engagementChart').getContext('2d');
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: ['1 week ago', '6 days ago', '5 days ago', '4 days ago', '3 days ago', '2 days ago', 'Yesterday'],
-                            datasets: [{
-                                label: 'Viewer Engagement',
-                                data: [65, 59, 80, 81, 56, 55, 90],
-                                fill: false,
-                                borderColor: 'rgb(6, 182, 212)',
-                                tension: 0.1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            scales: {
-                                y: {
-                                    beginAtZero: true
-                                }
-                            }
-                        }
+                initBackgroundAnimation() {
+                    const scene = new THREE.Scene();
+                    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    const renderer = new THREE.WebGLRenderer();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    document.getElementById('background-canvas').appendChild(renderer.domElement);
+
+                    const geometry = new THREE.BufferGeometry();
+                    const vertices = [];
+                    for (let i = 0; i < 10000; i++) {
+                        vertices.push(
+                            THREE.MathUtils.randFloatSpread(2000),
+                            THREE.MathUtils.randFloatSpread(2000),
+                            THREE.MathUtils.randFloatSpread(2000)
+                        );
+                    }
+                    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                    const particles = new THREE.Points(
+                        geometry,
+                        new THREE.PointsMaterial({ color: 0x00ffff, size: 3 })
+                    );
+                    scene.add(particles);
+
+                    camera.position.z = 1000;
+
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        particles.rotation.x += 0.0001;
+                        particles.rotation.y += 0.0001;
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+
+                    window.addEventListener('resize', () => {
+                        camera.aspect = window.innerWidth / window.innerHeight;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(window.innerWidth, window.innerHeight);
                     });
                 },
                 initWebSocket() {
@@ -260,14 +284,17 @@
                         const data = JSON.parse(event.data);
                         switch(data.type) {
                             case 'artistJoined':
-                                this.connectedArtists.push(data.artist);
+                                this.connectedArtists.push({
+                                    id: data.artist.id,
+                                    username: data.artist.username,
+                                    specialty: 'Artist',
+                                    avatar: `https://i.pravatar.cc/150?u=${data.artist.username}`
+                                });
                                 this.currentArtists = this.connectedArtists.length;
-                                this.updateConnectedArtistsList();
                                 break;
                             case 'artistLeft':
                                 this.connectedArtists = this.connectedArtists.filter(artist => artist.id !== data.artistId);
                                 this.currentArtists = this.connectedArtists.length;
-                                this.updateConnectedArtistsList();
                                 break;
                         }
                     };
@@ -281,24 +308,24 @@
                         // Implement reconnection logic here if needed
                     };
                 },
-                updateConnectedArtistsList() {
-                    const artistsList = document.getElementById('connectedArtistsList');
-                    artistsList.innerHTML = '';
-                    this.connectedArtists.forEach((artist, index) => {
-                        const li = document.createElement('li');
-                        li.className = 'flex items-center space-x-4 bg-gray-700 rounded-lg p-3 transform hover:scale-105 transition-transform';
-                        li.innerHTML = `
-                            <img src="https://i.pravatar.cc/150?u=${artist.username}" alt="${artist.username}" class="w-12 h-12 rounded-full border-2 border-cyan-400">
-                            <div>
-                                <span class="font-semibold">${artist.username}</span>
-                                <p class="text-sm text-gray-400">${artist.specialty}</p>
-                            </div>
-                        `;
-                        artistsList.appendChild(li);
-                    });
+                copyStreamKey() {
+                    navigator.clipboard.writeText(this.streamKey);
+                    alert('Stream key copied to clipboard');
+                },
+                async updatePrivacy() {
+                    try {
+                        const token = localStorage.getItem('token');
+                        await axios.put(`/streams/${this.streamId}/privacy`, { isPrivate: this.isPrivate }, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        alert(this.isPrivate ? 'Stream set to private' : 'Stream set to public');
+                    } catch (error) {
+                        console.error('Error updating stream privacy:', error);
+                        alert('Failed to update stream privacy');
+                        this.isPrivate = !this.isPrivate; // Revert the toggle if the update failed
+                    }
                 },
                 async goLive() {
-                    console.log('Go Live button clicked');
                     try {
                         const token = localStorage.getItem('token');
                         if (!token) {
@@ -355,33 +382,59 @@
                         localStorage.setItem('streamKey', stream_key);
                         console.log('Stream info saved to localStorage');
 
-                        // After successful creation of the livestream, update the stream status on your backend
-                        await axios.post(`/streams/${this.streamId}/start`, {}, {
-                            headers: {
-                                'Authorization': `Bearer ${token}`
-                            }
-                        });
-
                         // Redirect to the instructions page
                         window.location.href = 'instructions.html';
 
                     } catch (error) {
                         console.error('Error starting stream:', error);
-                        if (error.response) {
-                            console.error('Error response:', error.response.data);
-                            console.error('Error status:', error.response.status);
-                            console.error('Error headers:', error.response.headers);
-                        } else if (error.request) {
-                            console.error('Error request:', error.request);
-                        } else {
-                            console.error('Error message:', error.message);
-                        }
-                        console.error('Error config:', error.config);
+                        alert(`Failed to start stream: ${error.message}. Please try again.`);
                     }
+                },
+                initEngagementChart() {
+                    const ctx = document.getElementById('engagementChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['1 week ago', '6 days ago', '5 days ago', '4 days ago', '3 days ago', '2 days ago', 'Yesterday'],
+                            datasets: [{
+                                label: 'Viewer Engagement',
+                                data: [65, 59, 80, 81, 56, 55, 90],
+                                fill: false,
+                                borderColor: 'rgb(75, 192, 192)',
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                },
+                startShowcase() {
+                    this.showcaseInterval = setInterval(() => {
+                        const showcase = document.getElementById('artistShowcase');
+                        const firstCard = showcase.firstElementChild;
+                        const cardWidth = firstCard.offsetWidth + 16; // 16px for margin
+                        showcase.style.transform = `translateX(-${cardWidth}px)`;
+                        setTimeout(() => {
+                            showcase.style.transition = 'none';
+                            showcase.appendChild(firstCard);
+                            showcase.style.transform = 'translateX(0)';
+                            setTimeout(() => {
+                                showcase.style.transition = 'transform 0.5s ease-in-out';
+                            }, 50);
+                        }, 500);
+                    }, 3000);
+                },
+                stopShowcase() {
+                    clearInterval(this.showcaseInterval);
                 }
             }
         }
-
     </script>
 </body>
 </html>
