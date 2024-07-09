@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArtStream Nexus - Futuristic Art Museum</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+        #entryAnimation, #museum {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #museum {
+            display: none;
+            perspective: 1000px;
+        }
+        .artwork {
+            position: absolute;
+            width: 300px;
+            height: 400px;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+        .artwork-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+        .artwork-image {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        .artwork-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            transform: translateZ(20px);
+        }
+        .artwork-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .artwork-artist {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        .artwork-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            transform: translateZ(30px);
+        }
+        .artwork-btn {
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.2em;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .artwork-btn:hover {
+            background: rgba(0, 255, 255, 0.6);
+            transform: scale(1.1);
+        }
+        .artwork-btn.buy {
+            background: rgba(0, 255, 255, 0.6);
+        }
+        .artwork-btn.buy:hover {
+            background: rgba(0, 255, 255, 0.8);
+        }
+        #navigation {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+        .nav-btn {
+            background: rgba(0, 255, 255, 0.3);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.5em;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .nav-btn:hover {
+            background: rgba(0, 255, 255, 0.6);
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="entryAnimation"></div>
+    <div id="museum"></div>
+    <div id="navigation">
+        <button class="nav-btn" onclick="navigate(-1)"><i class="fas fa-chevron-left"></i></button>
+        <button class="nav-btn" onclick="navigate(1)"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <script>
+        // Wormhole Entry Animation
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('entryAnimation').appendChild(renderer.domElement);
+
+        const starGeometry = new THREE.BufferGeometry();
+        const starMaterial = new THREE.PointsMaterial({
+            color: 0xffffff,
+            size: 0.02,
+            transparent: true
+        });
+
+        const starsVertices = [];
+        for (let i = 0; i < 15000; i++) {
+            const x = (Math.random() - 0.5) * 20;
+            const y = (Math.random() - 0.5) * 20;
+            const z = Math.random() * 10 - 5;
+            starsVertices.push(x, y, z);
+        }
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
+
+        camera.position.z = 5;
+
+        let acceleration = 0.02;
+        let speed = 0;
+
+        function animateWormhole() {
+            requestAnimationFrame(animateWormhole);
+
+            speed += acceleration;
+            const positions = starGeometry.attributes.position.array;
+            for (let i = 0; i < positions.length; i += 3) {
+                positions[i + 2] += speed;
+                if (positions[i + 2] > 5) {
+                    positions[i + 2] = -5;
+                }
+            }
+            starGeometry.attributes.position.needsUpdate = true;
+
+            renderer.render(scene, camera);
+        }
+
+        animateWormhole();
+
+        // Transition to Museum
+        setTimeout(() => {
+            gsap.to('#entryAnimation', {
+                opacity: 0,
+                duration: 2,
+                onComplete: () => {
+                    document.getElementById('entryAnimation').style.display = 'none';
+                    document.getElementById('museum').style.display = 'block';
+                    initMuseum();
+                }
+            });
+        }, 5000); // 5 seconds of entry animation
+
+        // Museum Initialization
+        const artworks = [
+            { title: "Neon Dreams", artist: "CyberVision", image: "https://images.unsplash.com/photo-1506314277114-90b30bbe047b" },
+            { title: "Quantum Resonance", artist: "NeuralArtist", image: "https://images.unsplash.com/photo-1548364538-60b202975696" },
+            { title: "Digital Eden", artist: "PixelGardener", image: "https://images.unsplash.com/photo-1511982743194-536b8afca4e7" },
+            { title: "Cyberpunk Metropolis", artist: "NeonArchitect", image: "https://images.unsplash.com/photo-1493804714600-6edb1cd93080" },
+            { title: "Virtual Oasis", artist: "DigitalNomad", image: "https://images.unsplash.com/photo-1507834392584-253b187c94f1" },
+            { title: "Synthwave Serenity", artist: "AIComposer", image: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5" },
+            { title: "Binary Beats", artist: "CodeMaestro", image: "https://images.unsplash.com/photo-1516796181074-bf453fbfa3e6" },
+            { title: "Holographic Harmony", artist: "LightSculptor", image: "https://images.unsplash.com/photo-1547054728-09a27a36ec28" }
+        ];
+
+        let currentIndex = 0;
+
+        function initMuseum() {
+            const museum = document.getElementById('museum');
+            artworks.forEach((artwork, index) => {
+                const el = document.createElement('div');
+                el.className = 'artwork';
+                el.innerHTML = `
+                    <div class="artwork-content">
+                        <img src="${artwork.image}" alt="${artwork.title}" class="artwork-image">
+                        <div class="artwork-info">
+                            <div class="artwork-title">${artwork.title}</div>
+                            <div class="artwork-artist">by ${artwork.artist}</div>
+                        </div>
+                        <div class="artwork-actions">
+                            <button class="artwork-btn buy" onclick="buyArtwork('${artwork.title}')">
+                                <i class="fas fa-shopping-cart"></i>
+                            </button>
+                            <button class="artwork-btn" onclick="previewAR('${artwork.title}')">
+                                <i class="fas fa-vr-cardboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                museum.appendChild(el);
+                positionArtwork(el, index);
+            });
+            updateMuseum();
+        }
+
+        function positionArtwork(el, index) {
+            const radius = 1000;
+            const theta = (index / artworks.length) * 2 * Math.PI;
+            const x = radius * Math.sin(theta);
+            const z = radius * Math.cos(theta) - radius;
+            el.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${-theta}rad)`;
+        }
+
+        function updateMuseum() {
+            const museum = document.getElementById('museum');
+            const rotation = (currentIndex / artworks.length) * 360;
+            museum.style.transform = `rotateY(${rotation}deg)`;
+        }
+
+        function navigate(direction) {
+            currentIndex = (currentIndex + direction + artworks.length) % artworks.length;
+            updateMuseum();
+        }
+
+        function buyArtwork(title) {
+            alert(`Initiating purchase for: ${title}`);
+            // Implement actual purchase logic here
+        }
+
+        function previewAR(title) {
+            alert(`Launching AR preview for: ${title}`);
+            // Implement AR preview logic here
+        }
+
+        // Add smooth parallax effect
+        document.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            gsap.to('.artwork-content', {
+                rotateY: xAxis,
+                rotateX: -yAxis,
+                duration: 0.5,
+                ease: "power2.out"
+            });
+        });
+    </script>
+</body>
+</html>

@@ -3,446 +3,400 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArtStream Marketplace - Discover Unique Creations</title>
+    <title>ArtStream Nexus - Digital Artifacts of the Future</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400;700&display=swap');
+
+        :root {
+            --neon-blue: #00ffff;
+            --neon-pink: #ff00ff;
+            --neon-green: #39ff14;
+            --dark-bg: #0a0a0f;
+            --cyber-grid: rgba(0, 255, 255, 0.1);
+        }
+
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #0f0f1a;
-            color: #e0e0e0;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--dark-bg);
+            color: #ffffff;
+            overflow-x: hidden;
         }
 
-        .glassmorphism {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
         }
 
-        .gradient-text {
-            background: linear-gradient(45deg, #ff00cc, #3333ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+        .cyber-grid {
+            background-image: 
+                linear-gradient(to right, var(--cyber-grid) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--cyber-grid) 1px, transparent 1px);
+            background-size: 50px 50px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
         }
 
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(255, 0, 204, 0.2);
+        .neon-text {
+            text-shadow: 
+                0 0 5px var(--neon-blue),
+                0 0 10px var(--neon-blue),
+                0 0 20px var(--neon-blue),
+                0 0 40px var(--neon-blue);
         }
 
-        .animated-gradient {
-            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+        .neon-border {
+            box-shadow:
+                0 0 5px var(--neon-blue),
+                0 0 10px var(--neon-blue),
+                inset 0 0 5px var(--neon-blue),
+                inset 0 0 10px var(--neon-blue);
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        .cyber-card {
+            background: rgba(10, 10, 15, 0.8);
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+            transition: all 0.3s ease;
         }
 
-        .btn-gradient {
-            background: linear-gradient(to right, #00c6ff, #0072ff);
+        .cyber-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 
+                0 0 20px var(--neon-blue),
+                0 0 40px var(--neon-pink);
         }
 
-        .btn-watch {
-            background: linear-gradient(to right, #ff00cc, #333399);
+        .cyber-btn {
+            background: transparent;
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 10px 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
-        .sale-badge {
-            background: linear-gradient(to right, #ff416c, #ff4b2b);
+        .cyber-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: all 0.3s ease;
         }
 
-        .auction-badge {
-            background: linear-gradient(to right, #f7971e, #ffd200);
+        .cyber-btn:hover::before {
+            left: 100%;
         }
 
-        
+        .cyber-btn:hover {
+            background: var(--neon-blue);
+            color: var(--dark-bg);
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        #heroCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        .glitch {
+            position: relative;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 var(--neon-pink);
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim 3s infinite linear alternate-reverse;
+        }
+
+        .glitch::after {
+            left: -2px;
+            text-shadow: -2px 0 var(--neon-green);
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim 2s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(17px, 9999px, 36px, 0); }
+            20% { clip: rect(63px, 9999px, 97px, 0); }
+            40% { clip: rect(76px, 9999px, 5px, 0); }
+            60% { clip: rect(56px, 9999px, 98px, 0); }
+            80% { clip: rect(12px, 9999px, 54px, 0); }
+            100% { clip: rect(91px, 9999px, 23px, 0); }
+        }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-gray-900 to-black text-gray-100">
-    <header class="fixed w-full z-50 bg-opacity-90 bg-gray-900 backdrop-filter backdrop-blur-lg">
+<body class="min-h-screen">
+    <div class="cyber-grid"></div>
+    <canvas id="heroCanvas"></canvas>
+
+    <header class="fixed w-full z-50 bg-opacity-70 bg-black backdrop-filter backdrop-blur-md">
         <nav class="container mx-auto px-6 py-3">
             <div class="flex justify-between items-center">
                 <div class="flex items-center">
-                    <img src="/api/placeholder/40/40" alt="ArtStream Logo" class="h-10 w-10 mr-3">
-                    <a href="#" class="text-2xl font-bold gradient-text">ArtStream Marketplace</a>
+                    <img src="/api/placeholder/40/40" alt="ArtStream Logo" class="h-10 w-10 mr-3 neon-border rounded-full">
+                    <a href="#" class="text-2xl font-bold orbitron neon-text">ArtStream Nexus</a>
                 </div>
                 <div class="hidden md:flex items-center space-x-8">
-                    <a href="#" class="text-gray-300 hover:text-white transition duration-300">Home</a>
-                    <a href="#" class="text-gray-300 hover:text-white transition duration-300">Categories</a>
-                    <a href="#" class="text-gray-300 hover:text-white transition duration-300">Live Streams</a>
-                    <a href="#" class="text-gray-300 hover:text-white transition duration-300">About</a>
-                    <div class="relative">
-                        <input type="text" placeholder="Search items..." class="px-4 py-2 rounded-full bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-purple-600">
-                        <button class="absolute right-2 top-1/2 transform -translate-y-1/2">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </button>
-                    </div>
+                    <a href="#" class="text-gray-300 hover:text-white transition duration-300">Explore</a>
+                    <a href="#" class="text-gray-300 hover:text-white transition duration-300">Create</a>
+                    <a href="#" class="text-gray-300 hover:text-white transition duration-300">Connect</a>
+                    <a href="#" class="cyber-btn">Enter the Grid</a>
                 </div>
             </div>
         </nav>
     </header>
 
-    <main class="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-        <section class="mb-16">
-            <h1 class="text-4xl md:text-5xl font-bold text-center mb-8 gradient-text">Discover Unique Creations</h1>
-            <p class="text-xl text-center text-gray-400 mb-12">Explore one-of-a-kind items created by talented artists during live streams</p>
-            
-            <div class="flex flex-wrap justify-center gap-4 mb-12">
-                <button class="px-6 py-2 rounded-full bg-purple-700 hover:bg-purple-600 transition duration-300">All</button>
-                <button class="px-6 py-2 rounded-full bg-gray-700 hover:bg-gray-600 transition duration-300">Digital Art</button>
-                <button class="px-6 py-2 rounded-full bg-gray-700 hover:bg-gray-600 transition duration-300">Paintings</button>
-                <button class="px-6 py-2 rounded-full bg-gray-700 hover:bg-gray-600 transition duration-300">Sculptures</button>
-                <button class="px-6 py-2 rounded-full bg-gray-700 hover:bg-gray-600 transition duration-300">Music</button>
-                <button class="px-6 py-2 rounded-full bg-gray-700 hover:bg-gray-600 transition duration-300">Gaming</button>
+    <main class="container mx-auto px-6 py-20">
+        <section id="hero" class="text-center mb-20">
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 orbitron glitch neon-text" data-text="Digital Artifacts of the Future">Digital Artifacts of the Future</h1>
+            <p class="text-xl mb-10 max-w-2xl mx-auto">Dive into a world where art transcends reality. Collect, create, and connect in the digital frontier.</p>
+            <button id="initiateImmersionBtn" class="cyber-btn text-lg">Initiate Immersion</button>
+        </section>
+
+        <section id="featuredArtifacts" class="mb-20">
+            <h2 class="text-3xl font-bold mb-10 orbitron neon-text text-center">Featured Digital Artifacts</h2>
+            <div id="featuredArtifactsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Featured artifacts will be dynamically populated here -->
             </div>
         </section>
 
-        <section class="mb-16">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">Featured Items</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1536924940846-227afb31e2a5?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YWJzdHJhY3QlMjBhcnR8ZW58MHx8MHx8fDA%3D" alt="Abstract Masterpiece" class="w-full h-64 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Abstract Masterpiece</h3>
-                    <p class="text-gray-400 mb-4">A stunning piece of digital art created live on ArtStream</p>
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-2xl font-bold text-purple-400">$299.99</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="flex-1 btn-gradient text-white font-bold py-2 px-4 rounded transition duration-300">Buy Now</button>
-                        <button class="flex-1 btn-watch text-white font-bold py-2 px-4 rounded transition duration-300">Watch Creation</button>
-                    </div>
-                </div>
-
-                <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1558865869-c93f6f8482af?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fHNjdWxwdHVyZXxlbnwwfHwwfHx8MA%3D%3D" alt="Ethereal Sculpture" class="w-full h-64 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Ethereal Sculpture</h3>
-                    <p class="text-gray-400 mb-4">A mesmerizing sculpture crafted during a live session</p>
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-2xl font-bold text-purple-400">Current Bid: $750</span>
-                        <span class="auction-badge text-sm font-bold px-2 py-1 rounded-full">Auction</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="flex-1 btn-gradient text-white font-bold py-2 px-4 rounded transition duration-300">Place Bid</button>
-                        <button class="flex-1 btn-watch text-white font-bold py-2 px-4 rounded transition duration-300">Watch Creation</button>
-                    </div>
-                </div>
-
-                <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fG11c2ljJTIwYXJ0fGVufDB8fDB8fHww" alt="Harmonious Melodies" class="w-full h-64 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Harmonious Melodies</h3>
-                    <p class="text-gray-400 mb-4">An original music composition created live on ArtStream</p>
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-2xl font-bold text-purple-400">$49.99</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="flex-1 btn-gradient text-white font-bold py-2 px-4 rounded transition duration-300">Buy Now</button>
-                        <button class="flex-1 btn-watch text-white font-bold py-2 px-4 rounded transition duration-300">Watch Creation</button>
-                    </div>
-                </div>
+        <section id="digitalRealms" class="mb-20">
+            <h2 class="text-3xl font-bold mb-10 orbitron neon-text text-center">Digital Realms</h2>
+            <div id="digitalRealmsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Digital realms will be dynamically populated here -->
             </div>
         </section>
 
-        <section class="mb-16">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">Latest Creations</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <div class="glassmorphism p-4 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1582561833407-b95380302a43?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8Z2FtaW5nJTIwYXJ0fGVufDB8fDB8fHww" alt="Pixel Adventure" class="w-full h-48 object-cover rounded-lg mb-4">
-                    <h3 class="text-lg font-bold mb-2">Pixel Adventure</h3>
-                    <p class="text-gray-400 mb-2">Retro-style game art</p>
-                    <div class="flex justify-between items-center">
-                        <span class="text-xl font-bold text-purple-400">$24.99</span>
-                        <button class="btn-gradient text-white font-bold py-1 px-3 rounded text-sm transition duration-300">Buy Now</button>
-                    </div>
-                </div>
-
-                <div class="glassmorphism p-4 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1583316175462-5d9653a96aaa?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fG9pbCUyMHBhaW50aW5nfGVufDB8fDB8fHww" alt="Serene Landscape" class="w-full h-48 object-cover rounded-lg mb-4">
-                    <h3 class="text-lg font-bold mb-2">Serene Landscape</h3>
-                    <p class="text-gray-400 mb-2">Oil painting on canvas</p>
-                    <div class="flex justify-between items-center">
-                        <span class="text-xl font-bold text-purple-400">$399.99</span>
-                        <button class="btn-gradient text-white font-bold py-1 px-3 rounded text-sm transition duration-300">Buy Now</button>
-                    </div>
-                </div>
-
-                <div class="glassmorphism p-4 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1510297182321-a75bdc5b1092?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bW9kZXJuJTIwYXJ0fGVufDB8fDB8fHww" alt="Geometric Dreams" class="w-full h-48 object-cover rounded-lg mb-4">
-                    <h3 class="text-lg font-bold mb-2">Geometric Dreams</h3>
-                    <p class="text-gray-400 mb-2">Modern abstract painting</p>
-                    <div class="flex justify-between items-center">
-                        <span class="text-xl font-bold text-purple-400">Current Bid: $550</span>
-                        <button class="btn-gradient text-white font-bold py-1 px-3 rounded text-sm transition duration-300">Place Bid</button>
-                    </div>
-                </div>
-
-                <div class="glassmorphism p-4 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1615184697985-c9bde1b07da7?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGRpZ2l0YWwlMjBhcnR8ZW58MHx8MHx8fDA%3D" alt="Neon Cityscape" class="w-full h-48 object-cover rounded-lg mb-4">
-                    <h3 class="text-lg font-bold mb-2">Neon Cityscape</h3>
-                    <p class="text-gray-400 mb-2">Futuristic digital art</p>
-                    <div class="flex justify-between items-center">
-                        <span class="text-xl font-bold text-purple-400">$79.99</span>
-                        <button class="btn-gradient text-white font-bold py-1 px-3 rounded text-sm transition duration-300">Buy Now</button>
-                    </div>
-                </div>
+        <section id="neuralSymphonies" class="mb-20">
+            <h2 class="text-3xl font-bold mb-10 orbitron neon-text text-center">Neural Symphonies</h2>
+            <div id="neuralSymphoniesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Neural symphonies will be dynamically populated here -->
             </div>
         </section>
 
-        <section class="mb-16">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">Trending Auctions</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1567095761054-7a02e69e5c43?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8YWJzdHJhY3QlMjBzY3VscHR1cmV8ZW58MHx8MHx8fDA%3D" alt="Cosmic Harmony" class="w-full h-64 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Cosmic Harmony</h3>
-                    <p class="text-gray-400 mb-4">An otherworldly sculpture blending form and void</p>
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-2xl font-bold text-purple-400">Current Bid: $1,200</span>
-                        <span class="auction-badge text-sm font-bold px-2 py-1 rounded-full">Auction</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="flex-1 btn-gradient text-white font-bold py-2 px-4 rounded transition duration-300">Place Bid</button>
-                        <button class="flex-1 btn-watch text-white font-bold py-2 px-4 rounded transition duration-300">Watch Creation</button>
-                    </div>
-                </div>
-
-                <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1559154121-41f29a12d739?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZGlnaXRhbCUyMGFydHxlbnwwfHwwfHx8MA%3D%3D" alt="Digital Dreamscape" class="w-full h-64 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Digital Dreamscape</h3>
-                    <p class="text-gray-400 mb-4">A mesmerizing digital artwork exploring surreal landscapes</p>
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-2xl font-bold text-purple-400">Current Bid: $850</span>
-                        <span class="auction-badge text-sm font-bold px-2 py-1 rounded-full">Auction</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="flex-1 btn-gradient text-white font-bold py-2 px-4 rounded transition duration-300">Place Bid</button>
-                        <button class="flex-1 btn-watch text-white font-bold py-2 px-4 rounded transition duration-300">Watch Creation</button>
-                    </div>
-                </div>
-
-                <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1558865869-c93f6f8482af?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fHNjdWxwdHVyZXxlbnwwfHwwfHx8MA%3D%3D" alt="Ethereal Echoes" class="w-full h-64 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Ethereal Echoes</h3>
-                    <p class="text-gray-400 mb-4">A haunting musical composition blending ambient and electronic elements</p>
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-2xl font-bold text-purple-400">Current Bid: $320</span>
-                        <span class="auction-badge text-sm font-bold px-2 py-1 rounded-full">Auction</span>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="flex-1 btn-gradient text-white font-bold py-2 px-4 rounded transition duration-300">Place Bid</button>
-                        <button class="flex-1 btn-watch text-white font-bold py-2 px-4 rounded transition duration-300">Watch Creation</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="mb-16">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">Special Offers</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="glassmorphism p-4 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8ZGlnaXRhbCUyMGFydHxlbnwwfHwwfHx8MA%3D%3D" alt="Cyberpunk Vision" class="w-full h-48 object-cover rounded-lg mb-4">
-                    <h3 class="text-lg font-bold mb-2">Cyberpunk Vision</h3>
-                    <p class="text-gray-400 mb-2">Futuristic digital illustration</p>
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <span class="text-xl font-bold text-purple-400">$59.99</span>
-                            <span class="text-sm text-gray-500 line-through ml-2">$79.99</span>
-                        </div>
-                        <span class="sale-badge text-sm font-bold px-2 py-1 rounded-full">25% OFF</span>
-                    </div>
-                    <button class="w-full btn-gradient text-white font-bold py-2 px-4 rounded mt-4 transition duration-300">Buy Now</button>
-                </div>
-
-                <div class="glassmorphism p-4 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1598113913692-6b79df48bda8?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8YWJzdHJhY3QlMjBwYWludGluZ3xlbnwwfHwwfHx8MA%3D%3D" alt="Abstract Emotion" class="w-full h-48 object-cover rounded-lg mb-4">
-                    <h3 class="text-lg font-bold mb-2">Abstract Emotion</h3>
-                    <p class="text-gray-400 mb-2">Vibrant acrylic on canvas</p>
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <span class="text-xl font-bold text-purple-400">$199.99</span>
-                            <span class="text-sm text-gray-500 line-through ml-2">$249.99</span>
-                        </div>
-                        <span class="sale-badge text-sm font-bold px-2 py-1 rounded-full">20% OFF</span>
-                    </div>
-                    <button class="w-full btn-gradient text-white font-bold py-2 px-4 rounded mt-4 transition duration-300">Buy Now</button>
-                </div>
-
-                <div class="glassmorphism p-4 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YXJ0JTIwc2N1bHB0dXJlfGVufDB8fDB8fHww" alt="Quantum Entanglement" class="w-full h-48 object-cover rounded-lg mb-4">
-                    <h3 class="text-lg font-bold mb-2">Quantum Entanglement</h3>
-                    <p class="text-gray-400 mb-2">3D-printed sculpture</p>
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <span class="text-xl font-bold text-purple-400">$149.99</span>
-                            <span class="text-sm text-gray-500 line-through ml-2">$199.99</span>
-                        </div>
-                        <span class="sale-badge text-sm font-bold px-2 py-1 rounded-full">25% OFF</span>
-                    </div>
-                    <button class="w-full btn-gradient text-white font-bold py-2 px-4 rounded mt-4 transition duration-300">Buy Now</button>
-                </div>
-
-                <div class="glassmorphism p-4 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1511882150382-421056c89033?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzR8fGRpZ2l0YWwlMjBhcnR8ZW58MHx8MHx8fDA%3D" alt="Retro Gaming Collection" class="w-full h-48 object-cover rounded-lg mb-4">
-                    <h3 class="text-lg font-bold mb-2">Retro Gaming Collection</h3>
-                    <p class="text-gray-400 mb-2">Set of 5 pixel art prints</p>
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <span class="text-xl font-bold text-purple-400">$89.99</span>
-                            <span class="text-sm text-gray-500 line-through ml-2">$129.99</span>
-                        </div>
-                        <span class="sale-badge text-sm font-bold px-2 py-1 rounded-full">30% OFF</span>
-                    </div>
-                    <button class="w-full btn-gradient text-white font-bold py-2 px-4 rounded mt-4 transition duration-300">Buy Now</button>
-                </div>
-            </div>
-        </section>
-
-        <section class="mb-16">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">Featured Artists</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300 text-center">
-                    <img src="https://i.pravatar.cc/150?img=1" alt="Artist 1" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-purple-500">
-                    <h3 class="text-xl font-bold mb-2">NeoCrafterX</h3>
-                    <p class="text-gray-400 mb-4">Digital Art Maestro</p>
-                    <button class="btn-gradient text-white font-bold py-2 px-4 rounded transition duration-300">View Profile</button>
-                </div>
-
-                <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300 text-center">
-                    <img src="https://i.pravatar.cc/150?img=2" alt="Artist 2" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-purple-500">
-                    <h3 class="text-xl font-bold mb-2">BrushMasterPro</h3>
-                    <p class="text-gray-400 mb-4">Abstract Painter</p>
-                    <button class="btn-gradient text-white font-bold py-2 px-4 rounded transition duration-300">View Profile</button>
-                </div>
-
-                <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300 text-center">
-                    <img src="https://i.pravatar.cc/150?img=3" alt="Artist 3" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-purple-500">
-                    <h3 class="text-xl font-bold mb-2">SculptureWizard</h3>
-                    <p class="text-gray-400 mb-4">3D Sculpture Artist</p>
-                    <button class="btn-gradient text-white font-bold py-2 px-4 rounded transition duration-300">View Profile</button>
-                </div>
-
-                <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300 text-center">
-                    <img src="https://i.pravatar.cc/150?img=4" alt="Artist 4" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-purple-500">
-                    <h3 class="text-xl font-bold mb-2">PixelPioneer</h3>
-                    <p class="text-gray-400 mb-4">Retro Game Artist</p>
-                    <button class="btn-gradient text-white font-bold py-2 px-4 rounded transition duration-300">View Profile</button>
-                </div>
-            </div>
-        </section>
-
-        <section class="mb-16">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">Upcoming Live Creations</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1561648006-4c4d71639a8e?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8b2lsJTIwcGFpbnRpbmd8ZW58MHx8MHx8fDA%3D" alt="Sunset Serenity" class="w-full h-48 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Sunset Serenity</h3>
-                    <p class="text-gray-400 mb-4">Watch BrushMasterPro create a stunning oil painting live</p>
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-purple-400"><i class="far fa-clock mr-2"></i>Starts in 2 hours</span>
-                        <span class="bg-green-500 text-white text-sm font-bold px-2 py-1 rounded-full">Live Soon</span>
-                    </div>
-                    <button class="w-full btn-watch text-white font-bold py-2 px-4 rounded transition duration-300">Set Reminder</button>
-                </div>
-
-                <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1613457418385-21493173f3ef?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGRpZ2l0YWwlMjBhcnR8ZW58MHx8MHx8fDA%3D" alt="Cyberpunk Cityscape" class="w-full h-48 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Cyberpunk Cityscape</h3>
-                    <p class="text-gray-400 mb-4">Join NeoCrafterX for a live digital art session</p>
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-purple-400"><i class="far fa-clock mr-2"></i>Starts in 5 hours</span>
-                        <span class="bg-green-500 text-white text-sm font-bold px-2 py-1 rounded-full">Live Soon</span>
-                    </div>
-                    <button class="w-full btn-watch text-white font-bold py-2 px-4 rounded transition duration-300">Set Reminder</button>
-                </div>
-
-                <div class="glassmorphism p-6 rounded-lg shadow-lg card-hover transition duration-300">
-                    <img src="https://images.unsplash.com/photo-1599643498837-8a278b875da4?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8M2QlMjBwcmludGluZ3xlbnwwfHwwfHx8MA%3D%3D" alt="Quantum Sculpture" class="w-full h-48 object-cover rounded-lg mb-4">
-                    <h3 class="text-xl font-bold mb-2">Quantum Sculpture</h3>
-                    <p class="text-gray-400 mb-4">Watch SculptureWizard create a 3D-printed masterpiece</p>
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-purple-400"><i class="far fa-clock mr-2"></i>Starts in 8 hours</span>
-                        <span class="bg-green-500 text-white text-sm font-bold px-2 py-1 rounded-full">Live Soon</span>
-                    </div>
-                    <button class="w-full btn-watch text-white font-bold py-2 px-4 rounded transition duration-300">Set Reminder</button>
-                </div>
+        <section id="cyberneticMoments" class="mb-20">
+            <h2 class="text-3xl font-bold mb-10 orbitron neon-text text-center">Cybernetic Moments</h2>
+            <div id="cyberneticMomentsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Cybernetic moments will be dynamically populated here -->
             </div>
         </section>
     </main>
 
-    <footer class="bg-gray-900 text-white py-12">
+    <footer class="bg-opacity-70 bg-black backdrop-filter backdrop-blur-md py-10">
         <div class="container mx-auto px-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
-                    <h3 class="text-2xl font-bold mb-4 gradient-text">ArtStream</h3>
-                    <p class="text-gray-400">Discover unique creations from talented artists around the world.</p>
+                    <h3 class="text-2xl font-bold mb-4 orbitron neon-text">ArtStream Nexus</h3>
+                    <p class="text-gray-400">Bridging reality and digital artistry in the cybernetic age.</p>
                 </div>
                 <div>
-                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <h4 class="text-lg font-semibold mb-4 orbitron">Navigate</h4>
                     <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Home</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Categories</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Live Streams</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Explore</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Create</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Connect</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">About</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="text-lg font-semibold mb-4">Support</h4>
+                    <h4 class="text-lg font-semibold mb-4 orbitron">Support</h4>
                     <ul class="space-y-2">
                         <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">FAQ</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Contact Us</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Terms of Service</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Contact</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Terms</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Privacy</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="text-lg font-semibold mb-4">Newsletter</h4>
-                    <p class="text-gray-400 mb-4">Stay updated with our latest artworks and live streams.</p>
+                    <h4 class="text-lg font-semibold mb-4 orbitron">Join the Network</h4>
+                    <p class="text-gray-400 mb-4">Stay updated with the latest in digital artistry.</p>
                     <form class="flex">
-                        <input type="email" placeholder="Your email" class="bg-gray-800 text-white px-4 py-2 rounded-l-md focus:outline-none focus:ring-2 focus:ring-purple-600">
-                        <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-r-md hover:bg-purple-700 transition duration-300">Subscribe</button>
+                        <input type="email" placeholder="Enter your email" class="bg-gray-800 text-white px-4 py-2 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-600">
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 transition duration-300">Subscribe</button>
                     </form>
                 </div>
             </div>
             <div class="border-t border-gray-800 mt-8 pt-8 text-center">
-                <p class="text-gray-400">&copy; 2024 ArtStream. All rights reserved.</p>
+                <p class="text-gray-400">&copy; 2024 ArtStream Nexus. All rights reserved in this reality and beyond.</p>
             </div>
         </div>
     </footer>
 
     <script>
-        // Add any necessary JavaScript for interactivity
-        // For example, you could add functionality for the "Set Reminder" buttons
-        document.querySelectorAll('.btn-watch').forEach(button => {
-            button.addEventListener('click', function() {
-                alert('Reminder set! We\'ll notify you when the live creation begins.');
+        // Sample data for different sections
+        const featuredArtifacts = [
+            { title: "Neon Dreams", artist: "CyberVision", price: 2.5, img: "https://images.unsplash.com/photo-1515630277035-0f4ff5c8efcb?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bmVvbiUyMGNpdHl8ZW58MHx8MHx8fDA%3D" },
+            { title: "Quantum Resonance", artist: "NeuralArtist", price: 1.8, img: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aG9sb2dyYW18ZW58MHx8MHx8fDA%3D" },
+            { title: "Digital Eden", artist: "PixelGardener", price: 3.2, img: "https://images.unsplash.com/photo-1555448248-2571daf6344b?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZGlnaXRhbCUyMGFydHxlbnwwfHwwfHx8MA%3D%3D" },
+        ];
+
+        const digitalRealms = [
+            { title: "Cyberpunk Metropolis", creator: "NeonArchitect", price: 5.0, img: "https://images.unsplash.com/photo-1545147986-a9d6f2ab03b5?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y3liZXJwdW5rfGVufDB8fDB8fHww" },
+            { title: "Virtual Oasis", creator: "DigitalNomad", price: 4.2, img: "https://images.unsplash.com/photo-1520034475321-cbe63696469a?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8dmlydHVhbCUyMHJlYWxpdHl8ZW58MHx8MHx8fDA%3D" },
+            { title: "Neon Jungle", creator: "BioHacker", price: 3.8, img: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Z3JhZGllbnR8ZW58MHx8MHx8fDA%3D" },
+        ];
+
+        const neuralSymphonies = [
+            { title: "Synthwave Serenity", composer: "AIComposer", price: 1.5, img: "https://images.unsplash.com/photo-1508385082359-f38ae991e8f2?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c3ludGh3YXZlfGVufDB8fDB8fHww" },
+            { title: "Binary Beats", composer: "CodeMaestro", price: 1.2, img: "https://images.unsplash.com/photo-1542372597-005594e1a716?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZGlnaXRhbCUyMG11c2ljfGVufDB8fDB8fHww" },
+            { title: "Quantum Harmonies", composer: "WaveFunction", price: 1.8, img: "https://images.unsplash.com/photo-1614149162883-504ce4d13909?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c3ludGh3YXZlfGVufDB8fDB8fHww" },
+        ];
+
+        const cyberneticMoments = [
+            { title: "Neon Drift Victory", game: "CyberRacer 2077", streamer: "SpeedDemon", price: 0.5, img: "https://images.unsplash.com/photo-1551103782-8ab07afd45c1?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8c3RyZWV0JTIwcmFjaW5nfGVufDB8fDB8fHww", video: "https://assets.mixkit.co/videos/preview/mixkit-race-car-at-high-speeds-on-the-road-31496-large.mp4" },
+            { title: "Quantum Hack", game: "NetRunner", streamer: "CyberWitch", price: 0.8, img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8aGFja2VyfGVufDB8fDB8fHww", video: "https://assets.mixkit.co/videos/preview/mixkit-lines-of-code-appearing-on-a-black-screen-32915-large.mp4" },
+            { title: "Mech Showdown", game: "TitanFall X", streamer: "IronHeart", price: 0.7, img: "https://images.unsplash.com/photo-1624397640148-949b1732bb0a?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fHJvYm90fGVufDB8fDB8fHww", video: "https://assets.mixkit.co/videos/preview/mixkit-machine-engine-start-up-1773-large.mp4" },
+        ];
+
+        function createArtifactCard(item, type) {
+            return `
+                <div class="cyber-card p-4 rounded-lg">
+                    <img src="${item.img}" alt="${item.title}" class="w-full h-48 object-cover mb-4 rounded">
+                    <h3 class="text-xl font-bold mb-2 orbitron neon-text">${item.title}</h3>
+                    <p class="text-gray-400 mb-2">by ${item.artist || item.creator || item.composer || item.streamer}</p>
+                    <p class="text-lg font-bold mb-4 text-neon-green">${item.price} ETH</p>
+                    <div class="flex justify-between">
+                        <button class="cyber-btn" onclick="initiatePurchase('${item.title}', ${item.price})">Buy Now</button>
+                        ${type === 'moment' ? `<button class="cyber-btn" onclick="previewMoment('${item.video}')">Preview</button>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Populate sections
+        document.getElementById('featuredArtifactsContainer').innerHTML = featuredArtifacts.map(item => createArtifactCard(item)).join('');
+        document.getElementById('digitalRealmsContainer').innerHTML = digitalRealms.map(item => createArtifactCard(item)).join('');
+        document.getElementById('neuralSymphoniesContainer').innerHTML = neuralSymphonies.map(item => createArtifactCard(item)).join('');
+        document.getElementById('cyberneticMomentsContainer').innerHTML = cyberneticMoments.map(item => createArtifactCard(item, 'moment')).join('');
+
+        function initiatePurchase(title, price) {
+            alert(`Initiating smart contract for "${title}" - ${price} ETH. Please confirm the transaction in your crypto wallet.`);
+        }
+
+        function previewMoment(videoUrl) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-gray-900 p-4 rounded-lg max-w-3xl w-full">
+                    <video src="${videoUrl}" controls autoplay class="w-full rounded-lg"></video>
+                    <button class="cyber-btn mt-4" onclick="this.closest('.fixed').remove()">Close Preview</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Three.js background animation
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('heroCanvas'), alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const geometry = new THREE.TorusGeometry(10, 3, 16, 100);
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true });
+        const torus = new THREE.Mesh(geometry, material);
+        scene.add(torus);
+
+        camera.position.z = 30;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            torus.rotation.x += 0.01;
+            torus.rotation.y += 0.005;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Glitch effect on hover for cyber cards
+        document.querySelectorAll('.cyber-card').forEach(card => {
+            card.addEventListener('mouseover', () => {
+                gsap.to(card, {duration: 0.1, x: '+=3', yoyo: true, repeat: 5, ease: 'power1.inOut'});
+                gsap.to(card, {duration: 0.1, boxShadow: '0 0 20px var(--neon-pink)', yoyo: true, repeat: 5});
             });
         });
 
-        // Add to cart functionality
-        document.querySelectorAll('.btn-gradient').forEach(button => {
-            if (button.textContent.trim() === 'Buy Now') {
-                button.addEventListener('click', function() {
-                    alert('Item added to cart!');
-                });
+        // Typing effect for main title
+        const mainTitle = document.querySelector('h1');
+        const titleText = mainTitle.textContent;
+        mainTitle.textContent = '';
+        let i = 0;
+        function typeWriter() {
+            if (i < titleText.length) {
+                mainTitle.textContent += titleText.charAt(i);
+                i++;
+                setTimeout(typeWriter, 100);
             }
+        }
+        typeWriter();
+
+        // Scroll-triggered animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        gsap.utils.toArray('.cyber-card').forEach((card, i) => {
+            gsap.from(card, {
+                scrollTrigger: {
+                    trigger: card,
+                    start: 'top bottom-=100',
+                    toggleActions: 'play none none reverse'
+                },
+                opacity: 0,
+                y: 50,
+                duration: 0.6,
+                ease: 'power2.out',
+                delay: i * 0.1
+            });
         });
 
-        // Place bid functionality
-        document.querySelectorAll('.btn-gradient').forEach(button => {
-            if (button.textContent.trim() === 'Place Bid') {
-                button.addEventListener('click', function() {
-                    const currentBid = this.closest('.glassmorphism').querySelector('.text-2xl').textContent;
-                    const newBid = prompt(`Current bid is ${currentBid}. Enter your bid amount:`);
-                    if (newBid !== null) {
-                        alert(`Your bid of $${newBid} has been placed!`);
-                    }
-                });
-            }
+        // Interactive cyber grid
+        document.addEventListener('mousemove', (e) => {
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            gsap.to('.cyber-grid', {
+                backgroundPositionX: -mouseX * 50,
+                backgroundPositionY: -mouseY * 50,
+                duration: 1
+            });
+        });
+
+        document.getElementById('initiateImmersionBtn').addEventListener('click', () => {
+            window.location.href = 'immersive-marketplace.html';
         });
     </script>
 </body>
