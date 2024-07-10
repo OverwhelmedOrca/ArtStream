@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Art Gallery - Immersive Digital Art Marketplace</title>
+    <title>Immersive 3D Art Gallery</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body, html {
             margin: 0;
@@ -27,18 +28,22 @@
             border-radius: 50%;
             transform: translate(-50%, -50%);
             pointer-events: none;
+            z-index: 1000;
         }
         #info-panel {
             position: absolute;
             bottom: 20px;
-            left: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.7);
             color: white;
             padding: 20px;
             border-radius: 10px;
             display: none;
             font-size: 16px;
-            max-width: 300px;
+            max-width: 400px;
+            text-align: center;
+            z-index: 1000;
         }
         #controls-info {
             position: absolute;
@@ -49,6 +54,24 @@
             padding: 15px;
             border-radius: 10px;
             font-size: 14px;
+            z-index: 1000;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .btn i {
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -57,11 +80,11 @@
     <div id="crosshair"></div>
     <div id="info-panel"></div>
     <div id="controls-info">
-        WASD: Move | Mouse: Look | E: Interact
+        WASD: Move | Mouse: Look | Click: Interact
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 
     <script>
         const container = document.getElementById('gallery-container');
@@ -70,11 +93,13 @@
         let scene, camera, renderer, controls;
         let artworks = [];
         let raycaster, mouse;
+        let clock; // Add this line
 
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.set(0, 1.6, 0);
+            clock = new THREE.Clock();
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -113,7 +138,7 @@
 
             // Event listeners
             window.addEventListener('resize', onWindowResize, false);
-            document.addEventListener('keydown', onKeyDown, false);
+            document.addEventListener('click', onMouseClick, false);
 
             animate();
         }
@@ -133,7 +158,7 @@
 
             // Ceiling
             const ceilingGeometry = new THREE.PlaneGeometry(roomSize, roomSize);
-            const ceiling = new THREE.Mesh(ceilingGeometry, wallMaterial);
+            const ceiling = new THREE.Mesh(ceilingGeometry, wallMaterial.clone());
             ceiling.position.y = roomSize / 2;
             ceiling.rotation.x = Math.PI / 2;
             ceiling.receiveShadow = true;
@@ -142,26 +167,26 @@
             // Walls
             const wallGeometry = new THREE.BoxGeometry(roomSize, roomSize / 2, wallThickness);
             
-            const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            const backWall = new THREE.Mesh(wallGeometry, wallMaterial.clone());
             backWall.position.z = -roomSize / 2;
             backWall.position.y = roomSize / 4;
             backWall.receiveShadow = true;
             scene.add(backWall);
 
-            const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            const frontWall = new THREE.Mesh(wallGeometry, wallMaterial.clone());
             frontWall.position.z = roomSize / 2;
             frontWall.position.y = roomSize / 4;
             frontWall.receiveShadow = true;
             scene.add(frontWall);
 
-            const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            const leftWall = new THREE.Mesh(wallGeometry, wallMaterial.clone());
             leftWall.position.x = -roomSize / 2;
             leftWall.position.y = roomSize / 4;
             leftWall.rotation.y = Math.PI / 2;
             leftWall.receiveShadow = true;
             scene.add(leftWall);
 
-            const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            const rightWall = new THREE.Mesh(wallGeometry, wallMaterial.clone());
             rightWall.position.x = roomSize / 2;
             rightWall.position.y = roomSize / 4;
             rightWall.rotation.y = Math.PI / 2;
@@ -246,13 +271,8 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        function onKeyDown(event) {
-            if (event.code === 'KeyE') {
-                checkArtworkInteraction();
-            }
-        }
-
-        function checkArtworkInteraction() {
+        function onMouseClick(event) {
+            event.preventDefault();
             raycaster.setFromCamera(new THREE.Vector2(), camera);
             const intersects = raycaster.intersectObjects(artworks);
 
@@ -271,6 +291,8 @@
                 <p><strong>Year:</strong> ${info.year}</p>
                 <p><strong>Price:</strong> ${info.price}</p>
                 <p>${info.description}</p>
+                <button class="btn" onclick="addToCart('${info.title}')"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+                <button class="btn" onclick="showARPreview('${info.title}')"><i class="fas fa-vr-cardboard"></i> AR Preview</button>
             `;
             infoPanel.style.display = 'block';
         }
@@ -279,206 +301,311 @@
             infoPanel.style.display = 'none';
         }
 
+        function addToCart(title) {
+            alert(`Added "${title}" to your cart!`);
+        }
+
+        function showARPreview(title) {
+            alert(`Launching AR preview for "${title}"...`);
+        }
+
         function animate() {
             requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
+            
+            if (clock && controls) { // Add this check
+                const delta = clock.getDelta();
+                controls.update(delta);
+            }
+
+            // Animate particles
+            const particles = scene.children.find(child => child instanceof THREE.Points);
+            if (particles) {
+                const positions = particles.geometry.attributes.position.array;
+                for (let i = 0; i < positions.length; i += 3) {
+                    positions[i + 1] += 0.01 * (Math.random() - 0.5);
+                    if (positions[i + 1] > 10) positions[i + 1] = 0;
+                    if (positions[i + 1] < 0) positions[i + 1] = 10;
+                }
+                particles.geometry.attributes.position.needsUpdate = true;
+            }
+
+            if (renderer && scene && camera) { // Add this check
+                renderer.render(scene, camera);
+            }
         }
 
         class FirstPersonControls {
             constructor(camera, domElement) {
                 this.camera = camera;
                 this.domElement = domElement;
-                this.isLocked = false;
+                this.enabled = true;
+                this.movementSpeed = 10;
+                this.lookSpeed = 0.1;
+                this.lookVertical = true;
+                this.autoForward = false;
+                this.activeLook = true;
+                this.heightSpeed = false;
+                this.heightCoef = 1.0;
+                this.heightMin = 0.0;
+                this.heightMax = 1.0;
+                this.constrainVertical = false;
+                this.verticalMin = 0;
+                this.verticalMax = Math.PI;
+                this.mouseDragOn = false;
+
+                this.autoSpeedFactor = 0.0;
+                this.mouseX = 0;
+                this.mouseY = 0;
                 this.moveForward = false;
                 this.moveBackward = false;
                 this.moveLeft = false;
                 this.moveRight = false;
-                this.canJump = false;
-                this.velocity = new THREE.Vector3();
-                this.direction = new THREE.Vector3();
+                this.viewHalfX = 0;
+                this.viewHalfY = 0;
 
-                document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
-                document.addEventListener('keydown', this.onKeyDown.bind(this), false);
-                document.addEventListener('keyup', this.onKeyUp.bind(this), false);
+                // Initialize these properties
+                this.lat = 0;
+                this.lon = 0;
+                this.phi = 0;
+                this.theta = 0;
+                this.target = new THREE.Vector3(); // Add this line
+
+                this.domElement.addEventListener('contextmenu', this.contextmenu.bind(this), false);
+                this.domElement.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+                this.domElement.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+                this.domElement.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+                window.addEventListener('keydown', this.onKeyDown.bind(this), false);
+                window.addEventListener('keyup', this.onKeyUp.bind(this), false);
+
+                this.handleResize();
+            }
+
+            handleResize() {
+                if (this.domElement === document) {
+                    this.viewHalfX = window.innerWidth / 2;
+                    this.viewHalfY = window.innerHeight / 2;
+                } else {
+                    this.viewHalfX = this.domElement.offsetWidth / 2;
+                    this.viewHalfY = this.domElement.offsetHeight / 2;
+                }
+            }
+
+            onMouseDown(event) {
+                if (this.domElement !== document) {
+                    this.domElement.focus();
+                }
+                event.preventDefault();
+                event.stopPropagation();
+                if (this.activeLook) {
+                    switch (event.button) {
+                        case 0: this.moveForward = true; break;
+                        case 2: this.moveBackward = true; break;
+                    }
+                }
+                this.mouseDragOn = true;
+            }
+
+            onMouseUp(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                if (this.activeLook) {
+                    switch (event.button) {
+                        case 0: this.moveForward = false; break;
+                        case 2: this.moveBackward = false; break;
+                    }
+                }
+                this.mouseDragOn = false;
             }
 
             onMouseMove(event) {
-                if (this.isLocked) {
-                    const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-                    const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-
-                    this.camera.rotation.y -= movementX * 0.002;
-                    this.camera.rotation.x -= movementY * 0.002;
-                    this.camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.camera.rotation.x));
+                if (this.domElement === document) {
+                    this.mouseX = event.pageX - this.viewHalfX;
+                    this.mouseY = event.pageY - this.viewHalfY;
+                } else {
+                    this.mouseX = event.pageX - this.domElement.offsetLeft - this.viewHalfX;
+                    this.mouseY = event.pageY - this.domElement.offsetTop - this.viewHalfY;
                 }
             }
 
             onKeyDown(event) {
                 switch (event.code) {
+                    case 'ArrowUp':
                     case 'KeyW': this.moveForward = true; break;
+                    case 'ArrowLeft':
                     case 'KeyA': this.moveLeft = true; break;
+                    case 'ArrowDown':
                     case 'KeyS': this.moveBackward = true; break;
+                    case 'ArrowRight':
                     case 'KeyD': this.moveRight = true; break;
-                    case 'Space': if (this.canJump) this.velocity.y += 350; this.canJump = false; break;
                 }
             }
 
             onKeyUp(event) {
                 switch (event.code) {
+                    case 'ArrowUp':
                     case 'KeyW': this.moveForward = false; break;
+                    case 'ArrowLeft':
                     case 'KeyA': this.moveLeft = false; break;
+                    case 'ArrowDown':
                     case 'KeyS': this.moveBackward = false; break;
+                    case 'ArrowRight':
                     case 'KeyD': this.moveRight = false; break;
                 }
             }
 
-            update() {
-                if (this.isLocked) {
-                    const time = performance.now();
-                    const delta = (time - this.prevTime) / 1000;
+            update(delta) {
+                if (this.enabled === false) return;
+                if (this.heightSpeed) {
+                    var y = THREE.MathUtils.clamp(this.camera.position.y, this.heightMin, this.heightMax);
+                    var heightDelta = y - this.heightMin;
+                    this.autoSpeedFactor = delta * (heightDelta * this.heightCoef);
+                } else {
+                    this.autoSpeedFactor = 0.0;
+                }
 
-                    this.velocity.x -= this.velocity.x * 10.0 * delta;
-                    this.velocity.z -= this.velocity.z * 10.0 * delta;
-                    this.velocity.y -= 9.8 * 100.0 * delta; // Add gravity
+                var actualMoveSpeed = delta * this.movementSpeed;
+                if (this.moveForward || (this.autoForward && !this.moveBackward)) this.camera.translateZ(-(actualMoveSpeed + this.autoSpeedFactor));
+                if (this.moveBackward) this.camera.translateZ(actualMoveSpeed);
+                if (this.moveLeft) this.camera.translateX(-actualMoveSpeed);
+                if (this.moveRight) this.camera.translateX(actualMoveSpeed);
 
-                    this.direction.z = Number(this.moveForward) - Number(this.moveBackward);
-                    this.direction.x = Number(this.moveRight) - Number(this.moveLeft);
-                    this.direction.normalize();
+                var actualLookSpeed = delta * this.lookSpeed;
+                if (!this.activeLook) {
+                    actualLookSpeed = 0;
+                }
 
-                    if (this.moveForward || this.moveBackward) this.velocity.z -= this.direction.z * 400.0 * delta;
-                    if (this.moveLeft || this.moveRight) this.velocity.x -= this.direction.x * 400.0 * delta;
+                var verticalLookRatio = 1;
+                if (this.constrainVertical) {
+                    verticalLookRatio = Math.PI / (this.verticalMax - this.verticalMin);
+                }
 
-if (this.moveForward || this.moveBackward) this.velocity.z -= this.direction.z * 400.0 * delta;
-if (this.moveLeft || this.moveRight) this.velocity.x -= this.direction.x * 400.0 * delta;
+                this.lon += this.mouseX * actualLookSpeed;
+                if (this.lookVertical) this.lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
 
-this.camera.translateX(this.velocity.x * delta);
-this.camera.translateY(this.velocity.y * delta);
-this.camera.translateZ(this.velocity.z * delta);
+                this.lat = Math.max(-85, Math.min(85, this.lat));
+                this.phi = THREE.MathUtils.degToRad(90 - this.lat);
+                this.theta = THREE.MathUtils.degToRad(this.lon);
 
-if (this.camera.position.y < 1.6) {
-    this.velocity.y = 0;
-    this.camera.position.y = 1.6;
-    this.canJump = true;
-}
+                if (this.constrainVertical) {
+                    this.phi = THREE.MathUtils.mapLinear(this.phi, 0, Math.PI, this.verticalMin, this.verticalMax);
+                }
 
-this.prevTime = time;
-}
-}
+                var targetPosition = this.target,
+                    position = this.camera.position;
 
-lock() {
-this.domElement.requestPointerLock();
-}
+                    targetPosition.x = position.x + 100 * Math.sin(this.phi) * Math.cos(this.theta);
+                    targetPosition.y = position.y + 100 * Math.cos(this.phi);
+                    targetPosition.z = position.z + 100 * Math.sin(this.phi) * Math.sin(this.theta);
 
-unlock() {
-document.exitPointerLock();
-}
-}
+                    this.camera.lookAt(targetPosition);
+            }
 
-init();
+            contextmenu(event) {
+                event.preventDefault();
+            }
 
-// Lock controls on click
-document.addEventListener('click', () => {
-if (!controls.isLocked) {
-controls.lock();
-}
-});
+            dispose() {
+                this.domElement.removeEventListener('contextmenu', this.contextmenu, false);
+                this.domElement.removeEventListener('mousedown', this.onMouseDown, false);
+                this.domElement.removeEventListener('mousemove', this.onMouseMove, false);
+                this.domElement.removeEventListener('mouseup', this.onMouseUp, false);
+                window.removeEventListener('keydown', this.onKeyDown, false);
+                window.removeEventListener('keyup', this.onKeyUp, false);
+            }
+        }
 
-// Handle pointer lock state change
-document.addEventListener('pointerlockchange', () => {
-controls.isLocked = document.pointerLockElement === renderer.domElement;
-if (controls.isLocked) {
-controls.prevTime = performance.now();
-}
-});
+        // Initialize the scene
+        init();
 
-// Add some ambient sound to the gallery
-function addAmbientSound() {
-const listener = new THREE.AudioListener();
-camera.add(listener);
+        // Add some ambient sound to the gallery
+        function addAmbientSound() {
+            const listener = new THREE.AudioListener();
+            camera.add(listener);
 
-const sound = new THREE.Audio(listener);
-const audioLoader = new THREE.AudioLoader();
-audioLoader.load('https://cdn.example.com/ambient_gallery_sound.mp3', function(buffer) {
-sound.setBuffer(buffer);
-sound.setLoop(true);
-sound.setVolume(0.5);
-sound.play();
-});
-}
+            const sound = new THREE.Audio(listener);
+            const audioLoader = new THREE.AudioLoader();
+            audioLoader.load('https://example.com/ambient_gallery_sound.mp3', function(buffer) {
+                sound.setBuffer(buffer);
+                sound.setLoop(true);
+                sound.setVolume(0.5);
+                sound.play();
+            });
+        }
 
-// Add some particle effects for atmosphere
-function addAtmosphericParticles() {
-const particlesGeometry = new THREE.BufferGeometry();
-const particleCount = 1000;
+        // Add some particle effects for atmosphere
+        function addAtmosphericParticles() {
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particleCount = 1000;
 
-const positions = new Float32Array(particleCount * 3);
-const colors = new Float32Array(particleCount * 3);
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
 
-for (let i = 0; i < particleCount; i++) {
-positions[i * 3] = (Math.random() - 0.5) * 20;
-positions[i * 3 + 1] = Math.random() * 10;
-positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 20;
+                positions[i * 3 + 1] = Math.random() * 10;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
 
-colors[i * 3] = Math.random();
-colors[i * 3 + 1] = Math.random();
-colors[i * 3 + 2] = Math.random();
-}
+                colors[i * 3] = Math.random();
+                colors[i * 3 + 1] = Math.random();
+                colors[i * 3 + 2] = Math.random();
+            }
 
-particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-const particlesMaterial = new THREE.PointsMaterial({
-size: 0.1,
-vertexColors: true,
-transparent: true,
-opacity: 0.5
-});
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.1,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.5
+            });
 
-const particles = new THREE.Points(particlesGeometry, particlesMaterial);
-scene.add(particles);
-}
+            const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particles);
+        }
 
-// Improve lighting with some accent lights
-function addAccentLighting() {
-const accentLights = [
-{ color: 0xff0000, position: new THREE.Vector3(-5, 5, -5) },
-{ color: 0x00ff00, position: new THREE.Vector3(5, 5, -5) },
-{ color: 0x0000ff, position: new THREE.Vector3(-5, 5, 5) },
-{ color: 0xffff00, position: new THREE.Vector3(5, 5, 5) }
-];
+        // Improve lighting with some accent lights
+        function addAccentLighting() {
+            const accentLights = [
+                { color: 0xff0000, position: new THREE.Vector3(-5, 5, -5) },
+                { color: 0x00ff00, position: new THREE.Vector3(5, 5, -5) },
+                { color: 0x0000ff, position: new THREE.Vector3(-5, 5, 5) },
+                { color: 0xffff00, position: new THREE.Vector3(5, 5, 5) }
+            ];
 
-accentLights.forEach(light => {
-const accentLight = new THREE.PointLight(light.color, 0.5, 10);
-accentLight.position.copy(light.position);
-scene.add(accentLight);
-});
-}
+            accentLights.forEach(light => {
+                const accentLight = new THREE.PointLight(light.color, 0.5, 10);
+                accentLight.position.copy(light.position);
+                scene.add(accentLight);
+            });
+        }
 
-// Call these new functions
-addAmbientSound();
-addAtmosphericParticles();
-addAccentLighting();
+        // Call these new functions
+        addAmbientSound();
+        addAtmosphericParticles();
+        addAccentLighting();
 
-// Update the animate function to include particle animation
-function animate() {
-requestAnimationFrame(animate);
-controls.update();
+        // Update the animate function to include particle animation
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            controls.update(delta);
 
-// Animate particles
-const particles = scene.children.find(child => child instanceof THREE.Points);
-if (particles) {
-const positions = particles.geometry.attributes.position.array;
-for (let i = 0; i < positions.length; i += 3) {
-positions[i + 1] += 0.01 * (Math.random() - 0.5);
-if (positions[i + 1] > 10) positions[i + 1] = 0;
-if (positions[i + 1] < 0) positions[i + 1] = 10;
-}
-particles.geometry.attributes.position.needsUpdate = true;
-}
+            // Animate particles
+            const particles = scene.children.find(child => child instanceof THREE.Points);
+            if (particles) {
+                const positions = particles.geometry.attributes.position.array;
+                for (let i = 0; i < positions.length; i += 3) {
+                    positions[i + 1] += 0.01 * (Math.random() - 0.5);
+                    if (positions[i + 1] > 10) positions[i + 1] = 0;
+                    if (positions[i + 1] < 0) positions[i + 1] = 10;
+                }
+                particles.geometry.attributes.position.needsUpdate = true;
+            }
 
-renderer.render(scene, camera);
-}
-</script>
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
 </body>
 </html>
