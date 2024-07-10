@@ -298,14 +298,8 @@
         }
 
         function addFurniture() {
-            // Add a central circular bench
-            const benchGeometry = new THREE.TorusGeometry(2, 0.5, 16, 100);
-            const benchMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-            const bench = new THREE.Mesh(benchGeometry, benchMaterial);
-            bench.position.set(0, 0.5, 0);
-            bench.rotation.x = Math.PI / 2;
-            bench.castShadow = true;
-            bench.receiveShadow = true;
+
+            const bench = createDetailedBench();
             scene.add(bench);
 
             // Add some plants
@@ -364,6 +358,38 @@
             plant.add(leaves);
 
             return plant;
+        }
+
+        function createDetailedBench() {
+            const benchGroup = new THREE.Group();
+            
+            // Create the main ring
+            const ringGeometry = new THREE.TorusGeometry(2, 0.2, 32, 100);
+            const woodTexture = new THREE.TextureLoader().load('https://example.com/wood_texture.jpg');
+            const ringMaterial = new THREE.MeshStandardMaterial({ 
+                map: woodTexture,
+                roughness: 0.8,
+                metalness: 0.2
+            });
+            const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+            ring.rotation.x = Math.PI / 2;
+            benchGroup.add(ring);
+
+            // Add cushions
+            const cushionGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.1, 32);
+            const cushionMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.9 });
+            for (let i = 0; i < 8; i++) {
+                const cushion = new THREE.Mesh(cushionGeometry, cushionMaterial);
+                cushion.position.set(
+                    2 * Math.cos(i * Math.PI / 4),
+                    0.15,
+                    2 * Math.sin(i * Math.PI / 4)
+                );
+                benchGroup.add(cushion);
+            }
+
+            benchGroup.position.y = 0.5;
+            return benchGroup;
         }
 
         function createInfoStand(info) {
