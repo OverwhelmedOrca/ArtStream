@@ -213,28 +213,6 @@
             rightWall.rotation.y = Math.PI / 2;
             rightWall.receiveShadow = true;
             scene.add(rightWall);
-
-            // Add baseboards
-            const baseboardGeometry = new THREE.BoxGeometry(roomSize, 0.5, 0.1);
-            const baseboardMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-            
-            const backBaseboard = new THREE.Mesh(baseboardGeometry, baseboardMaterial);
-            backBaseboard.position.set(0, 0.25, -roomSize / 2 + 0.05);
-            scene.add(backBaseboard);
-
-            const frontBaseboard = new THREE.Mesh(baseboardGeometry, baseboardMaterial);
-            frontBaseboard.position.set(0, 0.25, roomSize / 2 - 0.05);
-            scene.add(frontBaseboard);
-
-            const leftBaseboard = new THREE.Mesh(baseboardGeometry, baseboardMaterial);
-            leftBaseboard.position.set(-roomSize / 2 + 0.05, 0.25, 0);
-            leftBaseboard.rotation.y = Math.PI / 2;
-            scene.add(leftBaseboard);
-
-            const rightBaseboard = new THREE.Mesh(baseboardGeometry, baseboardMaterial);
-            rightBaseboard.position.set(roomSize / 2 - 0.05, 0.25, 0);
-            rightBaseboard.rotation.y = Math.PI / 2;
-            scene.add(rightBaseboard);
         }
 
         function addArtworks() {
@@ -321,7 +299,7 @@
 
         function addFurniture() {
             // Add a central circular bench
-            const benchGeometry = new THREE.TorusGeometry(5, 0.5, 16, 100);
+            const benchGeometry = new THREE.TorusGeometry(2, 0.5, 16, 100);
             const benchMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
             const bench = new THREE.Mesh(benchGeometry, benchMaterial);
             bench.position.set(0, 0.5, 0);
@@ -346,14 +324,14 @@
 
             // Add information stands
             const standPositions = [
-                { x: -7, z: 0, rotY: -Math.PI / 2 },
-                { x: 7, z: 0, rotY: Math.PI / 2 },
-                { x: 0, z: -7, rotY: 0 },
-                { x: 0, z: 7, rotY: Math.PI }
+                { x: -7, z: 0, rotY: Math.PI / 2, info: { title: "Gallery Info", description: "Explore our curated collection of digital art masterpieces." } },
+                { x: 7, z: 0, rotY: -Math.PI / 2, info: { title: "Artist Spotlight", description: "Learn about our featured artists and their unique styles." } },
+                { x: 0, z: -7, rotY: 0, info: { title: "Upcoming Events", description: "Check out our schedule of exhibitions and workshops." } },
+                { x: 0, z: 7, rotY: Math.PI, info: { title: "Virtual Tour", description: "Take a guided tour of our gallery highlights." } }
             ];
 
             standPositions.forEach(pos => {
-                const stand = createInfoStand();
+                const stand = createInfoStand(pos.info);
                 stand.position.set(pos.x, 0, pos.z);
                 stand.rotation.y = pos.rotY;
                 scene.add(stand);
@@ -388,7 +366,7 @@
             return plant;
         }
 
-        function createInfoStand() {
+        function createInfoStand(info) {
             const standGeometry = new THREE.BoxGeometry(1.5, 1.2, 0.1);
             const standMaterial = new THREE.MeshStandardMaterial({ color: 0x4682B4 });
             const stand = new THREE.Mesh(standGeometry, standMaterial);
@@ -403,9 +381,32 @@
             base.castShadow = true;
             base.receiveShadow = true;
 
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 156;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'black';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(info.title, canvas.width / 2, 40);
+            ctx.font = '18px Arial';
+            ctx.fillText(info.description, canvas.width / 2, 100, canvas.width - 20);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const screenMaterial = new THREE.MeshBasicMaterial({ map: texture });
+            const screenGeometry = new THREE.PlaneGeometry(1.4, 1.1);
+            const screen = new THREE.Mesh(screenGeometry, screenMaterial);
+            screen.position.z = 0.051;
+
+            stand.add(screen);
+
             const infoStand = new THREE.Group();
             infoStand.add(stand);
             infoStand.add(base);
+
+            infoStand.userData = info;
 
             return infoStand;
         }
@@ -419,14 +420,28 @@
         function onMouseClick(event) {
             event.preventDefault();
             raycaster.setFromCamera(new THREE.Vector2(), camera);
-            const intersects = raycaster.intersectObjects(artworks);
+            const intersects = raycaster.intersectObjects(scene.children, true);
 
             if (intersects.length > 0) {
-                const artwork = intersects[0].object;
-                displayArtworkInfo(artwork.userData);
+                const object = intersects[0].object;
+                if (object.parent && object.parent.userData && object.parent.userData.title) {
+                    displayInfoStandInfo(object.parent.userData);
+                } else if (object.userData && object.userData.title) {
+                    displayArtworkInfo(object.userData);
+                } else {
+                    hideArtworkInfo();
+                }
             } else {
                 hideArtworkInfo();
             }
+        }
+
+        function displayInfoStandInfo(info) {
+            infoPanel.innerHTML = `
+                <h2>${info.title}</h2>
+                <p>${info.description}</p>
+            `;
+            infoPanel.style.display = 'block';
         }
 
         function onKeyDown(event) {
