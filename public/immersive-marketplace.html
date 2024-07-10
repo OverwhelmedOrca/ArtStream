@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Gallery - Immersive Digital Art Marketplace</title>
+    <title>Virtual Art Gallery - Immersive Digital Art Marketplace</title>
     <style>
         body, html {
             margin: 0;
@@ -11,11 +11,22 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
         }
         #gallery-container {
             width: 100%;
             height: 100%;
+        }
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
         }
         #info-panel {
             position: absolute;
@@ -23,9 +34,11 @@
             left: 20px;
             background: rgba(0, 0, 0, 0.7);
             color: white;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 20px;
+            border-radius: 10px;
             display: none;
+            font-size: 16px;
+            max-width: 300px;
         }
         #controls-info {
             position: absolute;
@@ -33,16 +46,18 @@
             left: 20px;
             background: rgba(0, 0, 0, 0.7);
             color: white;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div id="gallery-container"></div>
+    <div id="crosshair"></div>
     <div id="info-panel"></div>
     <div id="controls-info">
-        WASD: Move | Mouse: Look | Click: Select Artwork
+        WASD: Move | Mouse: Look | E: Interact
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -54,52 +69,37 @@
 
         let scene, camera, renderer, controls;
         let artworks = [];
+        let raycaster, mouse;
 
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 1.6, 5);
+            camera.position.set(0, 1.6, 0);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             container.appendChild(renderer.domElement);
 
             // Lighting
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
             scene.add(ambientLight);
 
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(5, 5, 5);
-            scene.add(directionalLight);
+            const spotLight = new THREE.SpotLight(0xffffff, 1);
+            spotLight.position.set(0, 10, 0);
+            spotLight.angle = Math.PI / 4;
+            spotLight.penumbra = 0.1;
+            spotLight.decay = 2;
+            spotLight.distance = 200;
+            spotLight.castShadow = true;
+            spotLight.shadow.mapSize.width = 2048;
+            spotLight.shadow.mapSize.height = 2048;
+            scene.add(spotLight);
 
-            // Floor
-            const floorGeometry = new THREE.PlaneGeometry(20, 20);
-            const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
-            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-            floor.rotation.x = -Math.PI / 2;
-            scene.add(floor);
-
-            // Walls
-            const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
-            const wallGeometry = new THREE.PlaneGeometry(20, 4);
-
-            const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
-            backWall.position.z = -10;
-            backWall.position.y = 2;
-            scene.add(backWall);
-
-            const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
-            leftWall.position.x = -10;
-            leftWall.position.y = 2;
-            leftWall.rotation.y = Math.PI / 2;
-            scene.add(leftWall);
-
-            const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
-            rightWall.position.x = 10;
-            rightWall.position.y = 2;
-            rightWall.rotation.y = -Math.PI / 2;
-            scene.add(rightWall);
+            // Room
+            createRoom();
 
             // Add artworks
             addArtworks();
@@ -107,82 +107,135 @@
             // Controls
             controls = new FirstPersonControls(camera, renderer.domElement);
 
+            // Raycaster for interaction
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
             // Event listeners
             window.addEventListener('resize', onWindowResize, false);
-            renderer.domElement.addEventListener('click', onMouseClick, false);
+            document.addEventListener('keydown', onKeyDown, false);
 
             animate();
         }
 
+        function createRoom() {
+            const roomSize = 20;
+            const wallThickness = 0.2;
+            const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xeeeeee });
+            
+            // Floor
+            const floorGeometry = new THREE.PlaneGeometry(roomSize, roomSize);
+            const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            // Ceiling
+            const ceilingGeometry = new THREE.PlaneGeometry(roomSize, roomSize);
+            const ceiling = new THREE.Mesh(ceilingGeometry, wallMaterial);
+            ceiling.position.y = roomSize / 2;
+            ceiling.rotation.x = Math.PI / 2;
+            ceiling.receiveShadow = true;
+            scene.add(ceiling);
+
+            // Walls
+            const wallGeometry = new THREE.BoxGeometry(roomSize, roomSize / 2, wallThickness);
+            
+            const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            backWall.position.z = -roomSize / 2;
+            backWall.position.y = roomSize / 4;
+            backWall.receiveShadow = true;
+            scene.add(backWall);
+
+            const frontWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            frontWall.position.z = roomSize / 2;
+            frontWall.position.y = roomSize / 4;
+            frontWall.receiveShadow = true;
+            scene.add(frontWall);
+
+            const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            leftWall.position.x = -roomSize / 2;
+            leftWall.position.y = roomSize / 4;
+            leftWall.rotation.y = Math.PI / 2;
+            leftWall.receiveShadow = true;
+            scene.add(leftWall);
+
+            const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            rightWall.position.x = roomSize / 2;
+            rightWall.position.y = roomSize / 4;
+            rightWall.rotation.y = Math.PI / 2;
+            rightWall.receiveShadow = true;
+            scene.add(rightWall);
+        }
+
         function addArtworks() {
             const artworkPositions = [
-                { x: -8, y: 1.5, z: -9.5 },
-                { x: -4, y: 1.5, z: -9.5 },
-                { x: 0, y: 1.5, z: -9.5 },
-                { x: 4, y: 1.5, z: -9.5 },
-                { x: 8, y: 1.5, z: -9.5 },
-                { x: -9.5, y: 1.5, z: -8 },
-                { x: -9.5, y: 1.5, z: -4 },
-                { x: -9.5, y: 1.5, z: 0 },
-                { x: -9.5, y: 1.5, z: 4 },
-                { x: 9.5, y: 1.5, z: -8 },
-                { x: 9.5, y: 1.5, z: -4 },
-                { x: 9.5, y: 1.5, z: 0 },
-                { x: 9.5, y: 1.5, z: 4 }
+                { x: -9, y: 2.5, z: -9, rotY: Math.PI / 4 },
+                { x: -9, y: 2.5, z: 9, rotY: 3 * Math.PI / 4 },
+                { x: 9, y: 2.5, z: -9, rotY: -Math.PI / 4 },
+                { x: 9, y: 2.5, z: 9, rotY: -3 * Math.PI / 4 },
+                { x: -9, y: 2.5, z: 0, rotY: Math.PI / 2 },
+                { x: 9, y: 2.5, z: 0, rotY: -Math.PI / 2 },
+                { x: 0, y: 2.5, z: -9, rotY: 0 },
+                { x: 0, y: 2.5, z: 9, rotY: Math.PI },
             ];
 
             artworkPositions.forEach((position, index) => {
-                const artwork = createArtwork(`Artwork ${index + 1}`, position);
+                const artwork = createArtwork(`Masterpiece ${index + 1}`, position);
                 artworks.push(artwork);
                 scene.add(artwork);
             });
         }
 
         function createArtwork(title, position) {
-            const frameGeometry = new THREE.BoxGeometry(2, 2, 0.1);
-            const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const frameGeometry = new THREE.BoxGeometry(3, 2, 0.1);
+            const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513, metalness: 0.5, roughness: 0.5 });
             const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+            frame.castShadow = true;
+            frame.receiveShadow = true;
 
-            const canvasSize = 512;
+            const canvasSize = 1024;
             const canvas = document.createElement('canvas');
             canvas.width = canvasSize;
             canvas.height = canvasSize;
             const ctx = canvas.getContext('2d');
 
-            // Create a gradient background
-            const gradient = ctx.createLinearGradient(0, 0, canvasSize, canvasSize);
-            gradient.addColorStop(0, `hsl(${Math.random() * 360}, 100%, 50%)`);
-            gradient.addColorStop(1, `hsl(${Math.random() * 360}, 100%, 50%)`);
-            ctx.fillStyle = gradient;
+            // Create a more sophisticated artwork
+            ctx.fillStyle = `hsl(${Math.random() * 360}, 50%, 90%)`;
             ctx.fillRect(0, 0, canvasSize, canvasSize);
 
-            // Add some random shapes
-            for (let i = 0; i < 5; i++) {
+            // Add some abstract shapes
+            for (let i = 0; i < 20; i++) {
                 ctx.beginPath();
-                ctx.arc(
-                    Math.random() * canvasSize,
-                    Math.random() * canvasSize,
-                    Math.random() * 50 + 10,
-                    0,
-                    Math.PI * 2
+                ctx.moveTo(Math.random() * canvasSize, Math.random() * canvasSize);
+                ctx.bezierCurveTo(
+                    Math.random() * canvasSize, Math.random() * canvasSize,
+                    Math.random() * canvasSize, Math.random() * canvasSize,
+                    Math.random() * canvasSize, Math.random() * canvasSize
                 );
-                ctx.fillStyle = `hsla(${Math.random() * 360}, 100%, 50%, 0.5)`;
-                ctx.fill();
+                ctx.strokeStyle = `hsla(${Math.random() * 360}, 70%, 50%, 0.7)`;
+                ctx.lineWidth = Math.random() * 10 + 2;
+                ctx.stroke();
             }
 
             const texture = new THREE.CanvasTexture(canvas);
             const artworkMaterial = new THREE.MeshBasicMaterial({ map: texture });
-            const artworkGeometry = new THREE.PlaneGeometry(1.8, 1.8);
+            const artworkGeometry = new THREE.PlaneGeometry(2.8, 1.8);
             const artworkMesh = new THREE.Mesh(artworkGeometry, artworkMaterial);
             artworkMesh.position.z = 0.051;
 
             frame.add(artworkMesh);
             frame.position.set(position.x, position.y, position.z);
+            frame.rotation.y = position.rotY;
 
-            // Rotate the artwork to face the center of the room
-            frame.lookAt(0, frame.position.y, 0);
-
-            frame.userData = { title: title, artist: "AI Artist", price: "$" + (Math.random() * 10000).toFixed(2) };
+            frame.userData = { 
+                title: title, 
+                artist: "AI Visionary", 
+                year: 2024 + Math.floor(Math.random() * 5),
+                price: "$" + (Math.random() * 1000000 + 50000).toFixed(2),
+                description: "A stunning piece that captures the essence of digital creativity, blending abstract forms with vibrant colors to evoke a sense of wonder and introspection."
+            };
 
             return frame;
         }
@@ -193,15 +246,14 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        function onMouseClick(event) {
-            const raycaster = new THREE.Raycaster();
-            const mouse = new THREE.Vector2();
+        function onKeyDown(event) {
+            if (event.code === 'KeyE') {
+                checkArtworkInteraction();
+            }
+        }
 
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-
+        function checkArtworkInteraction() {
+            raycaster.setFromCamera(new THREE.Vector2(), camera);
             const intersects = raycaster.intersectObjects(artworks);
 
             if (intersects.length > 0) {
@@ -214,9 +266,11 @@
 
         function displayArtworkInfo(info) {
             infoPanel.innerHTML = `
-                <h3>${info.title}</h3>
-                <p>Artist: ${info.artist}</p>
-                <p>Price: ${info.price}</p>
+                <h2>${info.title}</h2>
+                <p><strong>Artist:</strong> ${info.artist}</p>
+                <p><strong>Year:</strong> ${info.year}</p>
+                <p><strong>Price:</strong> ${info.price}</p>
+                <p>${info.description}</p>
             `;
             infoPanel.style.display = 'block';
         }
@@ -240,6 +294,7 @@
                 this.moveBackward = false;
                 this.moveLeft = false;
                 this.moveRight = false;
+                this.canJump = false;
                 this.velocity = new THREE.Vector3();
                 this.direction = new THREE.Vector3();
 
@@ -265,6 +320,7 @@
                     case 'KeyA': this.moveLeft = true; break;
                     case 'KeyS': this.moveBackward = true; break;
                     case 'KeyD': this.moveRight = true; break;
+                    case 'Space': if (this.canJump) this.velocity.y += 350; this.canJump = false; break;
                 }
             }
 
@@ -279,43 +335,150 @@
 
             update() {
                 if (this.isLocked) {
-                    this.velocity.x -= this.velocity.x * 10.0 * 0.016;
-                    this.velocity.z -= this.velocity.z * 10.0 * 0.016;
+                    const time = performance.now();
+                    const delta = (time - this.prevTime) / 1000;
+
+                    this.velocity.x -= this.velocity.x * 10.0 * delta;
+                    this.velocity.z -= this.velocity.z * 10.0 * delta;
+                    this.velocity.y -= 9.8 * 100.0 * delta; // Add gravity
 
                     this.direction.z = Number(this.moveForward) - Number(this.moveBackward);
                     this.direction.x = Number(this.moveRight) - Number(this.moveLeft);
                     this.direction.normalize();
 
-                    if (this.moveForward || this.moveBackward) this.velocity.z -= this.direction.z * 400.0 * 0.016;
-                    if (this.moveLeft || this.moveRight) this.velocity.x -= this.direction.x * 400.0 * 0.016;
+                    if (this.moveForward || this.moveBackward) this.velocity.z -= this.direction.z * 400.0 * delta;
+                    if (this.moveLeft || this.moveRight) this.velocity.x -= this.direction.x * 400.0 * delta;
 
-                    this.camera.translateX(this.velocity.x * 0.016);
-                    this.camera.translateZ(this.velocity.z * 0.016);
-                }
-            }
+if (this.moveForward || this.moveBackward) this.velocity.z -= this.direction.z * 400.0 * delta;
+if (this.moveLeft || this.moveRight) this.velocity.x -= this.direction.x * 400.0 * delta;
 
-            lock() {
-                this.domElement.requestPointerLock();
-            }
+this.camera.translateX(this.velocity.x * delta);
+this.camera.translateY(this.velocity.y * delta);
+this.camera.translateZ(this.velocity.z * delta);
 
-            unlock() {
-                document.exitPointerLock();
-            }
-        }
+if (this.camera.position.y < 1.6) {
+    this.velocity.y = 0;
+    this.camera.position.y = 1.6;
+    this.canJump = true;
+}
 
-        init();
+this.prevTime = time;
+}
+}
 
-        // Lock controls on click
-        document.addEventListener('click', () => {
-            if (!controls.isLocked) {
-                controls.lock();
-            }
-        });
+lock() {
+this.domElement.requestPointerLock();
+}
 
-        // Handle pointer lock state change
-        document.addEventListener('pointerlockchange', () => {
-            controls.isLocked = document.pointerLockElement === renderer.domElement;
-        });
-    </script>
+unlock() {
+document.exitPointerLock();
+}
+}
+
+init();
+
+// Lock controls on click
+document.addEventListener('click', () => {
+if (!controls.isLocked) {
+controls.lock();
+}
+});
+
+// Handle pointer lock state change
+document.addEventListener('pointerlockchange', () => {
+controls.isLocked = document.pointerLockElement === renderer.domElement;
+if (controls.isLocked) {
+controls.prevTime = performance.now();
+}
+});
+
+// Add some ambient sound to the gallery
+function addAmbientSound() {
+const listener = new THREE.AudioListener();
+camera.add(listener);
+
+const sound = new THREE.Audio(listener);
+const audioLoader = new THREE.AudioLoader();
+audioLoader.load('https://cdn.example.com/ambient_gallery_sound.mp3', function(buffer) {
+sound.setBuffer(buffer);
+sound.setLoop(true);
+sound.setVolume(0.5);
+sound.play();
+});
+}
+
+// Add some particle effects for atmosphere
+function addAtmosphericParticles() {
+const particlesGeometry = new THREE.BufferGeometry();
+const particleCount = 1000;
+
+const positions = new Float32Array(particleCount * 3);
+const colors = new Float32Array(particleCount * 3);
+
+for (let i = 0; i < particleCount; i++) {
+positions[i * 3] = (Math.random() - 0.5) * 20;
+positions[i * 3 + 1] = Math.random() * 10;
+positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+
+colors[i * 3] = Math.random();
+colors[i * 3 + 1] = Math.random();
+colors[i * 3 + 2] = Math.random();
+}
+
+particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+const particlesMaterial = new THREE.PointsMaterial({
+size: 0.1,
+vertexColors: true,
+transparent: true,
+opacity: 0.5
+});
+
+const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+scene.add(particles);
+}
+
+// Improve lighting with some accent lights
+function addAccentLighting() {
+const accentLights = [
+{ color: 0xff0000, position: new THREE.Vector3(-5, 5, -5) },
+{ color: 0x00ff00, position: new THREE.Vector3(5, 5, -5) },
+{ color: 0x0000ff, position: new THREE.Vector3(-5, 5, 5) },
+{ color: 0xffff00, position: new THREE.Vector3(5, 5, 5) }
+];
+
+accentLights.forEach(light => {
+const accentLight = new THREE.PointLight(light.color, 0.5, 10);
+accentLight.position.copy(light.position);
+scene.add(accentLight);
+});
+}
+
+// Call these new functions
+addAmbientSound();
+addAtmosphericParticles();
+addAccentLighting();
+
+// Update the animate function to include particle animation
+function animate() {
+requestAnimationFrame(animate);
+controls.update();
+
+// Animate particles
+const particles = scene.children.find(child => child instanceof THREE.Points);
+if (particles) {
+const positions = particles.geometry.attributes.position.array;
+for (let i = 0; i < positions.length; i += 3) {
+positions[i + 1] += 0.01 * (Math.random() - 0.5);
+if (positions[i + 1] > 10) positions[i + 1] = 0;
+if (positions[i + 1] < 0) positions[i + 1] = 10;
+}
+particles.geometry.attributes.position.needsUpdate = true;
+}
+
+renderer.render(scene, camera);
+}
+</script>
 </body>
 </html>
