@@ -806,23 +806,22 @@
 
         // Add decorative banners
         function addBanners() {
-            const bannerGeometry = new THREE.PlaneGeometry(3, 1);
+            const bannerGeometry = new THREE.PlaneGeometry(6, 1.5);
             const bannerMaterial = new THREE.MeshBasicMaterial({ 
-                color: 0xffffff, 
                 side: THREE.DoubleSide,
                 transparent: true,
-                opacity: 0.8
+                opacity: 0.9
             });
 
             const bannerPositions = [
-                { position: new THREE.Vector3(0, roomSize/4, -roomSize/2 + 0.1), rotation: new THREE.Euler(0, 0, 0) },
-                { position: new THREE.Vector3(0, roomSize/4, roomSize/2 - 0.1), rotation: new THREE.Euler(0, Math.PI, 0) },
-                { position: new THREE.Vector3(-roomSize/2 + 0.1, roomSize/4, 0), rotation: new THREE.Euler(0, Math.PI/2, 0) },
-                { position: new THREE.Vector3(roomSize/2 - 0.1, roomSize/4, 0), rotation: new THREE.Euler(0, -Math.PI/2, 0) }
+                { position: new THREE.Vector3(0, roomSize/3, -roomSize/2 + 0.1), rotation: new THREE.Euler(0, 0, 0) },
+                { position: new THREE.Vector3(0, roomSize/3, roomSize/2 - 0.1), rotation: new THREE.Euler(0, Math.PI, 0) },
+                { position: new THREE.Vector3(-roomSize/2 + 0.1, roomSize/3, 0), rotation: new THREE.Euler(0, Math.PI/2, 0) },
+                { position: new THREE.Vector3(roomSize/2 - 0.1, roomSize/3, 0), rotation: new THREE.Euler(0, -Math.PI/2, 0) }
             ];
 
             bannerPositions.forEach((bannerData, index) => {
-                const banner = new THREE.Mesh(bannerGeometry, bannerMaterial);
+                const banner = new THREE.Mesh(bannerGeometry, bannerMaterial.clone());
                 banner.position.copy(bannerData.position);
                 banner.rotation.copy(bannerData.rotation);
 
@@ -836,18 +835,48 @@
 
         function createBannerTexture(text) {
             const canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 128;
+            canvas.width = 1024;
+            canvas.height = 256;
             const ctx = canvas.getContext('2d');
 
-            ctx.fillStyle = 'rgba(200, 200, 200, 0.8)';
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+            gradient.addColorStop(0, '#3498db');
+            gradient.addColorStop(1, '#2980b9');
+            ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.font = 'bold 48px Arial';
-            ctx.fillStyle = 'black';
+            // Add some decorative elements
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(100, 0);
+            ctx.lineTo(120, 40);
+            ctx.lineTo(canvas.width - 120, 40);
+            ctx.lineTo(canvas.width - 100, 0);
+            ctx.lineTo(canvas.width, 0);
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.lineTo(0, canvas.height);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.fill();
+
+            // Add text shadow
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 5;
+            ctx.shadowOffsetY = 5;
+
+            // Add text
+            ctx.font = 'bold 72px Arial';
+            ctx.fillStyle = 'white';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+            // Add a border
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 10;
+            ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
 
             return new THREE.CanvasTexture(canvas);
         }
