@@ -73,6 +73,16 @@
         .btn i {
             margin-right: 5px;
         }
+        #minimap {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -80,8 +90,9 @@
     <div id="crosshair"></div>
     <div id="info-panel"></div>
     <div id="controls-info">
-        WASD: Move | Mouse: Look | Click: Interact
+        WASD: Move | Mouse: Look | Click: Interact | M: Toggle Minimap
     </div>
+    <canvas id="minimap"></canvas>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
@@ -89,11 +100,15 @@
     <script>
         const container = document.getElementById('gallery-container');
         const infoPanel = document.getElementById('info-panel');
+        const minimapCanvas = document.getElementById('minimap');
+        const minimapCtx = minimapCanvas.getContext('2d');
 
         let scene, camera, renderer, controls;
         let artworks = [];
         let raycaster, mouse;
-        let clock; // Add this line
+        let clock;
+        let roomSize = 30;
+        let minimapVisible = true;
 
         function init() {
             scene = new THREE.Scene();
@@ -129,6 +144,9 @@
             // Add artworks
             addArtworks();
 
+            // Add furniture
+            addFurniture();
+
             // Controls
             controls = new FirstPersonControls(camera, renderer.domElement);
 
@@ -139,12 +157,15 @@
             // Event listeners
             window.addEventListener('resize', onWindowResize, false);
             document.addEventListener('click', onMouseClick, false);
+            document.addEventListener('keydown', onKeyDown, false);
+
+            // Initialize minimap
+            initMinimap();
 
             animate();
         }
 
         function createRoom() {
-            const roomSize = 20;
             const wallThickness = 0.2;
             const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xeeeeee });
             
@@ -192,18 +213,40 @@
             rightWall.rotation.y = Math.PI / 2;
             rightWall.receiveShadow = true;
             scene.add(rightWall);
+
+            // Add baseboards
+            const baseboardGeometry = new THREE.BoxGeometry(roomSize, 0.5, 0.1);
+            const baseboardMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            
+            const backBaseboard = new THREE.Mesh(baseboardGeometry, baseboardMaterial);
+            backBaseboard.position.set(0, 0.25, -roomSize / 2 + 0.05);
+            scene.add(backBaseboard);
+
+            const frontBaseboard = new THREE.Mesh(baseboardGeometry, baseboardMaterial);
+            frontBaseboard.position.set(0, 0.25, roomSize / 2 - 0.05);
+            scene.add(frontBaseboard);
+
+            const leftBaseboard = new THREE.Mesh(baseboardGeometry, baseboardMaterial);
+            leftBaseboard.position.set(-roomSize / 2 + 0.05, 0.25, 0);
+            leftBaseboard.rotation.y = Math.PI / 2;
+            scene.add(leftBaseboard);
+
+            const rightBaseboard = new THREE.Mesh(baseboardGeometry, baseboardMaterial);
+            rightBaseboard.position.set(roomSize / 2 - 0.05, 0.25, 0);
+            rightBaseboard.rotation.y = Math.PI / 2;
+            scene.add(rightBaseboard);
         }
 
         function addArtworks() {
             const artworkPositions = [
-                { x: -9, y: 2.5, z: -9, rotY: Math.PI / 4 },
-                { x: -9, y: 2.5, z: 9, rotY: 3 * Math.PI / 4 },
-                { x: 9, y: 2.5, z: -9, rotY: -Math.PI / 4 },
-                { x: 9, y: 2.5, z: 9, rotY: -3 * Math.PI / 4 },
-                { x: -9, y: 2.5, z: 0, rotY: Math.PI / 2 },
-                { x: 9, y: 2.5, z: 0, rotY: -Math.PI / 2 },
-                { x: 0, y: 2.5, z: -9, rotY: 0 },
-                { x: 0, y: 2.5, z: 9, rotY: Math.PI },
+                { x: -13, y: 2.5, z: -13, rotY: Math.PI / 4 },
+                { x: -13, y: 2.5, z: 13, rotY: 3 * Math.PI / 4 },
+                { x: 13, y: 2.5, z: -13, rotY: -Math.PI / 4 },
+                { x: 13, y: 2.5, z: 13, rotY: -3 * Math.PI / 4 },
+                { x: -13, y: 2.5, z: 0, rotY: Math.PI / 2 },
+                { x: 13, y: 2.5, z: 0, rotY: -Math.PI / 2 },
+                { x: 0, y: 2.5, z: -13, rotY: 0 },
+                { x: 0, y: 2.5, z: 13, rotY: Math.PI },
             ];
 
             artworkPositions.forEach((position, index) => {
@@ -214,7 +257,7 @@
         }
 
         function createArtwork(title, position) {
-            const frameGeometry = new THREE.BoxGeometry(3, 2, 0.1);
+            const frameGeometry = new THREE.BoxGeometry(4, 3, 0.1);
             const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513, metalness: 0.5, roughness: 0.5 });
             const frame = new THREE.Mesh(frameGeometry, frameMaterial);
             frame.castShadow = true;
@@ -246,13 +289,24 @@
 
             const texture = new THREE.CanvasTexture(canvas);
             const artworkMaterial = new THREE.MeshBasicMaterial({ map: texture });
-            const artworkGeometry = new THREE.PlaneGeometry(2.8, 1.8);
+            const artworkGeometry = new THREE.PlaneGeometry(3.8, 2.8);
             const artworkMesh = new THREE.Mesh(artworkGeometry, artworkMaterial);
             artworkMesh.position.z = 0.051;
 
             frame.add(artworkMesh);
             frame.position.set(position.x, position.y, position.z);
             frame.rotation.y = position.rotY;
+
+            // Add spotlight for the artwork
+            const spotlight = new THREE.SpotLight(0xffffff, 1);
+            spotlight.position.set(position.x, position.y + 2, position.z);
+            spotlight.target = frame;
+            spotlight.angle = Math.PI / 6;
+            spotlight.penumbra = 0.1;
+            spotlight.decay = 2;
+            spotlight.distance = 10;
+            spotlight.castShadow = true;
+            scene.add(spotlight);
 
             frame.userData = { 
                 title: title, 
@@ -263,6 +317,97 @@
             };
 
             return frame;
+        }
+
+        function addFurniture() {
+            // Add a central circular bench
+            const benchGeometry = new THREE.TorusGeometry(5, 0.5, 16, 100);
+            const benchMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const bench = new THREE.Mesh(benchGeometry, benchMaterial);
+            bench.position.set(0, 0.5, 0);
+            bench.rotation.x = Math.PI / 2;
+            bench.castShadow = true;
+            bench.receiveShadow = true;
+            scene.add(bench);
+
+            // Add some plants
+            const plantPositions = [
+                { x: -14, z: -14 },
+                { x: 14, z: -14 },
+                { x: -14, z: 14 },
+                { x: 14, z: 14 }
+            ];
+
+            plantPositions.forEach(pos => {
+                const plant = createPlant();
+                plant.position.set(pos.x, 0, pos.z);
+                scene.add(plant);
+            });
+
+            // Add information stands
+            const standPositions = [
+                { x: -7, z: 0, rotY: -Math.PI / 2 },
+                { x: 7, z: 0, rotY: Math.PI / 2 },
+                { x: 0, z: -7, rotY: 0 },
+                { x: 0, z: 7, rotY: Math.PI }
+            ];
+
+            standPositions.forEach(pos => {
+                const stand = createInfoStand();
+                stand.position.set(pos.x, 0, pos.z);
+                stand.rotation.y = pos.rotY;
+                scene.add(stand);
+            });
+        }
+
+        function createPlant() {
+            const potGeometry = new THREE.CylinderGeometry(0.5, 0.4, 0.8, 32);
+            const potMaterial = new THREE.MeshStandardMaterial({ color: 0xA0522D });
+            const pot = new THREE.Mesh(potGeometry, potMaterial);
+            pot.castShadow = true;
+            pot.receiveShadow = true;
+
+            const trunkGeometry = new THREE.CylinderGeometry(0.1, 0.1, 2, 32);
+            const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.y = 1.4;
+            trunk.castShadow = true;
+
+            const leafGeometry = new THREE.SphereGeometry(0.7, 32, 32);
+            const leafMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+            const leaves = new THREE.Mesh(leafGeometry, leafMaterial);
+            leaves.position.y = 2.5;
+            leaves.scale.set(1, 1.5, 1);
+            leaves.castShadow = true;
+
+            const plant = new THREE.Group();
+            plant.add(pot);
+            plant.add(trunk);
+            plant.add(leaves);
+
+            return plant;
+        }
+
+        function createInfoStand() {
+            const standGeometry = new THREE.BoxGeometry(1.5, 1.2, 0.1);
+            const standMaterial = new THREE.MeshStandardMaterial({ color: 0x4682B4 });
+            const stand = new THREE.Mesh(standGeometry, standMaterial);
+            stand.position.y = 0.6;
+            stand.rotation.x = -Math.PI / 6;
+            stand.castShadow = true;
+            stand.receiveShadow = true;
+
+            const baseGeometry = new THREE.CylinderGeometry(0.2, 0.3, 0.6, 32);
+            const baseMaterial = new THREE.MeshStandardMaterial({ color: 0x4682B4 });
+            const base = new THREE.Mesh(baseGeometry, baseMaterial);
+            base.castShadow = true;
+            base.receiveShadow = true;
+
+            const infoStand = new THREE.Group();
+            infoStand.add(stand);
+            infoStand.add(base);
+
+            return infoStand;
         }
 
         function onWindowResize() {
@@ -281,6 +426,12 @@
                 displayArtworkInfo(artwork.userData);
             } else {
                 hideArtworkInfo();
+            }
+        }
+
+        function onKeyDown(event) {
+            if (event.key === 'm' || event.key === 'M') {
+                toggleMinimap();
             }
         }
 
@@ -309,30 +460,65 @@
             alert(`Launching AR preview for "${title}"...`);
         }
 
+        function initMinimap() {
+            minimapCanvas.width = 200;
+            minimapCanvas.height = 200;
+        }
+
+        function updateMinimap() {
+            minimapCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            minimapCtx.fillRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+
+            const scale = minimapCanvas.width / roomSize;
+
+            // Draw walls
+            minimapCtx.strokeStyle = 'white';
+            minimapCtx.strokeRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+
+            // Draw artworks
+            minimapCtx.fillStyle = 'blue';
+            artworks.forEach(artwork => {
+                const x = (artwork.position.x + roomSize / 2) * scale;
+                const y = (artwork.position.z + roomSize / 2) * scale;
+                minimapCtx.fillRect(x - 2, y - 2, 4, 4);
+            });
+
+            // Draw player position
+            minimapCtx.fillStyle = 'red';
+            const playerX = (camera.position.x + roomSize / 2) * scale;
+            const playerY = (camera.position.z + roomSize / 2) * scale;
+            minimapCtx.beginPath();
+            minimapCtx.arc(playerX, playerY, 3, 0, 2 * Math.PI);
+            minimapCtx.fill();
+
+            // Draw player direction
+            minimapCtx.strokeStyle = 'red';
+            minimapCtx.beginPath();
+            minimapCtx.moveTo(playerX, playerY);
+            minimapCtx.lineTo(
+                playerX + Math.sin(camera.rotation.y) * 10,
+                playerY + Math.cos(camera.rotation.y) * 10
+            );
+            minimapCtx.stroke();
+        }
+
+        function toggleMinimap() {
+            minimapVisible = !minimapVisible;
+            minimapCanvas.style.display = minimapVisible ? 'block' : 'none';
+        }
+
         function animate() {
             requestAnimationFrame(animate);
-            
-            if (clock && controls) { // Add this check
-                const delta = clock.getDelta();
-                controls.update(delta);
+            const delta = clock.getDelta();
+            controls.update(delta);
+
+            if (minimapVisible) {
+                updateMinimap();
             }
 
-            // Animate particles
-            const particles = scene.children.find(child => child instanceof THREE.Points);
-            if (particles) {
-                const positions = particles.geometry.attributes.position.array;
-                for (let i = 0; i < positions.length; i += 3) {
-                    positions[i + 1] += 0.01 * (Math.random() - 0.5);
-                    if (positions[i + 1] > 10) positions[i + 1] = 0;
-                    if (positions[i + 1] < 0) positions[i + 1] = 10;
-                }
-                particles.geometry.attributes.position.needsUpdate = true;
-            }
-
-            if (renderer && scene && camera) { // Add this check
-                renderer.render(scene, camera);
-            }
+            renderer.render(scene, camera);
         }
+
 
         class FirstPersonControls {
             constructor(camera, domElement) {
@@ -363,12 +549,11 @@
                 this.viewHalfX = 0;
                 this.viewHalfY = 0;
 
-                // Initialize these properties
                 this.lat = 0;
                 this.lon = 0;
                 this.phi = 0;
                 this.theta = 0;
-                this.target = new THREE.Vector3(); // Add this line
+                this.target = new THREE.Vector3();
 
                 this.domElement.addEventListener('contextmenu', this.contextmenu.bind(this), false);
                 this.domElement.addEventListener('mousemove', this.onMouseMove.bind(this), false);
@@ -493,11 +678,11 @@
                 var targetPosition = this.target,
                     position = this.camera.position;
 
-                    targetPosition.x = position.x + 100 * Math.sin(this.phi) * Math.cos(this.theta);
-                    targetPosition.y = position.y + 100 * Math.cos(this.phi);
-                    targetPosition.z = position.z + 100 * Math.sin(this.phi) * Math.sin(this.theta);
+                targetPosition.x = position.x + 100 * Math.sin(this.phi) * Math.cos(this.theta);
+                targetPosition.y = position.y + 100 * Math.cos(this.phi);
+                targetPosition.z = position.z + 100 * Math.sin(this.phi) * Math.sin(this.theta);
 
-                    this.camera.lookAt(targetPosition);
+                this.camera.lookAt(targetPosition);
             }
 
             contextmenu(event) {
@@ -541,9 +726,9 @@
             const colors = new Float32Array(particleCount * 3);
 
             for (let i = 0; i < particleCount; i++) {
-                positions[i * 3] = (Math.random() - 0.5) * 20;
-                positions[i * 3 + 1] = Math.random() * 10;
-                positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+                positions[i * 3] = (Math.random() - 0.5) * roomSize;
+                positions[i * 3 + 1] = Math.random() * (roomSize / 2);
+                positions[i * 3 + 2] = (Math.random() - 0.5) * roomSize;
 
                 colors[i * 3] = Math.random();
                 colors[i * 3 + 1] = Math.random();
@@ -567,23 +752,72 @@
         // Improve lighting with some accent lights
         function addAccentLighting() {
             const accentLights = [
-                { color: 0xff0000, position: new THREE.Vector3(-5, 5, -5) },
-                { color: 0x00ff00, position: new THREE.Vector3(5, 5, -5) },
-                { color: 0x0000ff, position: new THREE.Vector3(-5, 5, 5) },
-                { color: 0xffff00, position: new THREE.Vector3(5, 5, 5) }
+                { color: 0xff0000, position: new THREE.Vector3(-roomSize/4, roomSize/4, -roomSize/4) },
+                { color: 0x00ff00, position: new THREE.Vector3(roomSize/4, roomSize/4, -roomSize/4) },
+                { color: 0x0000ff, position: new THREE.Vector3(-roomSize/4, roomSize/4, roomSize/4) },
+                { color: 0xffff00, position: new THREE.Vector3(roomSize/4, roomSize/4, roomSize/4) }
             ];
 
             accentLights.forEach(light => {
-                const accentLight = new THREE.PointLight(light.color, 0.5, 10);
+                const accentLight = new THREE.PointLight(light.color, 0.5, roomSize/2);
                 accentLight.position.copy(light.position);
                 scene.add(accentLight);
             });
+        }
+
+        // Add decorative banners
+        function addBanners() {
+            const bannerGeometry = new THREE.PlaneGeometry(3, 1);
+            const bannerMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xffffff, 
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            const bannerPositions = [
+                { position: new THREE.Vector3(0, roomSize/4, -roomSize/2 + 0.1), rotation: new THREE.Euler(0, 0, 0) },
+                { position: new THREE.Vector3(0, roomSize/4, roomSize/2 - 0.1), rotation: new THREE.Euler(0, Math.PI, 0) },
+                { position: new THREE.Vector3(-roomSize/2 + 0.1, roomSize/4, 0), rotation: new THREE.Euler(0, Math.PI/2, 0) },
+                { position: new THREE.Vector3(roomSize/2 - 0.1, roomSize/4, 0), rotation: new THREE.Euler(0, -Math.PI/2, 0) }
+            ];
+
+            bannerPositions.forEach((bannerData, index) => {
+                const banner = new THREE.Mesh(bannerGeometry, bannerMaterial);
+                banner.position.copy(bannerData.position);
+                banner.rotation.copy(bannerData.rotation);
+
+                const canvasTexture = createBannerTexture(`Welcome to Gallery ${index + 1}`);
+                banner.material.map = canvasTexture;
+                banner.material.needsUpdate = true;
+
+                scene.add(banner);
+            });
+        }
+
+        function createBannerTexture(text) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = 'rgba(200, 200, 200, 0.8)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = 'bold 48px Arial';
+            ctx.fillStyle = 'black';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+            return new THREE.CanvasTexture(canvas);
         }
 
         // Call these new functions
         addAmbientSound();
         addAtmosphericParticles();
         addAccentLighting();
+        addBanners();
 
         // Update the animate function to include particle animation
         function animate() {
@@ -597,14 +831,20 @@
                 const positions = particles.geometry.attributes.position.array;
                 for (let i = 0; i < positions.length; i += 3) {
                     positions[i + 1] += 0.01 * (Math.random() - 0.5);
-                    if (positions[i + 1] > 10) positions[i + 1] = 0;
-                    if (positions[i + 1] < 0) positions[i + 1] = 10;
+                    if (positions[i + 1] > roomSize/2) positions[i + 1] = 0;
+                    if (positions[i + 1] < 0) positions[i + 1] = roomSize/2;
                 }
                 particles.geometry.attributes.position.needsUpdate = true;
             }
 
+            if (minimapVisible) {
+                updateMinimap();
+            }
+
             renderer.render(scene, camera);
         }
+
+        // Start the animation
         animate();
     </script>
 </body>
