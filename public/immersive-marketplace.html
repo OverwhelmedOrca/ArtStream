@@ -235,24 +235,33 @@
         }
 
         function createArtwork(title, position) {
-            const frameGeometry = new THREE.BoxGeometry(4, 3, 0.1);
-            const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513, metalness: 0.5, roughness: 0.5 });
+            const frameGroup = new THREE.Group();
+
+            // Create larger frame
+            const frameGeometry = new THREE.BoxGeometry(6, 4, 0.2);
+            const frameMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8B4513, 
+                metalness: 0.5, 
+                roughness: 0.5,
+                map: new THREE.TextureLoader().load('https://example.com/frame_texture.jpg')
+            });
             const frame = new THREE.Mesh(frameGeometry, frameMaterial);
             frame.castShadow = true;
             frame.receiveShadow = true;
+            frameGroup.add(frame);
 
-            const canvasSize = 1024;
+            // Create canvas for artwork
+            const canvasSize = 2048;
             const canvas = document.createElement('canvas');
             canvas.width = canvasSize;
             canvas.height = canvasSize;
             const ctx = canvas.getContext('2d');
 
             // Create a more sophisticated artwork
-            ctx.fillStyle = `hsl(${Math.random() * 360}, 50%, 90%)`;
+            ctx.fillStyle = `hsl(${Math.random() * 360}, 70%, 80%)`;
             ctx.fillRect(0, 0, canvasSize, canvasSize);
 
-            // Add some abstract shapes
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 50; i++) {
                 ctx.beginPath();
                 ctx.moveTo(Math.random() * canvasSize, Math.random() * canvasSize);
                 ctx.bezierCurveTo(
@@ -261,32 +270,21 @@
                     Math.random() * canvasSize, Math.random() * canvasSize
                 );
                 ctx.strokeStyle = `hsla(${Math.random() * 360}, 70%, 50%, 0.7)`;
-                ctx.lineWidth = Math.random() * 10 + 2;
+                ctx.lineWidth = Math.random() * 20 + 5;
                 ctx.stroke();
             }
 
             const texture = new THREE.CanvasTexture(canvas);
             const artworkMaterial = new THREE.MeshBasicMaterial({ map: texture });
-            const artworkGeometry = new THREE.PlaneGeometry(3.8, 2.8);
+            const artworkGeometry = new THREE.PlaneGeometry(5.8, 3.8);
             const artworkMesh = new THREE.Mesh(artworkGeometry, artworkMaterial);
-            artworkMesh.position.z = 0.051;
+            artworkMesh.position.z = 0.11;
+            frameGroup.add(artworkMesh);
 
-            frame.add(artworkMesh);
-            frame.position.set(position.x, position.y, position.z);
-            frame.rotation.y = position.rotY;
+            frameGroup.position.set(position.x, position.y, position.z);
+            frameGroup.rotation.y = position.rotY;
 
-            // Add spotlight for the artwork
-            const spotlight = new THREE.SpotLight(0xffffff, 1);
-            spotlight.position.set(position.x, position.y + 2, position.z);
-            spotlight.target = frame;
-            spotlight.angle = Math.PI / 6;
-            spotlight.penumbra = 0.1;
-            spotlight.decay = 2;
-            spotlight.distance = 10;
-            spotlight.castShadow = true;
-            scene.add(spotlight);
-
-            frame.userData = { 
+            frameGroup.userData = { 
                 title: title, 
                 artist: "AI Visionary", 
                 year: 2024 + Math.floor(Math.random() * 5),
@@ -294,7 +292,7 @@
                 description: "A stunning piece that captures the essence of digital creativity, blending abstract forms with vibrant colors to evoke a sense of wonder and introspection."
             };
 
-            return frame;
+            return frameGroup;
         }
 
         function addFurniture() {
