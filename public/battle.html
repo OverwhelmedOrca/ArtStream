@@ -47,16 +47,21 @@
 
         .chat-overlay {
             position: absolute;
-            z-index: 1;
-            bottom: 0;
+            top: 0;
             right: 0;
+            bottom: 0;
             width: 300px;
-            height: 50%;
             background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
             overflow-y: auto;
             display: flex;
-            flex-direction: column-reverse;
-            padding: 10px;
+            flex-direction: column;
         }
 
         .chat-message {
@@ -72,50 +77,58 @@
         #chat-toggle {
             position: absolute;
             top: 10px;
-            right: 10px;
+            right: 310px;
             z-index: 20;
+        }
+
+        #chat-input {
+            width: 100%;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: 4px;
         }
     </style>
 </head>
 
-<body class="bg-black text-white h-screen overflow-hidden">
-    <div class="flex h-full">
-        <div class="flex-1 flex relative">
-            <div class="video-wrapper">
-                <video id="video-1" autoplay muted></video>
-                <div class="streamer-info">
-                    <div class="flex items-center">
-                        <img src="https://i.pravatar.cc/40?img=1" alt="Streamer 1" class="w-10 h-10 rounded-full mr-2">
-                        <div>
-                            <h3 class="font-bold">Streamer 1</h3>
-                            <p class="text-sm text-gray-300">Category</p>
-                        </div>
+<body class="bg-black text-white h-screen overflow-hidden flex items-center">
+    <div class="flex-1 flex relative">
+        <div class="video-wrapper">
+            <video id="video-1" autoplay muted></video>
+            <div class="streamer-info">
+                <div class="flex items-center">
+                    <img src="https://i.pravatar.cc/40?img=1" alt="Streamer 1" class="w-10 h-10 rounded-full mr-2">
+                    <div>
+                        <h3 class="font-bold">Streamer 1</h3>
+                        <p class="text-sm text-gray-300">Category</p>
                     </div>
-                    <button class="like-btn bg-red-500 hover:bg-red-600 px-4 py-2 rounded" data-video="1">
-                        <i class="far fa-heart"></i> Like
-                    </button>
                 </div>
+                <button class="like-btn bg-red-500 hover:bg-red-600 px-4 py-2 rounded" data-video="1">
+                    <i class="far fa-heart"></i> Like
+                </button>
             </div>
-            <div class="video-wrapper">
-                <video id="video-2" autoplay muted></video>
-                <div class="streamer-info">
-                    <div class="flex items-center">
-                        <img src="https://i.pravatar.cc/40?img=2" alt="Streamer 2" class="w-10 h-10 rounded-full mr-2">
-                        <div>
-                            <h3 class="font-bold">Streamer 2</h3>
-                            <p class="text-sm text-gray-300">Category</p>
-                        </div>
+        </div>
+        <div class="video-wrapper">
+            <video id="video-2" autoplay muted></video>
+            <div class="streamer-info">
+                <div class="flex items-center">
+                    <img src="https://i.pravatar.cc/40?img=2" alt="Streamer 2" class="w-10 h-10 rounded-full mr-2">
+                    <div>
+                        <h3 class="font-bold">Streamer 2</h3>
+                        <p class="text-sm text-gray-300">Category</p>
                     </div>
-                    <button class="like-btn bg-red-500 hover:bg-red-600 px-4 py-2 rounded" data-video="2">
-                        <i class="far fa-heart"></i> Like
-                    </button>
                 </div>
+                <button class="like-btn bg-red-500 hover:bg-red-600 px-4 py-2 rounded" data-video="2">
+                    <i class="far fa-heart"></i> Like
+                </button>
             </div>
-            <div class="vs-divider">VS</div>
         </div>
-        <div id="chat-overlay" class="chat-overlay">
-            <div id="chat-messages"></div>
-        </div>
+        <div class="vs-divider">VS</div>
+    </div>
+    <div id="chat-overlay" class="chat-overlay">
+        <div id="chat-messages" class="chat-messages"></div>
+        <input type="text" id="chat-input" placeholder="Type a message..." class="mt-2">
     </div>
     <button id="chat-toggle" class="bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded">
         Toggle Chat
@@ -144,14 +157,20 @@
         const likeButtons = document.querySelectorAll('.like-btn');
         likeButtons.forEach(btn => {
             btn.addEventListener('click', function() {
-                likeButtons.forEach(b => {
-                    b.classList.remove('bg-red-600');
-                    b.classList.add('bg-red-500');
-                    b.innerHTML = '<i class="far fa-heart"></i> Like';
-                });
-                this.classList.remove('bg-red-500');
-                this.classList.add('bg-red-600');
-                this.innerHTML = '<i class="fas fa-heart"></i> Liked';
+                if (this.classList.contains('bg-red-600')) {
+                    this.classList.remove('bg-red-600');
+                    this.classList.add('bg-red-500');
+                    this.innerHTML = '<i class="far fa-heart"></i> Like';
+                } else {
+                    likeButtons.forEach(b => {
+                        b.classList.remove('bg-red-600');
+                        b.classList.add('bg-red-500');
+                        b.innerHTML = '<i class="far fa-heart"></i> Like';
+                    });
+                    this.classList.remove('bg-red-500');
+                    this.classList.add('bg-red-600');
+                    this.innerHTML = '<i class="fas fa-heart"></i> Liked';
+                }
             });
         });
 
@@ -159,6 +178,7 @@
         const chatMessages = document.getElementById('chat-messages');
         const chatOverlay = document.getElementById('chat-overlay');
         const chatToggle = document.getElementById('chat-toggle');
+        const chatInput = document.getElementById('chat-input');
 
         // Sample usernames and colors
         const users = [
@@ -173,7 +193,8 @@
             const messageElement = document.createElement('div');
             messageElement.className = 'chat-message';
             messageElement.innerHTML = `<span class="chat-username" style="color: ${color}">${username}:</span> ${message}`;
-            chatMessages.prepend(messageElement);
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         // Simulate chat messages
@@ -201,6 +222,14 @@
         // Toggle chat visibility
         chatToggle.addEventListener('click', () => {
             chatOverlay.style.display = chatOverlay.style.display === 'none' ? 'flex' : 'none';
+        });
+
+        // Allow user to chat
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.trim()) {
+                addChatMessage('You', this.value.trim(), '#FFFFFF');
+                this.value = '';
+            }
         });
     </script>
 </body>
