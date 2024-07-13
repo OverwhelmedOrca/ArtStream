@@ -47,12 +47,33 @@
 
         .chat-overlay {
             position: absolute;
-            top: 0;
-            right: 0;
+            z-index: 1;
             bottom: 0;
+            right: 0;
             width: 300px;
-            background: rgba(0, 0, 0, 0.5);
+            height: 50%;
+            background: rgba(0, 0, 0, 0.3);
             overflow-y: auto;
+            display: flex;
+            flex-direction: column-reverse;
+            padding: 10px;
+        }
+
+        .chat-message {
+            margin-bottom: 5px;
+            word-wrap: break-word;
+        }
+
+        .chat-username {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        #chat-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 20;
         }
     </style>
 </head>
@@ -92,12 +113,13 @@
             </div>
             <div class="vs-divider">VS</div>
         </div>
-        <div class="chat-overlay p-4">
-            <h2 class="text-xl font-bold mb-4">Chat</h2>
-            <div id="chat-messages" class="space-y-2"></div>
-            <input type="text" id="chat-input" placeholder="Type a message..." class="w-full bg-gray-700 p-2 mt-4 rounded">
+        <div id="chat-overlay" class="chat-overlay">
+            <div id="chat-messages"></div>
         </div>
     </div>
+    <button id="chat-toggle" class="bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded">
+        Toggle Chat
+    </button>
 
     <script>
         // Sample video URLs
@@ -134,18 +156,51 @@
         });
 
         // Chat functionality
-        const chatInput = document.getElementById('chat-input');
         const chatMessages = document.getElementById('chat-messages');
+        const chatOverlay = document.getElementById('chat-overlay');
+        const chatToggle = document.getElementById('chat-toggle');
 
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && this.value.trim()) {
-                const message = document.createElement('div');
-                message.textContent = this.value;
-                message.className = 'bg-gray-700 p-2 rounded';
-                chatMessages.appendChild(message);
-                this.value = '';
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
+        // Sample usernames and colors
+        const users = [
+            { name: 'kimmokee', color: '#FF69B4' },
+            { name: 'Autumnyxis', color: '#1E90FF' },
+            { name: 'SnoWF0XgiveN', color: '#FFA500' },
+            { name: 'wretchedfiend', color: '#32CD32' }
+        ];
+
+        // Function to add a chat message
+        function addChatMessage(username, message, color) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'chat-message';
+            messageElement.innerHTML = `<span class="chat-username" style="color: ${color}">${username}:</span> ${message}`;
+            chatMessages.prepend(messageElement);
+        }
+
+        // Simulate chat messages
+        function simulateChat() {
+            setInterval(() => {
+                const user = users[Math.floor(Math.random() * users.length)];
+                const messages = [
+                    "That's what you get for relying on your team",
+                    "I meant tyr",
+                    "and i was starting to sing! YOU RUINED IT",
+                    "you can continue to sing lol",
+                    "make cas sing it too",
+                    "no reeeeeEEEEEEEEEEE",
+                    "this actually the chillest chat ive seen above 10k view on twitch",
+                    "im gonna use all my points when i catch cas streaming next time... gonna make him sing whole stream MWAHAHAHHAH",
+                    "hes gonna moan so much lol"
+                ];
+                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                addChatMessage(user.name, randomMessage, user.color);
+            }, 2000);
+        }
+
+        simulateChat();
+
+        // Toggle chat visibility
+        chatToggle.addEventListener('click', () => {
+            chatOverlay.style.display = chatOverlay.style.display === 'none' ? 'flex' : 'none';
         });
     </script>
 </body>
