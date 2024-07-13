@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArtStream Battle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        .video-wrapper {
+            position: relative;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .vs-divider {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .streamer-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white h-screen overflow-hidden">
+    <div class="flex h-full">
+        <div class="flex-1 flex relative">
+            <div class="video-wrapper">
+                <video id="video-1" autoplay muted></video>
+                <div class="streamer-info">
+                    <div class="flex items-center">
+                        <img src="https://i.pravatar.cc/40?img=1" alt="Streamer 1" class="w-10 h-10 rounded-full mr-2">
+                        <div>
+                            <h3 class="font-bold">Streamer 1</h3>
+                            <p class="text-sm text-gray-300">Category</p>
+                        </div>
+                    </div>
+                    <button class="like-btn bg-red-500 hover:bg-red-600 px-4 py-2 rounded" data-video="1">
+                        <i class="far fa-heart"></i> Like
+                    </button>
+                </div>
+            </div>
+            <div class="video-wrapper">
+                <video id="video-2" autoplay muted></video>
+                <div class="streamer-info">
+                    <div class="flex items-center">
+                        <img src="https://i.pravatar.cc/40?img=2" alt="Streamer 2" class="w-10 h-10 rounded-full mr-2">
+                        <div>
+                            <h3 class="font-bold">Streamer 2</h3>
+                            <p class="text-sm text-gray-300">Category</p>
+                        </div>
+                    </div>
+                    <button class="like-btn bg-red-500 hover:bg-red-600 px-4 py-2 rounded" data-video="2">
+                        <i class="far fa-heart"></i> Like
+                    </button>
+                </div>
+            </div>
+            <div class="vs-divider">VS</div>
+        </div>
+        <div class="chat-overlay p-4">
+            <h2 class="text-xl font-bold mb-4">Chat</h2>
+            <div id="chat-messages" class="space-y-2"></div>
+            <input type="text" id="chat-input" placeholder="Type a message..." class="w-full bg-gray-700 p-2 mt-4 rounded">
+        </div>
+    </div>
+
+    <script>
+        // Sample video URLs
+        const videoUrls = [
+            'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+            'https://test-streams.mux.dev/test_001/stream.m3u8'
+        ];
+
+        // Initialize videos
+        videoUrls.forEach((url, index) => {
+            const video = document.getElementById(`video-${index + 1}`);
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+            }
+        });
+
+        // Like button functionality
+        const likeButtons = document.querySelectorAll('.like-btn');
+        likeButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                likeButtons.forEach(b => {
+                    b.classList.remove('bg-red-600');
+                    b.classList.add('bg-red-500');
+                    b.innerHTML = '<i class="far fa-heart"></i> Like';
+                });
+                this.classList.remove('bg-red-500');
+                this.classList.add('bg-red-600');
+                this.innerHTML = '<i class="fas fa-heart"></i> Liked';
+            });
+        });
+
+        // Chat functionality
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.trim()) {
+                const message = document.createElement('div');
+                message.textContent = this.value;
+                message.className = 'bg-gray-700 p-2 rounded';
+                chatMessages.appendChild(message);
+                this.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+    </script>
+</body>
+
+</html>
