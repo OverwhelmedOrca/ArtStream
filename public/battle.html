@@ -1,237 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArtStream Battle</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <title>StreamBattles - Epic Showdowns</title>
     <style>
-        .video-wrapper {
-            position: relative;
-            overflow: hidden;
-            flex: 1;
+        :root {
+            --primary-color: #6200ea;
+            --secondary-color: #03dac6;
+            --background-color: #121212;
+            --text-color: #ffffff;
         }
-
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
         }
-
-        .vs-divider {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 4rem;
-            font-weight: bold;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            z-index: 10;
-        }
-
-        .streamer-info {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
+        header {
+            background-color: var(--primary-color);
+            padding: 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-
-        .chat-overlay {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 300px;
-            background: rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-        }
-
-        .chat-messages {
-            flex-grow: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-message {
-            margin-bottom: 5px;
-            word-wrap: break-word;
-        }
-
-        .chat-username {
+        .logo {
+            font-size: 1.5rem;
             font-weight: bold;
-            margin-right: 5px;
         }
-
-        #chat-toggle {
-            position: absolute;
-            top: 10px;
-            right: 310px;
-            z-index: 20;
+        nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            margin-left: 1rem;
         }
-
-        #chat-input {
-            width: 100%;
-            padding: 5px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .battle-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .stream {
+            flex: 1;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .stream-header {
+            background-color: var(--secondary-color);
+            color: var(--background-color);
+            padding: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stream-video {
+            aspect-ratio: 16 / 9;
+            background-color: #000;
+        }
+        .battle-info {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .chat-container {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            height: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .voting-system {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 1rem;
+        }
+        .vote-button {
+            background-color: var(--primary-color);
             border: none;
+            color: var(--text-color);
+            padding: 0.5rem 1rem;
             border-radius: 4px;
+            cursor: pointer;
+        }
+        footer {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
         }
     </style>
 </head>
+<body>
+    <header>
+        <div class="logo">StreamBattles</div>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#">Battles</a>
+            <a href="#">Leaderboard</a>
+            <a href="#">Schedule</a>
+        </nav>
+    </header>
 
-<body class="bg-black text-white h-screen overflow-hidden flex items-center">
-    <div class="flex-1 flex relative">
-        <div class="video-wrapper">
-            <video id="video-1" autoplay muted></video>
-            <div class="streamer-info">
-                <div class="flex items-center">
-                    <img src="https://i.pravatar.cc/40?img=1" alt="Streamer 1" class="w-10 h-10 rounded-full mr-2">
-                    <div>
-                        <h3 class="font-bold">Streamer 1</h3>
-                        <p class="text-sm text-gray-300">Category</p>
-                    </div>
+    <main>
+        <div class="battle-container">
+            <div class="stream">
+                <div class="stream-header">
+                    <span>Streamer 1</span>
+                    <span>Viewers: 10,532</span>
                 </div>
-                <button class="like-btn bg-red-500 hover:bg-red-600 px-4 py-2 rounded" data-video="1">
-                    <i class="far fa-heart"></i> Like
-                </button>
+                <div class="stream-video"></div>
+            </div>
+            <div class="stream">
+                <div class="stream-header">
+                    <span>Streamer 2</span>
+                    <span>Viewers: 9,748</span>
+                </div>
+                <div class="stream-video"></div>
             </div>
         </div>
-        <div class="video-wrapper">
-            <video id="video-2" autoplay muted></video>
-            <div class="streamer-info">
-                <div class="flex items-center">
-                    <img src="https://i.pravatar.cc/40?img=2" alt="Streamer 2" class="w-10 h-10 rounded-full mr-2">
-                    <div>
-                        <h3 class="font-bold">Streamer 2</h3>
-                        <p class="text-sm text-gray-300">Category</p>
-                    </div>
-                </div>
-                <button class="like-btn bg-red-500 hover:bg-red-600 px-4 py-2 rounded" data-video="2">
-                    <i class="far fa-heart"></i> Like
-                </button>
-            </div>
+
+        <div class="battle-info">
+            <h2>Current Battle: Speed Run Challenge</h2>
+            <p>Time Remaining: 15:23</p>
         </div>
-        <div class="vs-divider">VS</div>
-    </div>
-    <div id="chat-overlay" class="chat-overlay">
-        <div id="chat-messages" class="chat-messages"></div>
-        <input type="text" id="chat-input" placeholder="Type a message..." class="mt-2">
-    </div>
-    <button id="chat-toggle" class="bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded">
-        Toggle Chat
-    </button>
 
-    <script>
-        // Sample video URLs
-        const videoUrls = [
-            'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-            'https://test-streams.mux.dev/test_001/stream.m3u8'
-        ];
+        <div class="chat-container">
+            <p><strong>User1:</strong> Let's go Streamer 1!</p>
+            <p><strong>User2:</strong> Streamer 2 is crushing it!</p>
+            <p><strong>User3:</strong> This battle is intense!</p>
+        </div>
 
-        // Initialize videos
-        videoUrls.forEach((url, index) => {
-            const video = document.getElementById(`video-${index + 1}`);
-            if (Hls.isSupported()) {
-                const hls = new Hls();
-                hls.loadSource(url);
-                hls.attachMedia(video);
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = url;
-            }
-        });
+        <div class="voting-system">
+            <button class="vote-button">Vote for Streamer 1</button>
+            <button class="vote-button">Vote for Streamer 2</button>
+        </div>
+    </main>
 
-        // Like button functionality
-        const likeButtons = document.querySelectorAll('.like-btn');
-        likeButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (this.classList.contains('bg-red-600')) {
-                    this.classList.remove('bg-red-600');
-                    this.classList.add('bg-red-500');
-                    this.innerHTML = '<i class="far fa-heart"></i> Like';
-                } else {
-                    likeButtons.forEach(b => {
-                        b.classList.remove('bg-red-600');
-                        b.classList.add('bg-red-500');
-                        b.innerHTML = '<i class="far fa-heart"></i> Like';
-                    });
-                    this.classList.remove('bg-red-500');
-                    this.classList.add('bg-red-600');
-                    this.innerHTML = '<i class="fas fa-heart"></i> Liked';
-                }
-            });
-        });
-
-        // Chat functionality
-        const chatMessages = document.getElementById('chat-messages');
-        const chatOverlay = document.getElementById('chat-overlay');
-        const chatToggle = document.getElementById('chat-toggle');
-        const chatInput = document.getElementById('chat-input');
-
-        // Sample usernames and colors
-        const users = [
-            { name: 'kimmokee', color: '#FF69B4' },
-            { name: 'Autumnyxis', color: '#1E90FF' },
-            { name: 'SnoWF0XgiveN', color: '#FFA500' },
-            { name: 'wretchedfiend', color: '#32CD32' }
-        ];
-
-        // Function to add a chat message
-        function addChatMessage(username, message, color) {
-            const messageElement = document.createElement('div');
-            messageElement.className = 'chat-message';
-            messageElement.innerHTML = `<span class="chat-username" style="color: ${color}">${username}:</span> ${message}`;
-            chatMessages.appendChild(messageElement);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        // Simulate chat messages
-        function simulateChat() {
-            setInterval(() => {
-                const user = users[Math.floor(Math.random() * users.length)];
-                const messages = [
-                    "That's what you get for relying on your team",
-                    "I meant tyr",
-                    "and i was starting to sing! YOU RUINED IT",
-                    "you can continue to sing lol",
-                    "make cas sing it too",
-                    "no reeeeeEEEEEEEEEEE",
-                    "this actually the chillest chat ive seen above 10k view on twitch",
-                    "im gonna use all my points when i catch cas streaming next time... gonna make him sing whole stream MWAHAHAHHAH",
-                    "hes gonna moan so much lol"
-                ];
-                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-                addChatMessage(user.name, randomMessage, user.color);
-            }, 2000);
-        }
-
-        simulateChat();
-
-        // Toggle chat visibility
-        chatToggle.addEventListener('click', () => {
-            chatOverlay.style.display = chatOverlay.style.display === 'none' ? 'flex' : 'none';
-        });
-
-        // Allow user to chat
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && this.value.trim()) {
-                addChatMessage('You', this.value.trim(), '#FFFFFF');
-                this.value = '';
-            }
-        });
-    </script>
+    <footer>
+        <p>&copy; 2024 StreamBattles. All rights reserved.</p>
+    </footer>
 </body>
-
 </html>
