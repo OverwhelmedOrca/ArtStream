@@ -6,134 +6,132 @@
     <title>Choose Your Art Battle Arena</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/2.3.0/alpine.js" integrity="sha512-nIwdJlD5/vHj23CbO2iHCXtsqzdTTx3e3uAmpTm4x2Y8xCIFyWu4cSIV8GaGe2UNVq86/1h9EgUZy7tn243qdA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #1a1a1a;
-            color: #ffffff;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Roboto', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
         }
-        .retro-header {
-            font-family: 'Permanent Marker', cursive;
-            text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.7);
-        }
-        .retro-border {
-            border: 2px solid #ff69b4;
-            box-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
+        h1, h2 {
+            font-family: 'Playfair Display', serif;
         }
         .card {
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
         }
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(255, 105, 180, 0.4);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
         }
-        .gradient-text {
-            background: linear-gradient(45deg, #ff69b4, #ff1493);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .gradient-bg {
+            background: linear-gradient(135deg, #4338ca, #3b82f6);
+        }
+        .custom-shape-divider-bottom-1689436216 {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+        }
+        .custom-shape-divider-bottom-1689436216 svg {
+            position: relative;
+            display: block;
+            width: calc(185% + 1.3px);
+            height: 110px;
+        }
+        .custom-shape-divider-bottom-1689436216 .shape-fill {
+            fill: #0f172a;
         }
     </style>
 </head>
-<body class="min-h-screen bg-gray-900">
-    <header class="p-4 flex justify-between items-center border-b-2 border-pink-500">
-        <h1 class="retro-header text-3xl gradient-text">Choose your Arena</h1>
-        <div class="flex items-center space-x-4">
+<body class="min-h-screen">
+    <header class="bg-gray-900 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-blue-400">Art Battle Arena</h1>
             <div class="relative" x-data="{ open: false }">
                 <img @click="open = !open" src="https://i.pravatar.cc/150?u=username" alt="User" class="w-10 h-10 rounded-full cursor-pointer retro-border">
                 <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 retro-border">
                     <div class="py-1" role="menu">
-                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Profile</a>
-                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Community</a>
-                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">FAQs</a>
-                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem" id="logout-button">Logout</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white" role="menuitem">Profile</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white" role="menuitem">Settings</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white" role="menuitem">Logout</a>
                     </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-8">
+    <main class="container mx-auto px-4 py-12">
+        <h2 class="text-4xl font-bold mb-8 text-center text-blue-400">Choose Your Arena</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div class="card bg-gray-800 rounded-lg overflow-hidden retro-border">
-                <img src="/api/placeholder/400/200" alt="Friendly Battle" class="w-full h-48 object-cover">
+            <div class="card bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+                <img src="https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Friendly Skirmish" class="w-full h-48 object-cover">
                 <div class="p-6">
-                    <h2 class="text-2xl font-bold mb-2 gradient-text">Friendly Skirmish</h2>
+                    <h3 class="text-2xl font-bold mb-2 text-blue-400">Friendly Skirmish</h3>
                     <p class="text-gray-300 mb-4">Stake: $0</p>
                     <p class="text-gray-400 mb-4">Unleash your creativity without breaking the bank. Perfect for warming up those artistic muscles!</p>
-                    <button class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
                         Enter Arena
                     </button>
                 </div>
             </div>
 
-            <div class="card bg-gray-800 rounded-lg overflow-hidden retro-border">
-                <img src="/api/placeholder/400/200" alt="Street Battle" class="w-full h-48 object-cover">
+            <div class="card bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+                <img src="https://images.unsplash.com/photo-1561214115-f2f134cc4912?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Street Showdown" class="w-full h-48 object-cover">
                 <div class="p-6">
-                    <h2 class="text-2xl font-bold mb-2 gradient-text">Street Showdown</h2>
+                    <h3 class="text-2xl font-bold mb-2 text-blue-400">Street Showdown</h3>
                     <p class="text-gray-300 mb-4">Stake: $2</p>
                     <p class="text-gray-400 mb-4">Bring your A-game to the streets. Show 'em what you've got for the price of a coffee!</p>
-                    <button class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
                         Enter Arena
                     </button>
                 </div>
             </div>
 
-            <div class="card bg-gray-800 rounded-lg overflow-hidden retro-border">
-                <img src="/api/placeholder/400/200" alt="Gallery Grudge" class="w-full h-48 object-cover">
+            <div class="card bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+                <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Gallery Grudge" class="w-full h-48 object-cover">
                 <div class="p-6">
-                    <h2 class="text-2xl font-bold mb-2 gradient-text">Gallery Grudge</h2>
+                    <h3 class="text-2xl font-bold mb-2 text-blue-400">Gallery Grudge</h3>
                     <p class="text-gray-300 mb-4">Stake: $5</p>
                     <p class="text-gray-400 mb-4">Step it up a notch. Your art might just end up on someone's wall... or their meme collection!</p>
-                    <button class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
                         Enter Arena
                     </button>
                 </div>
             </div>
 
-            <div class="card bg-gray-800 rounded-lg overflow-hidden retro-border">
-                <img src="/api/placeholder/400/200" alt="Canvas Clash" class="w-full h-48 object-cover">
+            <div class="card bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+                <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Canvas Clash" class="w-full h-48 object-cover">
                 <div class="p-6">
-                    <h2 class="text-2xl font-bold mb-2 gradient-text">Canvas Clash</h2>
+                    <h3 class="text-2xl font-bold mb-2 text-blue-400">Canvas Clash</h3>
                     <p class="text-gray-300 mb-4">Stake: $10</p>
                     <p class="text-gray-400 mb-4">Getting serious now. Time to show those brushes who's boss!</p>
-                    <button class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
                         Enter Arena
                     </button>
                 </div>
             </div>
 
-            <div class="card bg-gray-800 rounded-lg overflow-hidden retro-border">
-                <img src="/api/placeholder/400/200" alt="Masterpiece Mayhem" class="w-full h-48 object-cover">
+            <div class="card bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+                <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Masterpiece Mayhem" class="w-full h-48 object-cover">
                 <div class="p-6">
-                    <h2 class="text-2xl font-bold mb-2 gradient-text">Masterpiece Mayhem</h2>
+                    <h3 class="text-2xl font-bold mb-2 text-blue-400">Masterpiece Mayhem</h3>
                     <p class="text-gray-300 mb-4">Stake: $25</p>
                     <p class="text-gray-400 mb-4">The big leagues. Your art vs theirs. May the best masterpiece win!</p>
-                    <button class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
                         Enter Arena
                     </button>
                 </div>
             </div>
 
-            <div class="card bg-gray-800 rounded-lg overflow-hidden retro-border">
-                <img src="/api/placeholder/400/200" alt="Renaissance Rumble" class="w-full h-48 object-cover">
+            <div class="card bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+                <img src="https://images.unsplash.com/photo-1567095761054-7a02e69e5c43?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8YWJzdHJhY3QlMjBzY3VscHR1cmV8ZW58MHx8MHx8fDA%3D" alt="Louvre Legends" class="w-full h-48 object-cover">
                 <div class="p-6">
-                    <h2 class="text-2xl font-bold mb-2 gradient-text">Renaissance Rumble</h2>
-                    <p class="text-gray-300 mb-4">Stake: $50</p>
-                    <p class="text-gray-400 mb-4">Channel your inner Da Vinci. Just don't take 3 years to finish like he did!</p>
-                    <button class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
-                        Enter Arena
-                    </button>
-                </div>
-            </div>
-
-            <div class="card bg-gray-800 rounded-lg overflow-hidden retro-border">
-                <img src="/api/placeholder/400/200" alt="Louvre Legends" class="w-full h-48 object-cover">
-                <div class="p-6">
-                    <h2 class="text-2xl font-bold mb-2 gradient-text">Louvre Legends</h2>
+                    <h3 class="text-2xl font-bold mb-2 text-blue-400">Louvre Legends</h3>
                     <p class="text-gray-300 mb-4">Stake: $100</p>
                     <p class="text-gray-400 mb-4">The ultimate showdown. Winner gets a spot next to Mona Lisa... well, almost!</p>
-                    <button class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
                         Enter Arena
                     </button>
                 </div>
@@ -141,8 +139,35 @@
         </div>
     </main>
 
-    <footer class="bg-gray-800 text-center py-4 mt-8">
-        <p>&copy; 2024 Art Battle Arena. All rights reserved.</p>
+    <footer class="bg-gray-900 text-center py-8 relative">
+        <div class="container mx-auto">
+            <p>&copy; 2024 Art Battle Arena. All rights reserved.</p>
+            <div class="flex justify-center space-x-6 mt-4">
+                <a href="#" class="text-gray-400 hover:text-blue-400 transition duration-300">
+                    <span class="sr-only">Facebook</span>
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-blue-400 transition duration-300">
+                    <span class="sr-only">Instagram</span>
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-blue-400 transition duration-300">
+                    <span class="sr-only">Twitter</span>
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+        <div class="custom-shape-divider-bottom-1689436216">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path>
+            </svg>
+        </div>
     </footer>
 </body>
 </html>
