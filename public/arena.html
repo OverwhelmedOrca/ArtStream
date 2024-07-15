@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Art Battle Arena</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/2.3.0/alpine.js" integrity="sha512-nIwdJlD5/vHj23CbO2iHCXtsqzdTTx3e3uAmpTm4x2Y8xCIFyWu4cSIV8GaGe2UNVq86/1h9EgUZy7tn243qdA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+        .retro-header {
+            font-family: 'Permanent Marker', cursive;
+            text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.7);
+        }
+        .retro-border {
+            border: 2px solid #ff69b4;
+            box-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
+        }
+        .card {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(255, 105, 180, 0.4);
+        }
+        .gradient-text {
+            background: linear-gradient(45deg, #ff69b4, #ff1493);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-900">
+    <header class="p-4 flex justify-between items-center border-b-2 border-pink-500">
+        <h1 class="retro-header text-3xl gradient-text">Choose your Arena</h1>
+        <div class="flex items-center space-x-4">
+            <div class="relative" x-data="{ open: false }">
+                <img @click="open = !open" src="https://i.pravatar.cc/150?u=username" alt="User" class="w-10 h-10 rounded-full cursor-pointer retro-border">
+                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 retro-border">
+                    <div class="py-1" role="menu">
+                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Profile</a>
+                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Community</a>
+                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">FAQs</a>
+                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem" id="logout-button">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="card bg-gray-800 rounded-lg overflow-hidden retro-border">
+                <img src="/api/placeholder/400/200" alt="Friendly Battle" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold mb-2 gradient-text">Friendly Skirmish</h2>
+                    <p class="text-gray-300 mb-4">Stake: $0</p>
+                    <p class="text-gray-400 mb-4">Unleash your creativity without breaking the bank. Perfect for warming up those artistic muscles!</p>
+                    <button class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
+                        Enter Arena
+                    </button>
+                </div>
+            </div>
+
+            <div class="card bg-gray-800 rounded-lg overflow-hidden retro-border">
+                <img src="/api/placeholder/400/200" alt="Street Battle" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold mb-2 gradient-text">Street Showdown</h2>
+                    <p class="text-gray-300 mb-4">Stake: $2</p>
+                    <p class="text-gray-400 mb-4">Bring your A-game to the streets. Show 'em what you've got for the price of a coffee!</p>
+                    <button class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
+                        Enter Arena
+                    </button>
+                </div>
+            </div>
+
+            <div class="card bg-gray-800 rounded-lg overflow-hidden retro-border">
+                <img src="/api/placeholder/400/200" alt="Gallery Grudge" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold mb-2 gradient-text">Gallery Grudge</h2>
+                    <p class="text-gray-300 mb-4">Stake: $5</p>
+                    <p class="text-gray-400 mb-4">Step it up a notch. Your art might just end up on someone's wall... or their meme collection!</p>
+                    <button class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
+                        Enter Arena
+                    </button>
+                </div>
+            </div>
+
+            <div class="card bg-gray-800 rounded-lg overflow-hidden retro-border">
+                <img src="/api/placeholder/400/200" alt="Canvas Clash" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold mb-2 gradient-text">Canvas Clash</h2>
+                    <p class="text-gray-300 mb-4">Stake: $10</p>
+                    <p class="text-gray-400 mb-4">Getting serious now. Time to show those brushes who's boss!</p>
+                    <button class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
+                        Enter Arena
+                    </button>
+                </div>
+            </div>
+
+            <div class="card bg-gray-800 rounded-lg overflow-hidden retro-border">
+                <img src="/api/placeholder/400/200" alt="Masterpiece Mayhem" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold mb-2 gradient-text">Masterpiece Mayhem</h2>
+                    <p class="text-gray-300 mb-4">Stake: $25</p>
+                    <p class="text-gray-400 mb-4">The big leagues. Your art vs theirs. May the best masterpiece win!</p>
+                    <button class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
+                        Enter Arena
+                    </button>
+                </div>
+            </div>
+
+            <div class="card bg-gray-800 rounded-lg overflow-hidden retro-border">
+                <img src="/api/placeholder/400/200" alt="Renaissance Rumble" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold mb-2 gradient-text">Renaissance Rumble</h2>
+                    <p class="text-gray-300 mb-4">Stake: $50</p>
+                    <p class="text-gray-400 mb-4">Channel your inner Da Vinci. Just don't take 3 years to finish like he did!</p>
+                    <button class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
+                        Enter Arena
+                    </button>
+                </div>
+            </div>
+
+            <div class="card bg-gray-800 rounded-lg overflow-hidden retro-border">
+                <img src="/api/placeholder/400/200" alt="Louvre Legends" class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold mb-2 gradient-text">Louvre Legends</h2>
+                    <p class="text-gray-300 mb-4">Stake: $100</p>
+                    <p class="text-gray-400 mb-4">The ultimate showdown. Winner gets a spot next to Mona Lisa... well, almost!</p>
+                    <button class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded">
+                        Enter Arena
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-center py-4 mt-8">
+        <p>&copy; 2024 Art Battle Arena. All rights reserved.</p>
+    </footer>
+</body>
+</html>
