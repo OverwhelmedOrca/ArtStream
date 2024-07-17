@@ -38,6 +38,10 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 1rem;
+            display: flex;
+        }
+        .content {
+            flex: 3;
         }
         .battle-container {
             display: flex;
@@ -49,6 +53,7 @@
             background-color: #1e1e1e;
             border-radius: 8px;
             overflow: hidden;
+            position: relative;
         }
         .stream-header {
             background-color: var(--secondary-color);
@@ -58,22 +63,35 @@
             justify-content: space-between;
             align-items: center;
         }
+        .stream-header .likes-container {
+            display: flex;
+            align-items: center;
+        }
+        .stream-header .likes-container button {
+            background-color: transparent;
+            border: none;
+            color: var(--background-color);
+            margin-left: 0.5rem;
+            cursor: pointer;
+        }
         .stream-video {
             aspect-ratio: 16 / 9;
             background-color: #000;
+        }
+        .stream-footer {
+            background-color: #1e1e1e;
+            color: var(--text-color);
+            padding: 0.5rem;
+            overflow-y: auto;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
         }
         .battle-info {
             background-color: #1e1e1e;
             border-radius: 8px;
             padding: 1rem;
             margin-bottom: 1rem;
-        }
-        .chat-container {
-            background-color: #1e1e1e;
-            border-radius: 8px;
-            height: 300px;
-            overflow-y: auto;
-            padding: 1rem;
         }
         .voting-system {
             display: flex;
@@ -86,6 +104,39 @@
             color: var(--text-color);
             padding: 0.5rem 1rem;
             border-radius: 4px;
+            cursor: pointer;
+        }
+        .chat-container {
+            flex: 1;
+            margin-left: 1rem;
+            background-color: rgba(30, 30, 30, 0.8);
+            border-radius: 8px;
+            padding: 1rem;
+            height: calc(100vh - 6rem);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .chat-input {
+            display: flex;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+        }
+        .chat-input button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--primary-color);
+            color: var(--text-color);
             cursor: pointer;
         }
         footer {
@@ -109,37 +160,57 @@
     </header>
 
     <main>
-        <div class="battle-container">
-            <div class="stream">
-                <div class="stream-header">
-                    <span>Streamer 1</span>
-                    <span>Viewers: 10,532</span>
+        <div class="content">
+            <div class="battle-container">
+                <div class="stream">
+                    <div class="stream-header">
+                        <span>Streamer 1</span>
+                        <div class="likes-container">
+                            <span>Likes: 10,532</span>
+                            <button>👍</button>
+                        </div>
+                    </div>
+                    <div class="stream-video"></div>
+                    <div class="stream-footer">
+                        <p>More information about Streamer 1</p>
+                    </div>
                 </div>
-                <div class="stream-video"></div>
-            </div>
-            <div class="stream">
-                <div class="stream-header">
-                    <span>Streamer 2</span>
-                    <span>Viewers: 9,748</span>
+                <div class="stream">
+                    <div class="stream-header">
+                        <span>Streamer 2</span>
+                        <div class="likes-container">
+                            <span>Likes: 9,748</span>
+                            <button>👍</button>
+                        </div>
+                    </div>
+                    <div class="stream-video"></div>
+                    <div class="stream-footer">
+                        <p>More information about Streamer 2</p>
+                    </div>
                 </div>
-                <div class="stream-video"></div>
             </div>
-        </div>
 
-        <div class="battle-info">
-            <h2>Current Battle: Speed Run Challenge</h2>
-            <p>Time Remaining: 15:23</p>
+            <div class="battle-info">
+                <h2>Current Battle: Speed Run Challenge</h2>
+                <p>Time Remaining: 15:23</p>
+            </div>
+
+            <div class="voting-system">
+                <button class="vote-button">Vote for Streamer 1</button>
+                <button class="vote-button">Vote for Streamer 2</button>
+            </div>
         </div>
 
         <div class="chat-container">
-            <p><strong>User1:</strong> Let's go Streamer 1!</p>
-            <p><strong>User2:</strong> Streamer 2 is crushing it!</p>
-            <p><strong>User3:</strong> This battle is intense!</p>
-        </div>
-
-        <div class="voting-system">
-            <button class="vote-button">Vote for Streamer 1</button>
-            <button class="vote-button">Vote for Streamer 2</button>
+            <div class="chat-messages">
+                <p><strong>User1:</strong> Let's go Streamer 1!</p>
+                <p><strong>User2:</strong> Streamer 2 is crushing it!</p>
+                <p><strong>User3:</strong> This battle is intense!</p>
+            </div>
+            <div class="chat-input">
+                <input type="text" placeholder="Type your message here...">
+                <button>Send</button>
+            </div>
         </div>
     </main>
 

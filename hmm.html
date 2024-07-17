@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Art Gallery</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+    <script>
+        let scene, camera, renderer, controls;
+        let artworks = [];
+
+        function init() {
+            // Create scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf0f0f0);
+
+            // Create camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1.6, 5);
+
+            // Create renderer
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Add lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xffffff, 0.5);
+            pointLight.position.set(0, 4, 0);
+            scene.add(pointLight);
+
+            // Create room
+            createRoom();
+
+            // Create artworks
+            createArtworks();
+
+            // Set up controls
+            setupControls();
+
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize, false);
+
+            // Start animation loop
+            animate();
+        }
+
+        function createRoom() {
+            const roomGeometry = new THREE.BoxGeometry(10, 5, 20);
+            const roomMaterial = new THREE.MeshPhongMaterial({color: 0xcccccc, side: THREE.BackSide});
+            const room = new THREE.Mesh(roomGeometry, roomMaterial);
+            scene.add(room);
+        }
+
+        function createArtworks() {
+            const artworkGeometry = new THREE.PlaneGeometry(1.5, 1);
+            const artworkMaterials = [
+                new THREE.MeshBasicMaterial({color: 0xff0000}),
+                new THREE.MeshBasicMaterial({color: 0x00ff00}),
+                new THREE.MeshBasicMaterial({color: 0x0000ff}),
+                new THREE.MeshBasicMaterial({color: 0xffff00})
+            ];
+
+            const positions = [
+                {x: -4, y: 1.5, z: -5, ry: Math.PI / 2},
+                {x: 4, y: 1.5, z: -3, ry: -Math.PI / 2},
+                {x: 0, y: 1.5, z: -9.9, ry: 0},
+                {x: 0, y: 1.5, z: 0, ry: Math.PI}
+            ];
+
+            for (let i = 0; i < 4; i++) {
+                const artwork = new THREE.Mesh(artworkGeometry, artworkMaterials[i]);
+                artwork.position.set(positions[i].x, positions[i].y, positions[i].z);
+                artwork.rotation.y = positions[i].ry;
+                scene.add(artwork);
+                artworks.push(artwork);
+            }
+        }
+
+        function setupControls() {
+            controls = {
+                moveForward: false,
+                moveBackward: false,
+                moveLeft: false,
+                moveRight: false,
+                velocity: new THREE.Vector3(),
+                speed: 0.1
+            };
+
+            document.addEventListener('keydown', onKeyDown, false);
+            document.addEventListener('keyup', onKeyUp, false);
+        }
+
+        function onKeyDown(event) {
+            switch (event.code) {
+                case 'ArrowUp':
+                case 'KeyW':
+                    controls.moveForward = true;
+                    break;
+                case 'ArrowLeft':
+                case 'KeyA':
+                    controls.moveLeft = true;
+                    break;
+                case 'ArrowDown':
+                case 'KeyS':
+                    controls.moveBackward = true;
+                    break;
+                case 'ArrowRight':
+                case 'KeyD':
+                    controls.moveRight = true;
+                    break;
+            }
+        }
+
+        function onKeyUp(event) {
+            switch (event.code) {
+                case 'ArrowUp':
+                case 'KeyW':
+                    controls.moveForward = false;
+                    break;
+                case 'ArrowLeft':
+                case 'KeyA':
+                    controls.moveLeft = false;
+                    break;
+                case 'ArrowDown':
+                case 'KeyS':
+                    controls.moveBackward = false;
+                    break;
+                case 'ArrowRight':
+                case 'KeyD':
+                    controls.moveRight = false;
+                    break;
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Update controls
+            if (controls.moveForward) controls.velocity.z -= controls.speed;
+            if (controls.moveBackward) controls.velocity.z += controls.speed;
+            if (controls.moveLeft) controls.velocity.x -= controls.speed;
+            if (controls.moveRight) controls.velocity.x += controls.speed;
+
+            // Apply velocity to camera position
+            camera.position.add(controls.velocity);
+
+            // Constrain camera to room
+            camera.position.x = Math.max(-5, Math.min(5, camera.position.x));
+            camera.position.y = Math.max(1.6, Math.min(5, camera.position.y));
+            camera.position.z = Math.max(-10, Math.min(10, camera.position.z));
+
+            // Decay velocity
+            controls.velocity.multiplyScalar(0.9);
+
+            // Check for artwork interaction
+            checkArtworkInteraction();
+
+            renderer.render(scene, camera);
+        }
+
+        function checkArtworkInteraction() {
+            const raycaster = new THREE.Raycaster();
+            const direction = new THREE.Vector3(0, 0, -1);
+            direction.applyQuaternion(camera.quaternion);
+            raycaster.set(camera.position, direction);
+
+            const intersects = raycaster.intersectObjects(artworks);
+            if (intersects.length > 0 && intersects[0].distance < 2) {
+                intersects[0].object.material.color.setHex(0xffffff);
+            } else {
+                artworks.forEach(artwork => {
+                    artwork.material.color.setHex(artwork.material.color.getHex());
+                });
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        init();
+    </script>
+</body>
+</html>
