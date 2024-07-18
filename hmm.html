@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>3D Art Gallery</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Basic setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Materials
+        const wallMaterial = new THREE.MeshBasicMaterial({ color: 0xf5f5f5, side: THREE.DoubleSide });
+        const floorMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc, shininess: 100 });
+
+        // Geometries
+        const wallGeometry = new THREE.PlaneGeometry(100, 50);
+        const floorGeometry = new THREE.PlaneGeometry(200, 200);
+
+        // Main hall
+        const backWall = new THREE.Mesh(wallGeometry, wallMaterial);
+        backWall.position.z = -50;
+        scene.add(backWall);
+
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = - Math.PI / 2;
+        scene.add(floor);
+
+        const ceiling = new THREE.Mesh(floorGeometry, wallMaterial);
+        ceiling.rotation.x = Math.PI / 2;
+        ceiling.position.y = 50;
+        scene.add(ceiling);
+
+        const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
+        leftWall.rotation.y = Math.PI / 2;
+        leftWall.position.x = -50;
+        scene.add(leftWall);
+
+        const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
+        rightWall.rotation.y = -Math.PI / 2;
+        rightWall.position.x = 50;
+        scene.add(rightWall);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
+        scene.add(ambientLight);
+
+        const spotLight1 = new THREE.SpotLight(0xffffff);
+        spotLight1.position.set(0, 45, -25);
+        scene.add(spotLight1);
+
+        const spotLight2 = new THREE.SpotLight(0xffffff);
+        spotLight2.position.set(0, 45, 0);
+        scene.add(spotLight2);
+
+        const spotLight3 = new THREE.SpotLight(0xffffff);
+        spotLight3.position.set(0, 45, 25);
+        scene.add(spotLight3);
+
+        // Artwork
+        const frameMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        const artworkTexture = new THREE.TextureLoader().load('path/to/your/artwork.jpg');
+        const artworkMaterial = new THREE.MeshBasicMaterial({ map: artworkTexture });
+
+        const frameGeometry = new THREE.BoxGeometry(20, 30, 2);
+        const artworkGeometry = new THREE.PlaneGeometry(18, 28);
+
+        const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+        frame.position.set(0, 25, -49);
+        scene.add(frame);
+
+        const artwork = new THREE.Mesh(artworkGeometry, artworkMaterial);
+        artwork.position.set(0, 25, -48);
+        scene.add(artwork);
+
+        // Navigation controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        camera.position.set(0, 25, 100);
+        controls.update();
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Helper functions
+        function addSpotlight(position) {
+            const spotLight = new THREE.SpotLight(0xffffff);
+            spotLight.position.set(position.x, position.y, position.z);
+            spotLight.castShadow = true;
+            scene.add(spotLight);
+        }
+
+        function addArtwork(position, texturePath) {
+            const artworkTexture = new THREE.TextureLoader().load(texturePath);
+            const artworkMaterial = new THREE.MeshBasicMaterial({ map: artworkTexture });
+            const artwork = new THREE.Mesh(artworkGeometry, artworkMaterial);
+            artwork.position.set(position.x, position.y, position.z);
+            scene.add(artwork);
+        }
+
+        function addFrame(position) {
+            const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+            frame.position.set(position.x, position.y, position.z - 1);
+            scene.add(frame);
+        }
+
+        // Adding more artworks and spotlights
+        addSpotlight({ x: 0, y: 45, z: 25 });
+        addArtwork({ x: -30, y: 25, z: -48 }, 'path/to/your/artwork2.jpg');
+        addFrame({ x: -30, y: 25, z: -48 });
+
+        addArtwork({ x: 30, y: 25, z: -48 }, 'path/to/your/artwork3.jpg');
+        addFrame({ x: 30, y: 25, z: -48 });
+
+        // Seating areas
+        const benchGeometry = new THREE.BoxGeometry(30, 5, 10);
+        const benchMaterial = new THREE.MeshBasicMaterial({ color: 0x555555 });
+        const bench = new THREE.Mesh(benchGeometry, benchMaterial);
+        bench.position.set(0, 2.5, -30);
+        scene.add(bench);
+    </script>
+</body>
+
+</html>
