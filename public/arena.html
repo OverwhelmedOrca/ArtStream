@@ -138,6 +138,7 @@
                 timeLimit: '10',
                 opponentName: '',
                 opponentAvatar: '',
+                battleId: null,
                 arenas: [
                     {
                         name: "Friendly Skirmish",
@@ -185,6 +186,7 @@
                 async findOpponent() {
                     this.showModal = false;
                     this.showLoading = true;
+                    this.battleId = null; // Reset battleId
 
                     const battleData = {
                         username: localStorage.getItem('username'),
@@ -214,6 +216,7 @@
                         if (result.opponentFound) {
                             this.showOpponentFound(result.opponent);
                         } else {
+                            this.battleId = result.battleId;
                             this.checkForOpponent();
                         }
                     } catch (error) {
@@ -224,8 +227,13 @@
                 },
 
                 async checkForOpponent() {
+                    if (!this.battleId) {
+                        this.showLoading = false;
+                        return;
+                    }
+
                     try {
-                        const response = await fetch('/api/check-opponent', {
+                        const response = await fetch(`/api/check-opponent/${this.battleId}`, {
                             method: 'GET',
                             headers: {
                                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -259,7 +267,7 @@
                     
                     // Redirect to battle page after 3 seconds
                     setTimeout(() => {
-                        window.location.href = '/battle.html';
+                        window.location.href = `/battle.html?id=${this.battleId}`;
                     }, 3000);
                 }
             }

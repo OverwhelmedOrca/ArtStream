@@ -340,7 +340,11 @@ app.post('/api/find-opponent', verifyToken, async (req, res) => {
           });
           await newBattle.save();
 
-          return res.json({ opponentFound: true, opponent: { username: existingBattle.username } });
+          return res.json({ 
+              opponentFound: true, 
+              opponent: { username: existingBattle.username },
+              battleId: newBattle._id
+          });
       } else {
           // No opponent found, create a new battle entry
           const newBattle = new Battle({
@@ -353,11 +357,35 @@ app.post('/api/find-opponent', verifyToken, async (req, res) => {
           });
           await newBattle.save();
 
-          return res.json({ opponentFound: false });
+          return res.json({ opponentFound: false, battleId: newBattle._id });
       }
   } catch (err) {
       console.error('Error finding opponent:', err);
       res.status(500).json({ message: 'Error finding opponent', error: err.message });
+  }
+});
+
+app.get('/api/check-opponent/:battleId', verifyToken, async (req, res) => {
+  const { battleId } = req.params;
+
+  try {
+      const battle = await Battle.findById(battleId);
+
+      if (!battle) {
+          return res.status(404).json({ message: 'Battle not found' });
+      }
+
+      if (battle.opponentFound) {
+          res.json({ 
+              opponentFound: true, 
+              opponent: { username: battle.opponentName } 
+          });
+      } else {
+          res.json({ opponentFound: false });
+      }
+  } catch (err) {
+      console.error('Error checking for opponent:', err);
+      res.status(500).json({ message: 'Error checking for opponent' });
   }
 });
 
