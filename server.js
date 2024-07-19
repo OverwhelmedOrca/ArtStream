@@ -46,6 +46,20 @@ const streamSchema = new mongoose.Schema({
 
 const Stream = mongoose.model('Stream', streamSchema, 'Streams');
 
+const battleSchema = new mongoose.Schema({
+  username: { type: String, required: true },
+  arenaName: { type: String, required: true },
+  stakeAmount: { type: Number, required: true },
+  aiAllowed: { type: Boolean, required: true },
+  liveStream: { type: Boolean, required: true },
+  timeLimit: { type: Number, required: true },
+  opponentFound: { type: Boolean, default: false },
+  opponentName: { type: String, default: null },
+  createdAt: { type: Date, default: Date.now, expires: '1h' } // Automatically delete after 1 hour
+});
+
+const Battle = mongoose.model('Battle', battleSchema, 'Battles');
+
 app.post('/signup', async (req, res) => {
   const { username, email, password } = req.body;
   try {
@@ -285,6 +299,82 @@ app.post('/streams/:id/start', verifyToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error starting stream' });
+  }
+});
+
+app.post('/api/find-opponent', verifyToken, async (req, res) => {
+  const { username, arenaName, stakeAmount, aiAllowed, liveStream, timeLimit } = req.body;
+
+  try {
+      // Validate incoming data
+      if (!username || !arenaName || stakeAmount === undefined || aiAllowed === undefined || liveStream === undefined || !timeLimit) {
+          return res.status(400).json({ message: 'Missing required fields' });
+      }
+
+      // Check for an existing opponent
+      const existingBattle = await Battle.findOne({
+          arenaName,
+          stakeAmount,
+          aiAllowed,
+          liveStream,
+          timeLimit,
+          opponentFound: false,
+          username: { $ne: username }
+      });
+
+      if (existingBattle) {
+          // Opponent found, update both battles
+          existingBattle.opponentFound = true;
+          existingBattle.opponentName = username;
+          await existingBattle.save();
+
+          const newBattle = new Battle({
+              username,
+              arenaName,
+              stakeAmount,
+              aiAllowed,
+              liveStream,
+              timeLimit,
+              opponentFound: true,
+              opponentName: existingBattle.username
+          });
+          await newBattle.save();
+
+          return res.json({ opponentFound: true, opponent: { username: existingBattle.username } });
+      } else {
+          // No opponent found, create a new battle entry
+          const newBattle = new Battle({
+              username,
+              arenaName,
+              stakeAmount,
+              aiAllowed,
+              liveStream,
+              timeLimit
+          });
+          await newBattle.save();
+
+          return res.json({ opponentFound: false });
+      }
+  } catch (err) {
+      console.error('Error finding opponent:', err);
+      res.status(500).json({ message: 'Error finding opponent', error: err.message });
+  }
+});
+
+app.get('/api/check-opponent', verifyToken, async (req, res) => {
+  const username = req.user.username;
+
+  try {
+      const battle = await Battle.findOne({ username, opponentFound: true });
+
+      if (battle) {
+          res.json({ opponentFound: true, opponent: { username: battle.opponentName } });
+      } else {
+          res.json({ opponentFound: false });
+      }
+  } catch (err) {
+      console.error('Error checking for opponent:', err);
+      res.status(500).json({ message: 'Error checking for opponent' });
   }
 });
 
