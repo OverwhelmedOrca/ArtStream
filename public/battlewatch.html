@@ -109,6 +109,39 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
         }
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #FF416C, #FF4B2B);
+            border-radius: 20px;
+            height: 20px;
+            width: 0%;
+            transition: width 1s linear;
+        }
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+        }
+        .chat-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -155,7 +188,7 @@
                 <!-- Battle Info -->
                 <div class="bg-gray-800 p-6 mt-4 rounded-lg shadow-md">
                     <h2 class="text-2xl font-bold mb-4 text-center text-purple-400">Epic Art Showdown</h2>
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center mb-4">
                         <div class="text-center">
                             <img src="https://i.pravatar.cc/100?img=3" alt="Artist 1" class="w-20 h-20 rounded-full mx-auto mb-2 border-4 border-purple-500">
                             <h3 class="font-bold text-lg">CanvasRebel</h3>
@@ -168,6 +201,11 @@
                             <p class="text-sm text-gray-400">Illustrator</p>
                         </div>
                     </div>
+                    <div class="progress-container mb-2">
+                        <div id="battleProgress" class="progress-bar"></div>
+                        <div class="progress-text"><span id="battleTimeRemaining">10:00</span></div>
+                    </div>
+                    <div id="battlePrompt" class="text-center text-yellow-300 font-bold"></div>
                 </div>
 
                 <!-- Voting and Betting Section -->
@@ -214,9 +252,10 @@
             </div>
 
             <!-- Right Column: Chat -->
-            <div class="w-1/4 bg-gray-800 flex flex-col border-l border-gray-700">
-                <div class="p-4 bg-gray-700 font-bold text-lg">
-                    <i class="fas fa-comments mr-2"></i> Battle Chat
+            <div id="chatSidebar" class="w-1/4 bg-gray-800 flex flex-col border-l border-gray-700 transition-all duration-300 ease-in-out">
+                <div class="p-4 bg-gray-700 font-bold text-lg flex justify-between items-center">
+                    <span><i class="fas fa-comments mr-2"></i> Battle Chat</span>
+                    <span id="viewerCount" class="text-sm"><i class="fas fa-eye mr-1"></i> 0</span>
                 </div>
                 <div id="chatMessages" class="flex-grow overflow-y-auto p-4 custom-scrollbar">
                     <!-- Chat messages will be inserted here -->
@@ -529,6 +568,52 @@
                 }
             });
         });
+
+        // Battle progress bar
+        let battleDuration = 600; // 10 minutes in seconds
+        let battleTimeRemaining = battleDuration;
+        const battleProgress = document.getElementById('battleProgress');
+        const battleTimeRemainingElement = document.getElementById('battleTimeRemaining');
+        const battlePromptElement = document.getElementById('battlePrompt');
+
+        function updateBattleProgress() {
+            const progress = ((battleDuration - battleTimeRemaining) / battleDuration) * 100;
+            battleProgress.style.width = `${progress}%`;
+            
+            const minutes = Math.floor(battleTimeRemaining / 60);
+            const seconds = battleTimeRemaining % 60;
+            battleTimeRemainingElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (battleTimeRemaining > 0) {
+                battleTimeRemaining--;
+                setTimeout(updateBattleProgress, 1000);
+            }
+        }
+
+        // Set battle prompt
+        const prompts = [
+            "Futuristic cityscape",
+            "Underwater fantasy world",
+            "Steampunk animal hybrids",
+            "Abstract emotions",
+            "Post-apocalyptic nature reclamation"
+        ];
+        battlePromptElement.textContent = `Prompt: ${prompts[Math.floor(Math.random() * prompts.length)]}`;
+
+        // Start the battle progress
+        updateBattleProgress();
+
+        // Viewer count
+        const viewerCountElement = document.getElementById('viewerCount');
+        let viewerCount = 0;
+
+        function updateViewerCount() {
+            viewerCount = Math.floor(Math.random() * 1000) + 307; // Simulated viewer count
+            viewerCountElement.innerHTML = `<i class="fas fa-eye mr-1"></i> ${viewerCount.toLocaleString()}`;
+            setTimeout(updateViewerCount, 5000); // Update every 5 seconds
+        }
+
+        updateViewerCount();
     </script>
 </body>
 
