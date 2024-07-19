@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArtBattle - Live 1v1 Art Streaming</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #2D3748;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #4A5568;
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+        .gradient-bg {
+            background: linear-gradient(45deg, #FF416C, #FF4B2B);
+        }
+        .video-wrapper {
+            position: relative;
+            border: 2px solid #FF416C;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(255, 65, 108, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .video-wrapper:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(255, 65, 108, 0.5);
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: opacity 0.3s;
+            opacity: 0;
+        }
+        .video-wrapper:hover .video-controls {
+            opacity: 1;
+        }
+        .video-controls button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s;
+        }
+        .video-controls button:hover {
+            color: #FF416C;
+        }
+        .vs-divider {
+            position: relative;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #FF416C, #FF4B2B);
+        }
+        .vs-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1A202C;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #FF416C;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: pulse 2s infinite;
+        }
+        .bet-button {
+            background: linear-gradient(45deg, #FF416C, #FF4B2B);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .bet-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.5);
+        }
+        .vote-button {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .vote-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+        }
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #FF416C, #FF4B2B);
+            border-radius: 20px;
+            height: 20px;
+            width: 0%;
+            transition: width 1s linear;
+        }
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+        }
+        .chat-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #2D3748;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #4A5568;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 10px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .chart-container {
+            position: relative;
+            height: 40vh;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white">
+    <div class="flex flex-col h-screen">
+        <!-- Header -->
+        <header class="gradient-bg p-4 shadow-lg">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center">
+                    <img src="/api/placeholder/40/40" alt="Logo" class="w-10 h-10 mr-2 rounded-full">
+                    <h1 class="text-2xl font-bold text-white">ArtBattle</h1>
+                </div>
+                <nav>
+                    <ul class="flex space-x-6">
+                        <li><a href="#" class="hover:text-yellow-300 transition duration-300">Live Battles</a></li>
+                        <li><a href="#" class="hover:text-yellow-300 transition duration-300">Leaderboard</a></li>
+                        <li><a href="#" class="hover:text-yellow-300 transition duration-300">My Bets</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="flex-grow flex overflow-hidden">
+            <!-- Left Column: Video Player and Info -->
+            <div class="w-3/4 flex flex-col overflow-y-auto custom-scrollbar">
+                <!-- Battle Mode Toggle -->
+                <div class="p-4 bg-gray-800">
+                    <div class="flex justify-center space-x-4">
+                        <button id="sideBySideBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition duration-300">
+                            Side by Side
+                        </button>
+                        <button id="pipBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition duration-300">
+                            Picture in Picture
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Video Container -->
+                <div id="videoContainer" class="flex-grow p-4 bg-gray-800">
+                    <!-- Videos will be dynamically inserted here -->
+                </div>
+
+                <!-- Battle Info -->
+                <div class="bg-gray-800 p-6 mt-4 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold mb-4 text-center text-purple-400">Epic Art Showdown</h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="text-center">
+                            <img src="https://i.pravatar.cc/100?img=3" alt="Artist 1" class="w-20 h-20 rounded-full mx-auto mb-2 border-4 border-purple-500">
+                            <h3 class="font-bold text-lg">CanvasRebel</h3>
+                            <p class="text-sm text-gray-400">Digital Painter</p>
+                        </div>
+                        <div class="text-4xl font-bold text-red-500">VS</div>
+                        <div class="text-center">
+                            <img src="https://i.pravatar.cc/100?img=4" alt="Artist 2" class="w-20 h-20 rounded-full mx-auto mb-2 border-4 border-purple-500">
+                            <h3 class="font-bold text-lg">BrushMaster</h3>
+                            <p class="text-sm text-gray-400">Illustrator</p>
+                        </div>
+                    </div>
+                    <div class="progress-container mb-2">
+                        <div id="battleProgress" class="progress-bar"></div>
+                        <div class="progress-text"><span id="battleTimeRemaining">10:00</span></div>
+                    </div>
+                    <div id="battlePrompt" class="text-center text-yellow-300 font-bold"></div>
+                </div>
+
+                <!-- Voting and Betting Section -->
+                <div class="bg-gray-800 p-6 mt-4 rounded-lg shadow-md">
+                    <h3 class="text-2xl font-bold mb-6 text-center text-purple-400">Cast Your Vote & Place Your Bet</h3>
+                    <div class="flex justify-between items-center">
+                        <div class="text-center">
+                            <button class="vote-button bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full mb-2">
+                                Vote for CanvasRebel
+                            </button>
+                            <button class="bet-button text-white font-bold py-2 px-6 rounded-full">
+                                Bet on CanvasRebel
+                            </button>
+                        </div>
+                        <div class="text-center">
+                            <button class="vote-button bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full mb-2">
+                                Vote for BrushMaster
+                            </button>
+                            <button class="bet-button text-white font-bold py-2 px-6 rounded-full">
+                                Bet on BrushMaster
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button id="showInsightsBtn" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
+                            Show Battle Insights
+                        </button>
+                    </div>
+                </div>
+
+
+                <!-- Insights Modal -->
+                <div id="insightsModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <h2 class="text-2xl font-bold mb-4 text-center text-purple-400">Battle Insights</h2>
+                        <div class="flex justify-between">
+                            <div class="w-1/2 pr-2">
+                                <div class="chart-container">
+                                    <canvas id="winProbabilityChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="w-1/2 pl-2">
+                                <div class="chart-container">
+                                    <canvas id="betDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Battle Stats -->
+                <div class="bg-gray-800 p-6 mt-4 rounded-lg shadow-md">
+                    <h3 class="text-2xl font-bold mb-6 text-center text-purple-400">Battle Stats</h3>
+                    <div class="flex justify-between items-center">
+                        <div class="text-center">
+                            <p class="text-2xl font-bold">1,234</p>
+                            <p class="text-sm text-gray-400">Votes for CanvasRebel</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold">5,678</p>
+                            <p class="text-sm text-gray-400">Total Bets Placed</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold">987</p>
+                            <p class="text-sm text-gray-400">Votes for BrushMaster</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Chat -->
+            <div id="chatSidebar" class="w-1/4 bg-gray-800 flex flex-col border-l border-gray-700 transition-all duration-300 ease-in-out">
+                <div class="p-4 bg-gray-700 font-bold text-lg flex justify-between items-center">
+                    <span><i class="fas fa-comments mr-2"></i> Battle Chat</span>
+                    <span id="viewerCount" class="text-sm"><i class="fas fa-eye mr-1"></i> 0</span>
+                </div>
+                <div id="chatMessages" class="flex-grow overflow-y-auto p-4 custom-scrollbar">
+                    <!-- Chat messages will be inserted here -->
+                </div>
+                <div class="p-4 border-t border-gray-700">
+                    <input type="text" id="chatInput" placeholder="Send a message" class="w-full p-3 rounded-full bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const videoContainer = document.getElementById('videoContainer');
+        const sideBySideBtn = document.getElementById('sideBySideBtn');
+        const pipBtn = document.getElementById('pipBtn');
+
+        // Sample video data
+        const sampleStreams = [
+            {
+                url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+                title: 'CanvasRebel\'s Stream',
+            },
+            {
+                url: 'https://test-streams.mux.dev/test_001/stream.m3u8',
+                title: 'BrushMaster\'s Stream',
+            },
+        ];
+
+        function createVideoWrapper(url, title) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'video-wrapper';
+
+            const video = document.createElement('video');
+            video.controls = false;
+            video.autoplay = true;
+            video.muted = true;
+
+            const titleElement = document.createElement('div');
+            titleElement.className = 'absolute top-0 left-0 bg-black bg-opacity-50 text-white p-2 rounded-br';
+            titleElement.textContent = title;
+
+            const controls = document.createElement('div');
+            controls.className = 'video-controls';
+
+            const playPauseBtn = document.createElement('button');
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            playPauseBtn.onclick = (e) => {
+                e.stopPropagation();
+                togglePlayPause(video, playPauseBtn);
+            };
+
+            controls.appendChild(playPauseBtn);
+
+            wrapper.appendChild(video);
+            wrapper.appendChild(titleElement);
+            wrapper.appendChild(controls);
+
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play();
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+                video.addEventListener('loadedmetadata', function() {
+                    video.play();
+                });
+            }
+
+            return wrapper;
+        }
+
+        function togglePlayPause(video, btn) {
+            if (video.paused) {
+                video.play();
+                btn.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                video.pause();
+                btn.innerHTML = '<i class="fas fa-play"></i>';
+            }
+        }
+
+        function setupSideBySide() {
+            videoContainer.innerHTML = '';
+            videoContainer.className = 'flex-grow p-4 bg-gray-800 flex items-center justify-center';
+
+            const videoWrapper = document.createElement('div');
+            videoWrapper.className = 'flex items-stretch space-x-4 w-full h-full';
+
+            sampleStreams.forEach((stream) => {
+                const wrapper = createVideoWrapper(stream.url, stream.title);
+                wrapper.style.flex = '1';
+                videoWrapper.appendChild(wrapper);
+            });
+
+            videoContainer.appendChild(videoWrapper);
+        }
+
+        function setupPictureInPicture() {
+            videoContainer.innerHTML = '';
+            videoContainer.className = 'flex-grow p-4 bg-gray-800 relative';
+
+            const mainWrapper = createVideoWrapper(sampleStreams[0].url, sampleStreams[0].title);
+            mainWrapper.style.width = '100%';
+            mainWrapper.style.height = '100%';
+
+            const pipWrapper = createVideoWrapper(sampleStreams[1].url, sampleStreams[1].title);
+            pipWrapper.style.position = 'absolute';
+            pipWrapper.style.width = '30%';
+            pipWrapper.style.height = '30%';
+            pipWrapper.style.bottom = '20px';
+            pipWrapper.style.right = '20px';
+            pipWrapper.style.zIndex = '10';
+
+            videoContainer.appendChild(mainWrapper);
+            videoContainer.appendChild(pipWrapper);
+
+            // Add swap button
+            const swapButton = document.createElement('button');
+            swapButton.innerHTML = '<i class="fas fa-exchange-alt"></i>';
+            swapButton.className = 'absolute top-4 right-4 bg-gray-800 text-white p-2 rounded-full z-20';
+            swapButton.onclick = () => {
+                const tempUrl = mainWrapper.querySelector('video').src;
+                const tempTitle = mainWrapper.querySelector('div').textContent;
+
+                const mainHls = new Hls();
+                mainHls.loadSource(sampleStreams[1].url);
+                mainHls.attachMedia(mainWrapper.querySelector('video'));
+                mainWrapper.querySelector('div').textContent = sampleStreams[1].title;
+
+                const pipHls = new Hls();
+                pipHls.loadSource(sampleStreams[0].url);
+                pipHls.attachMedia(pipWrapper.querySelector('video'));
+                pipWrapper.querySelector('div').textContent = sampleStreams[0].title;
+
+                // Swap the stream objects
+                [sampleStreams[0], sampleStreams[1]] = [sampleStreams[1], sampleStreams[0]];
+            };
+            videoContainer.appendChild(swapButton);
+        }
+
+        // Set up event listeners for mode buttons
+        sideBySideBtn.addEventListener('click', () => {
+            sideBySideBtn.classList.add('bg-purple-600');
+            pipBtn.classList.remove('bg-purple-600');
+            setupSideBySide();
+        });
+
+        pipBtn.addEventListener('click', () => {
+            pipBtn.classList.add('bg-purple-600');
+            sideBySideBtn.classList.remove('bg-purple-600');
+            setupPictureInPicture();
+        });
+
+        // Initialize with side-by-side view
+        setupSideBySide();
+
+        // Chat functionality
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+
+        function addChatMessage(user, message) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'mb-3 p-2 bg-gray-700 rounded-lg';
+            messageElement.innerHTML = `<span class="font-bold text-purple-400">${user}:</span> ${message}`;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        chatInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                const message = this.value.trim();
+                if (message) {
+                    addChatMessage('You', message);
+                    this.value = '';
+                }
+            }
+        });
+
+        // Simulated chat messages
+        const simulatedUsers = [
+            'ArtFan123',
+            'CreativeSoul',
+            'BrushEnthusiast',
+            'ColorMaster',
+            'PaintPro',
+            'CanvasLover',
+            'InspirationSeeker',
+            'ArtisticDreamer',
+            'PaletteWizard',
+            'SketchSavant',
+            'TextureGuru',
+            'DesignDynamo',
+            'VisualVirtuoso',
+            'StrokeSpecialist',
+            'HueHero',
+            'IllustrationExpert',
+            'MasterpieceMaker',
+            'GalleryGazer',
+            'VividVisionary'
+        ]
+        const simulatedMessages = [
+            'This battle is intense!',
+            'CanvasRebel is killing it!',
+            'BrushMaster\'s technique is insane',
+            'Who do you think will win?',
+            'The colors are so vibrant!',
+            'I can\'t believe how fast they work',
+            'This is the best art battle I\'ve seen',
+            'Both artists are so talented',
+            'Wow, look at those details!',
+            'I wish I could paint like that',
+            'This is pure art magic',
+            'Unbelievable precision!',
+            'Every stroke is perfect',
+            'The atmosphere is electric',
+            'I\'m on the edge of my seat!',
+            'The creativity is off the charts',
+            'Just look at those textures',
+            'This battle will go down in history',
+            'I can\'t choose a favorite',
+            'The talent here is unreal',
+            'I love the way they blend colors',
+            'Such a unique style!',
+            'This is a masterclass in painting',
+            'Their techniques are revolutionary',
+            'Absolutely mesmerizing!',
+            'The energy is palpable',
+            'They\'re in a league of their own',
+            'I\'m learning so much just by watching',
+            'This is a visual feast',
+            'The contrast is stunning',
+            'I\'m totally blown away',
+            'They make it look so easy',
+            'The brushwork is impeccable',
+            'Such bold choices!',
+            'I never thought I\'d see something like this',
+            'Art in its purest form',
+            'Every second is captivating',
+            'Their vision is extraordinary',
+            'The audience is loving it',
+            'I\'m getting chills',
+            'This is what art is all about',
+            'Pushing the boundaries of creativity',
+            'A true display of skill',
+            'This is an epic showdown',
+            'Every element is perfect',
+            'Astonishing talent on display',
+            'This will be talked about for years',
+            'They\'re raising the bar for everyone',
+            'I can\'t take my eyes off the screen',
+            'This is a once-in-a-lifetime event',
+            'Their techniques complement each other so well',
+            'Such a dramatic battle!',
+            'The audience is completely engaged',
+            'Artistry at its finest',
+            'This is so inspiring',
+            'I can feel the passion',
+            'The composition is flawless',
+            'I\'m in awe of their skill',
+            'A masterful performance',
+            'They\'re creating masterpieces in real-time',
+            'This is why I love art',
+            'The details are mind-blowing',
+            'I\'ve never seen anything like this',
+            'Each piece tells a story',
+            'Their styles are so different yet so compelling',
+            'This is a true art duel',
+            'I can see the dedication in every stroke',
+            'They\'re both winners in my book',
+            'The crowd is going wild',
+            'Such intricate designs',
+            'I\'m completely absorbed in this',
+            'The suspense is killing me!',
+            'Art is truly alive here',
+            'Both artists are so talented'
+        ];
+
+        function simulateChat() {
+            const user = simulatedUsers[Math.floor(Math.random() * simulatedUsers.length)];
+            const message = simulatedMessages[Math.floor(Math.random() * simulatedMessages.length)];
+            addChatMessage(user, message);
+        }
+
+        // Simulate a new chat message every 5 seconds
+        setInterval(simulateChat, 2000);
+
+        // Voting and Betting functionality
+        const voteButtons = document.querySelectorAll('.vote-button');
+        const betButtons = document.querySelectorAll('.bet-button');
+
+        voteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                voteButtons.forEach(btn => btn.disabled = true);
+                this.classList.add('bg-purple-600');
+                this.textContent = 'Voted!';
+                alert('Thank you for voting!');
+            });
+        });
+
+        betButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const amount = prompt('Enter your bet amount:');
+                if (amount && !isNaN(amount)) {
+                    alert(`You've placed a bet of $${amount}. Good luck!`);
+                    this.textContent = `Bet: $${amount}`;
+                    this.disabled = true;
+                }
+            });
+        });
+
+        // Battle progress bar
+        let battleDuration = 600; // 10 minutes in seconds
+        let battleTimeRemaining = battleDuration;
+        const battleProgress = document.getElementById('battleProgress');
+        const battleTimeRemainingElement = document.getElementById('battleTimeRemaining');
+        const battlePromptElement = document.getElementById('battlePrompt');
+
+        function updateBattleProgress() {
+            const progress = ((battleDuration - battleTimeRemaining) / battleDuration) * 100;
+            battleProgress.style.width = `${progress}%`;
+            
+            const minutes = Math.floor(battleTimeRemaining / 60);
+            const seconds = battleTimeRemaining % 60;
+            battleTimeRemainingElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (battleTimeRemaining > 0) {
+                battleTimeRemaining--;
+                setTimeout(updateBattleProgress, 1000);
+            }
+        }
+
+        // Set battle prompt
+        const prompts = [
+            "Futuristic cityscape",
+            "Underwater fantasy world",
+            "Steampunk animal hybrids",
+            "Abstract emotions",
+            "Post-apocalyptic nature reclamation"
+        ];
+        battlePromptElement.textContent = `Prompt: ${prompts[Math.floor(Math.random() * prompts.length)]}`;
+
+        // Start the battle progress
+        updateBattleProgress();
+
+        // Viewer count
+        const viewerCountElement = document.getElementById('viewerCount');
+        let viewerCount = 0;
+
+        function updateViewerCount() {
+            viewerCount = Math.floor(Math.random() * 1000) + 307; // Simulated viewer count
+            viewerCountElement.innerHTML = `<i class="fas fa-eye mr-1"></i> ${viewerCount.toLocaleString()}`;
+            setTimeout(updateViewerCount, 5000); // Update every 5 seconds
+        }
+
+        updateViewerCount();
+
+        // Insights Modal
+        const modal = document.getElementById("insightsModal");
+        const btn = document.getElementById("showInsightsBtn");
+        const span = document.getElementsByClassName("close")[0];
+
+        btn.onclick = function() {
+            modal.style.display = "block";
+            updateInsightsCharts();
+        }
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function updateInsightsCharts() {
+            // Win Probability Chart
+            const winProbCtx = document.getElementById('winProbabilityChart').getContext('2d');
+            new Chart(winProbCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['CanvasRebel', 'BrushMaster'],
+                    datasets: [{
+                        data: [60, 40],
+                        backgroundColor: ['#FF416C', '#4CAF50']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Win Probability',
+                            color: 'white',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            labels: {
+                                color: 'white',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Bet Distribution Chart
+            const betDistCtx = document.getElementById('betDistributionChart').getContext('2d');
+            new Chart(betDistCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['$0-$50', '$51-$100', '$101-$200', '$201-$500', '$500+'],
+                    datasets: [{
+                        label: 'Number of Bets',
+                        data: [50, 30, 20, 10, 5],
+                        backgroundColor: '#8B5CF6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Bet Distribution',
+                            color: 'white',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            labels: {
+                                color: 'white',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: 'white',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'white',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -293,6 +293,20 @@
         </div>
     </div>
 
+    <!-- Server Type Modal -->
+    <div id="server-type-modal" class="modal">
+        <div class="modal-content">
+            <span class="close text-2xl font-bold cursor-pointer float-right text-gray-400 hover:text-white">&times;</span>
+            <h2 class="text-2xl font-bold mb-4 text-purple-400">Choose Server Type</h2>
+            <button id="collaborate-btn" class="w-full mb-4 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white font-bold py-3 px-4 rounded transition duration-300">
+                <i class="fas fa-users mr-2"></i> Collaborate
+            </button>
+            <button id="1v1-btn" class="w-full bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white font-bold py-3 px-4 rounded transition duration-300">
+                <i class="fas fa-chess mr-2"></i> 1v1
+            </button>
+        </div>
+    </div>
+
     <script>
         // Function to create a stream element
         function createStreamElement(stream, type) {
@@ -353,6 +367,7 @@
         const loginModal = document.getElementById('login-modal');
         const signupModal = document.getElementById('signup-modal');
         const liveOptionsModal = document.getElementById('live-options-modal');
+        const serverTypeModal = document.getElementById('server-type-modal');
         const closeBtns = document.getElementsByClassName('close');
         const goLiveBtn = document.getElementById('go-live');
 
@@ -477,10 +492,30 @@
             const token = localStorage.getItem('token');
             const username = localStorage.getItem('username');
             if (token && username) {
+                closeModal(liveOptionsModal);
+                openModal(serverTypeModal);
+            } else {
+                alert('Please log in before starting a server.');
+            }
+        }
+
+        document.getElementById('collaborate-btn').onclick = function() {
+            const username = localStorage.getItem('username');
+            if (username) {
                 localStorage.setItem('isHost', 'true');
                 window.location.href = 'setup.html';
             } else {
-                alert('Please log in before starting a server.');
+                alert('Please log in before collaborating.');
+            }
+        }
+
+        document.getElementById('1v1-btn').onclick = function() {
+            const username = localStorage.getItem('username');
+            if (username) {
+                localStorage.setItem('isHost', 'true');
+                window.location.href = 'arena.html';
+            } else {
+                alert('Please log in before starting a 1v1 session.');
             }
         }
 
@@ -500,6 +535,9 @@
             start: "top 80%",
         }});
     </script>
+<<<<<<< HEAD
     
+=======
+>>>>>>> 5db582e95b508937a596617a2cec48164ee23580
 </body>
 </html>
