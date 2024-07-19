@@ -175,6 +175,11 @@
             text-decoration: none;
             cursor: pointer;
         }
+        .chart-container {
+            position: relative;
+            height: 40vh;
+            width: 100%;
+        }
     </style>
 </head>
 
@@ -277,10 +282,14 @@
                         <h2 class="text-2xl font-bold mb-4 text-center text-purple-400">Battle Insights</h2>
                         <div class="flex justify-between">
                             <div class="w-1/2 pr-2">
-                                <canvas id="winProbabilityChart"></canvas>
+                                <div class="chart-container">
+                                    <canvas id="winProbabilityChart"></canvas>
+                                </div>
                             </div>
                             <div class="w-1/2 pl-2">
-                                <canvas id="betDistributionChart"></canvas>
+                                <div class="chart-container">
+                                    <canvas id="betDistributionChart"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -704,15 +713,22 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         title: {
                             display: true,
                             text: 'Win Probability',
-                            color: 'white'
+                            color: 'white',
+                            font: {
+                                size: 16
+                            }
                         },
                         legend: {
                             labels: {
-                                color: 'white'
+                                color: 'white',
+                                font: {
+                                    size: 14
+                                }
                             }
                         }
                     }
@@ -733,15 +749,22 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         title: {
                             display: true,
                             text: 'Bet Distribution',
-                            color: 'white'
+                            color: 'white',
+                            font: {
+                                size: 16
+                            }
                         },
                         legend: {
                             labels: {
-                                color: 'white'
+                                color: 'white',
+                                font: {
+                                    size: 14
+                                }
                             }
                         }
                     },
@@ -749,12 +772,18 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                color: 'white'
+                                color: 'white',
+                                font: {
+                                    size: 12
+                                }
                             }
                         },
                         x: {
                             ticks: {
-                                color: 'white'
+                                color: 'white',
+                                font: {
+                                    size: 12
+                                }
                             }
                         }
                     }
