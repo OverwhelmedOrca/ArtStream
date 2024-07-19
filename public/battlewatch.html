@@ -251,6 +251,8 @@
 
             const video = document.createElement('video');
             video.controls = false;
+            video.autoplay = true;
+            video.muted = true;
 
             const titleElement = document.createElement('div');
             titleElement.className = 'absolute top-0 left-0 bg-black bg-opacity-50 text-white p-2 rounded-br';
@@ -276,8 +278,14 @@
                 const hls = new Hls();
                 hls.loadSource(url);
                 hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play();
+                });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = url;
+                video.addEventListener('loadedmetadata', function() {
+                    video.play();
+                });
             }
 
             return wrapper;
@@ -295,21 +303,23 @@
 
         function setupSideBySide() {
             videoContainer.innerHTML = '';
-            videoContainer.className = 'flex-grow p-4 bg-gray-800 flex flex-col';
+            videoContainer.className = 'flex-grow p-4 bg-gray-800 flex items-center justify-center';
 
             const videoWrapper = document.createElement('div');
-            videoWrapper.className = 'flex-grow flex items-stretch space-x-4';
+            videoWrapper.className = 'flex items-stretch space-x-4 w-full h-full';
 
             sampleStreams.forEach((stream, index) => {
                 const wrapper = createVideoWrapper(stream.url, stream.title);
                 wrapper.style.flex = '1';
                 videoWrapper.appendChild(wrapper);
 
-                if (index === 0 && sampleStreams.length > 1) {
+                if (index === 0) {
                     const divider = document.createElement('div');
-                    divider.className = 'vs-divider';
+                    divider.className = 'vs-divider flex items-center justify-center';
+                    divider.style.width = '2px';
+                    divider.style.backgroundColor = '#FF416C';
                     const vsText = document.createElement('span');
-                    vsText.className = 'vs-text';
+                    vsText.className = 'vs-text bg-gray-900 px-2 py-1 rounded-full text-red-500 font-bold';
                     vsText.textContent = 'VS';
                     divider.appendChild(vsText);
                     videoWrapper.appendChild(divider);
@@ -343,13 +353,21 @@
             swapButton.innerHTML = '<i class="fas fa-exchange-alt"></i>';
             swapButton.className = 'absolute top-4 right-4 bg-gray-800 text-white p-2 rounded-full z-20';
             swapButton.onclick = () => {
-                const temp = mainWrapper.querySelector('video').src;
-                mainWrapper.querySelector('video').src = pipWrapper.querySelector('video').src;
-                pipWrapper.querySelector('video').src = temp;
-
+                const tempUrl = mainWrapper.querySelector('video').src;
                 const tempTitle = mainWrapper.querySelector('div').textContent;
-                mainWrapper.querySelector('div').textContent = pipWrapper.querySelector('div').textContent;
-                pipWrapper.querySelector('div').textContent = tempTitle;
+
+                const mainHls = new Hls();
+                mainHls.loadSource(sampleStreams[1].url);
+                mainHls.attachMedia(mainWrapper.querySelector('video'));
+                mainWrapper.querySelector('div').textContent = sampleStreams[1].title;
+
+                const pipHls = new Hls();
+                pipHls.loadSource(sampleStreams[0].url);
+                pipHls.attachMedia(pipWrapper.querySelector('video'));
+                pipWrapper.querySelector('div').textContent = sampleStreams[0].title;
+
+                // Swap the stream objects
+                [sampleStreams[0], sampleStreams[1]] = [sampleStreams[1], sampleStreams[0]];
             };
             videoContainer.appendChild(swapButton);
         }
