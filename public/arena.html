@@ -36,8 +36,8 @@
     <header class="bg-gray-900 p-4 shadow-lg">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-3xl font-bold text-blue-400">Art Battle Arena</h1>
-            <div class="relative" x-data="{ open: false }">
-                <img @click="open = !open" src="https://i.pravatar.cc/150?u=username" alt="User" class="w-10 h-10 rounded-full cursor-pointer border-2 border-blue-400">
+            <div class="relative" x-data="{ open: false, username: '' }" x-init="username = localStorage.getItem('username') || 'default'">
+                <img :src="'https://i.pravatar.cc/150?u=' + username" class="w-10 h-10 rounded-full cursor-pointer border-2 border-blue-400" @click="open = !open">
                 <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5">
                     <div class="py-1" role="menu">
                         <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white" role="menuitem">Profile</a>
