@@ -279,6 +279,7 @@
                     } catch (error) {
                         console.error('Error setting up live stream:', error);
                         alert(`Failed to set up live stream: ${error.message}. Continuing to battle without live stream.`);
+                        this.liveStream = false; // Disable live stream if setup fails
                     }
 
                     // Store battle information in localStorage
@@ -286,10 +287,15 @@
                     localStorage.setItem('aiAllowed', this.aiAllowed);
                     localStorage.setItem('timeLimit', this.timeLimit);
                     localStorage.setItem('arenaName', this.currentArena.name);
+                    localStorage.setItem('liveStream', this.liveStream);
 
                     // Redirect after 3 seconds
                     setTimeout(() => {
-                        window.location.href = `/instructions.html?id=${this.battleId}`;
+                        if (this.liveStream) {
+                            window.location.href = `/instructions.html?id=${this.battleId}`;
+                        } else {
+                            window.location.href = `/battle.html?id=${this.battleId}`;
+                        }
                     }, 3000);
                 },
 
