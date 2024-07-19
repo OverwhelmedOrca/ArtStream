@@ -308,22 +308,10 @@
             const videoWrapper = document.createElement('div');
             videoWrapper.className = 'flex items-stretch space-x-4 w-full h-full';
 
-            sampleStreams.forEach((stream, index) => {
+            sampleStreams.forEach((stream) => {
                 const wrapper = createVideoWrapper(stream.url, stream.title);
                 wrapper.style.flex = '1';
                 videoWrapper.appendChild(wrapper);
-
-                if (index === 0) {
-                    const divider = document.createElement('div');
-                    divider.className = 'vs-divider flex items-center justify-center';
-                    divider.style.width = '2px';
-                    divider.style.backgroundColor = '#FF416C';
-                    const vsText = document.createElement('span');
-                    vsText.className = 'vs-text bg-gray-900 px-2 py-1 rounded-full text-red-500 font-bold';
-                    vsText.textContent = 'VS';
-                    divider.appendChild(vsText);
-                    videoWrapper.appendChild(divider);
-                }
             });
 
             videoContainer.appendChild(videoWrapper);
@@ -411,7 +399,27 @@
         });
 
         // Simulated chat messages
-        const simulatedUsers = ['ArtFan123', 'CreativeSoul', 'BrushEnthusiast', 'ColorMaster'];
+        const simulatedUsers = [
+            'ArtFan123',
+            'CreativeSoul',
+            'BrushEnthusiast',
+            'ColorMaster',
+            'PaintPro',
+            'CanvasLover',
+            'InspirationSeeker',
+            'ArtisticDreamer',
+            'PaletteWizard',
+            'SketchSavant',
+            'TextureGuru',
+            'DesignDynamo',
+            'VisualVirtuoso',
+            'StrokeSpecialist',
+            'HueHero',
+            'IllustrationExpert',
+            'MasterpieceMaker',
+            'GalleryGazer',
+            'VividVisionary'
+        ]
         const simulatedMessages = [
             'This battle is intense!',
             'CanvasRebel is killing it!',
@@ -420,6 +428,72 @@
             'The colors are so vibrant!',
             'I can\'t believe how fast they work',
             'This is the best art battle I\'ve seen',
+            'Both artists are so talented',
+            'Wow, look at those details!',
+            'I wish I could paint like that',
+            'This is pure art magic',
+            'Unbelievable precision!',
+            'Every stroke is perfect',
+            'The atmosphere is electric',
+            'I\'m on the edge of my seat!',
+            'The creativity is off the charts',
+            'Just look at those textures',
+            'This battle will go down in history',
+            'I can\'t choose a favorite',
+            'The talent here is unreal',
+            'I love the way they blend colors',
+            'Such a unique style!',
+            'This is a masterclass in painting',
+            'Their techniques are revolutionary',
+            'Absolutely mesmerizing!',
+            'The energy is palpable',
+            'They\'re in a league of their own',
+            'I\'m learning so much just by watching',
+            'This is a visual feast',
+            'The contrast is stunning',
+            'I\'m totally blown away',
+            'They make it look so easy',
+            'The brushwork is impeccable',
+            'Such bold choices!',
+            'I never thought I\'d see something like this',
+            'Art in its purest form',
+            'Every second is captivating',
+            'Their vision is extraordinary',
+            'The audience is loving it',
+            'I\'m getting chills',
+            'This is what art is all about',
+            'Pushing the boundaries of creativity',
+            'A true display of skill',
+            'This is an epic showdown',
+            'Every element is perfect',
+            'Astonishing talent on display',
+            'This will be talked about for years',
+            'They\'re raising the bar for everyone',
+            'I can\'t take my eyes off the screen',
+            'This is a once-in-a-lifetime event',
+            'Their techniques complement each other so well',
+            'Such a dramatic battle!',
+            'The audience is completely engaged',
+            'Artistry at its finest',
+            'This is so inspiring',
+            'I can feel the passion',
+            'The composition is flawless',
+            'I\'m in awe of their skill',
+            'A masterful performance',
+            'They\'re creating masterpieces in real-time',
+            'This is why I love art',
+            'The details are mind-blowing',
+            'I\'ve never seen anything like this',
+            'Each piece tells a story',
+            'Their styles are so different yet so compelling',
+            'This is a true art duel',
+            'I can see the dedication in every stroke',
+            'They\'re both winners in my book',
+            'The crowd is going wild',
+            'Such intricate designs',
+            'I\'m completely absorbed in this',
+            'The suspense is killing me!',
+            'Art is truly alive here',
             'Both artists are so talented'
         ];
 
@@ -430,7 +504,7 @@
         }
 
         // Simulate a new chat message every 5 seconds
-        setInterval(simulateChat, 5000);
+        setInterval(simulateChat, 2000);
 
         // Voting and Betting functionality
         const voteButtons = document.querySelectorAll('.vote-button');
