@@ -320,40 +320,6 @@
             icon.addEventListener('mouseleave', () => tooltip.classList.add('opacity-0'));
         });
 
-        // Add emote picker to chat input
-        const emoteButton = document.createElement('button');
-        emoteButton.className = 'absolute right-12 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors';
-        emoteButton.innerHTML = '<i class="fas fa-smile"></i>';
-        chatInput.parentElement.classList.add('relative');
-        chatInput.parentElement.insertBefore(emoteButton, chatInput.nextSibling);
-
-        const emoteList = ['😀', '😂', '❤️', '👍', '🎉', '🔥', '👀', '🤔'];
-        const emotePicker = document.createElement('div');
-        emotePicker.className = 'absolute bottom-full right-0 bg-gray-700 rounded-lg p-2 grid grid-cols-4 gap-2 mb-2 hidden';
-        emoteList.forEach(emote => {
-            const emoteElement = document.createElement('button');
-            emoteElement.className = 'text-2xl hover:bg-gray-600 rounded';
-            emoteElement.textContent = emote;
-            emoteElement.addEventListener('click', () => {
-                chatInput.value += emote;
-                emotePicker.classList.add('hidden');
-            });
-            emotePicker.appendChild(emoteElement);
-        });
-        emoteButton.parentElement.appendChild(emotePicker);
-
-        emoteButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            emotePicker.classList.toggle('hidden');
-        });
-
-        // Close emote picker when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!emoteButton.contains(e.target) && !emotePicker.contains(e.target)) {
-                emotePicker.classList.add('hidden');
-            }
-        });
-
         // Add stream quality selector
         const qualityButton = document.createElement('button');
         qualityButton.className = 'bg-gray-700 text-white px-3 py-1 rounded-md text-sm hover:bg-gray-600 transition-colors';
