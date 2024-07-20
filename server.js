@@ -10,7 +10,11 @@ const port = 3000;
 const jwtSecret = 'your_jwt_secret';
 
 app.use(bodyParser.json());
-app.use(cors());
+
+app.use(cors({
+  origin: '*', // Be cautious with this in production
+  credentials: true
+}));
 
 mongoose.connect('mongodb+srv://yashaggarwal3011:ShEt62UC0T176xru@greenglobe.gyrhabg.mongodb.net/?retryWrites=true&w=majority&appName=greenglobe')
   .then(() => console.log('MongoDB connected'))
