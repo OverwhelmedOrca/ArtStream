@@ -158,7 +158,7 @@
                             </div>
                         </div>
                         <p x-text="post.content" class="mb-4"></p>
-                        <template x-if="post.imageUrl && post.imageUrl !== null && post.imageUrl !== undefined && post.imageUrl !== ''">
+                        <template x-if="post.imageUrl">
                             <img :src="post.imageUrl" :alt="post.username + '\'s content'" class="w-full mb-4 rounded-lg">
                         </template>
                         <div class="flex justify-between items-center">
@@ -304,6 +304,7 @@
                 imagePreview: null,
                 previewImage: null,
                 submitPost: null,
+                previewImageUrl: null,
 
                 init() {
                     this.createPostBtn = document.getElementById('createPostBtn');
@@ -328,7 +329,6 @@
 
                     this.postImage.addEventListener('change', this.handleImageUpload.bind(this));
                     this.submitPost.addEventListener('click', this.handleSubmitPost.bind(this));
-                    console.log('Initial posts:', JSON.stringify(this.posts));
                 },
 
                 handleImageUpload(event) {
@@ -336,15 +336,19 @@
                     if (file) {
                         const reader = new FileReader();
                         reader.onload = (e) => {
-                            this.previewImage.src = e.target.result;
+                            this.previewImageUrl = e.target.result;
+                            this.previewImage.src = this.previewImageUrl;
                             this.imagePreview.classList.remove('hidden');
                         };
                         reader.readAsDataURL(file);
+                    } else {
+                        this.previewImageUrl = null;
+                        this.previewImage.src = '';
+                        this.imagePreview.classList.add('hidden');
                     }
                 },
 
                 toggleLike(post) {
-                    console.log('Before toggle:', JSON.stringify(post));
                     post.isLiked = !post.isLiked;
                     post.likes += post.isLiked ? 1 : -1;
                     
@@ -353,8 +357,6 @@
                     setTimeout(() => {
                         likeButton.classList.remove('like-animation');
                     }, 300);
-
-                    console.log('After toggle:', JSON.stringify(post));
                 },
 
                 toggleFriendRequest(user) {
@@ -369,7 +371,7 @@
                             username: this.username,
                             timeAgo: 'Just now',
                             content: content,
-                            imageUrl: this.previewImage.src && this.previewImage.src !== window.location.href ? this.previewImage.src : null,
+                            imageUrl: this.previewImageUrl,
                             likes: 0,
                             comments: 0,
                             isLiked: false
@@ -387,6 +389,7 @@
                     this.postImage.value = '';
                     this.imagePreview.classList.add('hidden');
                     this.previewImage.src = '';
+                    this.previewImageUrl = null;
                 },
 
                 searchUsers() {
