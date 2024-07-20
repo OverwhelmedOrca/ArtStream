@@ -26,54 +26,58 @@
     </div>
 
     <!-- Main Content -->
-    <div class="flex-grow flex p-4 space-x-4">
+    <div class="flex-grow flex overflow-hidden">
         <!-- Left Column (2/3 width) -->
-        <div class="w-2/3 flex flex-col space-y-4">
-            <!-- Stream Preview -->
-            <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
-                <div class="aspect-video">
-                    <video id="video" class="w-full h-full object-cover" controls></video>
+        <div class="w-2/3 p-4 overflow-y-auto">
+            <div class="space-y-4">
+                <!-- Stream Preview -->
+                <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+                    <div class="aspect-video">
+                        <video id="video" class="w-full h-full object-cover" controls></video>
+                    </div>
                 </div>
-                <div class="p-4">
-                    <div class="flex items-center space-x-4 mb-2">
-                        <img src="https://i.pravatar.cc/150?u=artistname" alt="Artist" class="w-12 h-12 rounded-full">
+
+                <!-- Stream Details -->
+                <div class="bg-gray-800 rounded-lg p-4 shadow-lg">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <img src="https://i.pravatar.cc/150?u=artistname" alt="Artist" class="w-16 h-16 rounded-full">
                         <div>
-                            <h2 class="text-xl font-bold">Artist Name</h2>
+                            <h2 class="text-2xl font-bold">Artist Name</h2>
                             <p class="text-sm text-gray-400">Music</p>
                         </div>
                     </div>
-                    <h1 class="text-2xl font-bold mb-2">Stream Title: Live Music Session</h1>
-                    <p class="text-sm text-gray-400">Join us for an amazing live music performance! We'll be playing some of our favorite tunes and taking requests from the audience.</p>
+                    <h1 class="text-3xl font-bold mb-2">Stream Title: Live Music Session</h1>
+                    <p class="text-gray-400 mb-4">Join us for an amazing live music performance! We'll be playing some of our favorite tunes and taking requests from the audience.</p>
                 </div>
-            </div>
 
-            <!-- Quick Actions -->
-            <div class="bg-gray-800 rounded-lg p-4 shadow-lg">
-                <h2 class="text-lg font-semibold mb-3">Quick Actions</h2>
-                <div class="grid grid-cols-3 gap-3">
-                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors">
-                        <i class="fas fa-edit mr-2"></i>Edit Stream Info
-                    </button>
-                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors">
-                        <i class="fas fa-film mr-2"></i>Manage Clips
-                    </button>
-                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors">
-                        <i class="fas fa-volume-up mr-2"></i>Sound Alerts
-                    </button>
-                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors">
-                        <i class="fas fa-star mr-2"></i>Create Highlight
-                    </button>
-                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors">
-                        <i class="fas fa-user-plus mr-2"></i>Invite Moderator
-                    </button>
+                <!-- Quick Actions -->
+                <div class="bg-gray-800 rounded-lg p-4 shadow-lg">
+                    <h2 class="text-lg font-semibold mb-3">Quick Actions</h2>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors text-sm">
+                            <i class="fas fa-edit mr-2"></i>Edit Stream Info
+                        </button>
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors text-sm">
+                            <i class="fas fa-film mr-2"></i>Manage Clips
+                        </button>
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors text-sm">
+                            <i class="fas fa-volume-up mr-2"></i>Sound Alerts
+                        </button>
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors text-sm">
+                            <i class="fas fa-star mr-2"></i>Create Highlight
+                        </button>
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors text-sm">
+                            <i class="fas fa-user-plus mr-2"></i>Invite Moderator
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Right Column (1/3 width) -->
-        <div class="w-1/3 flex flex-col space-y-4">
+        <div class="w-1/3 p-4 flex flex-col space-y-4">
             <!-- Activity Feed -->
-            <div class="bg-gray-800 rounded-lg p-4 flex flex-col h-1/2 shadow-lg">
+            <div class="bg-gray-800 rounded-lg p-4 flex flex-col shadow-lg flex-grow">
                 <div class="flex justify-between items-center mb-3">
                     <h2 class="text-lg font-semibold">Activity Feed</h2>
                     <button class="text-sm text-gray-400 hover:text-white transition-colors">
@@ -91,7 +95,7 @@
             </div>
 
             <!-- Live Chat -->
-            <div class="bg-gray-800 rounded-lg p-4 flex flex-col h-1/2 shadow-lg">
+            <div class="bg-gray-800 rounded-lg p-4 flex flex-col shadow-lg flex-grow">
                 <h2 class="text-lg font-semibold mb-3">Live Chat</h2>
                 <div id="chatMessages" class="overflow-y-auto flex-grow mb-3 text-sm">
                     <p class="mb-2">Welcome to the chat room!</p>
