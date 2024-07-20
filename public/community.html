@@ -158,7 +158,9 @@
                             </div>
                         </div>
                         <p x-text="post.content" class="mb-4"></p>
-                        <img x-show="post.imageUrl" :src="post.imageUrl" :alt="post.username + '\'s content'" class="w-full mb-4 rounded-lg">
+                        <template x-if="post.imageUrl">
+                            <img :src="post.imageUrl" :alt="post.username + '\'s content'" class="w-full mb-4 rounded-lg">
+                        </template>
                         <div class="flex justify-between items-center">
                             <div class="space-x-4">
                                 <button @click="toggleLike(post)" class="retro-button like-button" :class="{ 'liked': post.isLiked }">
@@ -201,12 +203,17 @@
                     <h2 class="retro-header text-lg mb-4">Suggested Users</h2>
                     <div class="space-y-4">
                         <template x-for="user in suggestedUsers" :key="user.id">
-                            <div class="flex items-center space-x-2 user-card p-2 rounded retro-border">
-                                <img :src="'https://i.pravatar.cc/150?u=' + user.username" :alt="user.username" class="w-10 h-10 rounded-full retro-border">
-                                <div>
-                                    <p x-text="user.username" class="font-bold"></p>
-                                    <p x-text="user.followers + ' followers'" class="text-sm text-gray-400"></p>
+                            <div class="flex items-center justify-between user-card p-2 rounded retro-border">
+                                <div class="flex items-center space-x-2">
+                                    <img :src="'https://i.pravatar.cc/150?u=' + user.username" :alt="user.username" class="w-10 h-10 rounded-full retro-border">
+                                    <div>
+                                        <p x-text="user.username" class="font-bold"></p>
+                                        <p x-text="user.followers + ' followers'" class="text-sm text-gray-400"></p>
+                                    </div>
                                 </div>
+                                <button @click="toggleFriendRequest(user)" class="retro-button friend-request-btn" :class="{ 'requested': user.friendRequested }">
+                                    <span x-text="user.friendRequested ? 'Requested' : 'Add Friend'"></span>
+                                </button>
                             </div>
                         </template>
                     </div>
@@ -277,11 +284,11 @@
                     }
                 ],
                 suggestedUsers: [
-                    { id: 1, username: 'NeonNinja', followers: 1200 },
-                    { id: 2, username: 'RetroRascal', followers: 980 },
-                    { id: 3, username: 'SynthSorcerer', followers: 1500 },
-                    { id: 4, username: 'PixelPrincess', followers: 2200 },
-                    { id: 5, username: 'WaveRider', followers: 750 }
+                    { id: 1, username: 'NeonNinja', followers: 1200, friendRequested: false },
+                    { id: 2, username: 'RetroRascal', followers: 980, friendRequested: false },
+                    { id: 3, username: 'SynthSorcerer', followers: 1500, friendRequested: false },
+                    { id: 4, username: 'PixelPrincess', followers: 2200, friendRequested: false },
+                    { id: 5, username: 'WaveRider', followers: 750, friendRequested: false }
                 ],
                 searchQuery: '',
                 searchResults: [],
