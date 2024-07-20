@@ -5,4 +5,5 @@
 5. minting nfts
 6. displaying in marketplace and gallery
 7. mute and unmute in userwatch page
-8. 
+8. redesigning the website to incorporate new categories
+9. 
