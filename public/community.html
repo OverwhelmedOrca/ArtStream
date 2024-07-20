@@ -98,6 +98,32 @@
             transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
         }
+        .like-button {
+            transition: all 0.3s ease;
+        }
+        
+        .like-button.liked {
+            background-color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+        
+        .friend-request-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .friend-request-btn.requested {
+            background-color: var(--secondary-color);
+        }
+
+        @keyframes likeAnimation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .like-animation {
+            animation: likeAnimation 0.3s ease;
+        }
     </style>
 </head>
 <body class="retro-container" x-data="retroCommunity()">
@@ -135,7 +161,7 @@
                         <img x-show="post.imageUrl" :src="post.imageUrl" :alt="post.username + '\'s content'" class="w-full mb-4 rounded-lg">
                         <div class="flex justify-between items-center">
                             <div class="space-x-4">
-                                <button class="retro-button">
+                                <button @click="toggleLike(post)" class="retro-button like-button" :class="{ 'liked': post.isLiked }">
                                     <span x-text="post.likes"></span> Likes
                                 </button>
                                 <button class="retro-button">
@@ -156,12 +182,17 @@
                     <input type="text" x-model="searchQuery" @input="searchUsers" placeholder="Search users..." class="w-full retro-input mb-4">
                     <div class="space-y-4">
                         <template x-for="user in searchResults" :key="user.id">
-                            <div class="flex items-center space-x-2 user-card p-2 rounded retro-border">
-                                <img :src="'https://i.pravatar.cc/150?u=' + user.username" :alt="user.username" class="w-10 h-10 rounded-full retro-border">
-                                <div>
-                                    <p x-text="user.username" class="font-bold"></p>
-                                    <p x-text="user.followers + ' followers'" class="text-sm text-gray-400"></p>
+                            <div class="flex items-center justify-between user-card p-2 rounded retro-border">
+                                <div class="flex items-center space-x-2">
+                                    <img :src="'https://i.pravatar.cc/150?u=' + user.username" :alt="user.username" class="w-10 h-10 rounded-full retro-border">
+                                    <div>
+                                        <p x-text="user.username" class="font-bold"></p>
+                                        <p x-text="user.followers + ' followers'" class="text-sm text-gray-400"></p>
+                                    </div>
                                 </div>
+                                <button @click="toggleFriendRequest(user)" class="retro-button friend-request-btn" :class="{ 'requested': user.friendRequested }">
+                                    <span x-text="user.friendRequested ? 'Requested' : 'Add Friend'"></span>
+                                </button>
                             </div>
                         </template>
                     </div>
@@ -300,6 +331,21 @@
                     }
                 },
 
+                toggleLike(post) {
+                    post.isLiked = !post.isLiked;
+                    post.likes += post.isLiked ? 1 : -1;
+                    
+                    const likeButton = event.target.closest('.like-button');
+                    likeButton.classList.add('like-animation');
+                    setTimeout(() => {
+                        likeButton.classList.remove('like-animation');
+                    }, 300);
+                },
+
+                toggleFriendRequest(user) {
+                    user.friendRequested = !user.friendRequested;
+                },
+
                 handleSubmitPost() {
                     const content = this.postContent.value.trim();
                     if (content) {
@@ -310,7 +356,8 @@
                             content: content,
                             imageUrl: this.previewImage.src || null,
                             likes: 0,
-                            comments: 0
+                            comments: 0,
+                            isLiked: false
                         };
                         this.posts.unshift(newPost);
                         this.createPostModal.classList.add('hidden');
