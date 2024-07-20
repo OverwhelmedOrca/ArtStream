@@ -7,4 +7,3 @@
 7. displaying in marketplace and gallery
 8. mute and unmute in userwatch page
 9. redesigning the website to incorporate new categories
-9. 
