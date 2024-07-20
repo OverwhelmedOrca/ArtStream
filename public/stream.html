@@ -1,37 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Streaming Platform</title>
+    <title>Professional Streaming Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
-<body class="bg-gray-900 text-gray-300 min-h-screen">
-    <div class="container mx-auto p-4">
-        <!-- Top Info Bar -->
-        <div class="flex justify-between items-center mb-4 bg-gray-800 p-2 rounded-lg">
-            <div class="flex items-center space-x-4">
-                <span class="bg-red-500 text-white px-2 py-1 rounded-md text-sm font-semibold">LIVE</span>
-                <span><i class="fas fa-clock mr-1"></i> <span id="sessionTime">0:00:00</span></span>
-                <span><i class="fas fa-eye mr-1"></i> <span id="viewers">0</span> Viewers</span>
-                <span><i class="fas fa-user mr-1"></i> <span id="followers">94</span> Followers</span>
-            </div>
-            <div class="flex items-center space-x-4">
-                <span><i class="fas fa-signal mr-1"></i> Bitrate</span>
-                <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition-colors">
-                    <i class="fas fa-question-circle mr-1"></i> Help
-                </button>
-            </div>
+<body class="bg-gray-900 text-gray-300 h-full flex flex-col">
+    <!-- Top Info Bar -->
+    <div class="bg-gray-800 p-3 flex justify-between items-center border-b border-gray-700">
+        <div class="flex items-center space-x-6">
+            <span class="bg-red-500 text-white px-2 py-1 rounded-md text-sm font-semibold">LIVE</span>
+            <span><i class="fas fa-clock mr-2"></i><span id="sessionTime">00:02:13</span></span>
+            <span><i class="fas fa-eye mr-2"></i><span id="viewers">11</span> Viewers</span>
+            <span><i class="fas fa-user mr-2"></i><span id="followers">94</span> Followers</span>
         </div>
+        <div class="flex items-center space-x-6">
+            <span><i class="fas fa-signal mr-2"></i>Bitrate</span>
+            <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm transition-colors">
+                End Stream
+            </button>
+        </div>
+    </div>
 
-        <div class="flex space-x-4">
-            <!-- Stream Preview (1/2 width) -->
-            <div class="w-1/2 bg-gray-800 rounded-lg overflow-hidden">
-                <div class="relative">
-                    <video id="video" class="w-full aspect-video" controls></video>
-                    <div class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-sm">LIVE</div>
+    <!-- Main Content -->
+    <div class="flex-grow flex p-4 space-x-4">
+        <!-- Left Column (2/3 width) -->
+        <div class="w-2/3 flex flex-col space-y-4">
+            <!-- Stream Preview -->
+            <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+                <div class="aspect-video">
+                    <video id="video" class="w-full h-full object-cover" controls></video>
                 </div>
                 <div class="p-4">
                     <div class="flex items-center space-x-4 mb-2">
@@ -42,73 +43,65 @@
                         </div>
                     </div>
                     <h1 class="text-2xl font-bold mb-2">Stream Title: Live Music Session</h1>
-                    <p class="text-sm text-gray-400 mb-4">Join us for an amazing live music performance! We'll be playing some of our favorite tunes and taking requests from the audience.</p>
-                    <div class="flex space-x-2">
-                        <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md transition-colors">
-                            <i class="fas fa-heart mr-1"></i> Follow
-                        </button>
-                        <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors">
-                            <i class="fas fa-dollar-sign mr-1"></i> Donate
-                        </button>
-                    </div>
+                    <p class="text-sm text-gray-400">Join us for an amazing live music performance! We'll be playing some of our favorite tunes and taking requests from the audience.</p>
                 </div>
             </div>
 
-            <!-- Activity Feed and Chat (1/2 width) -->
-            <div class="w-1/2 flex flex-col space-y-4">
-                <!-- Activity Feed -->
-                <div class="flex-1 bg-gray-800 rounded-lg overflow-hidden">
-                    <div class="p-4 border-b border-gray-700 flex justify-between items-center">
-                        <h2 class="text-lg font-semibold">Activity Feed</h2>
-                        <button class="text-sm text-gray-400 hover:text-white transition-colors">
-                            <i class="fas fa-filter mr-1"></i> Filter
-                        </button>
-                    </div>
-                    <div id="activityFeed" class="p-4 h-48 overflow-y-auto">
-                        <p class="text-gray-400 text-center">It's quiet. Too quiet...</p>
-                        <p class="text-gray-400 text-center">We'll show new follows, subs, cheers, and raids here.</p>
-                    </div>
-                </div>
-
-                <!-- Chat -->
-                <div class="flex-1 bg-gray-800 rounded-lg overflow-hidden">
-                    <div class="p-4 border-b border-gray-700">
-                        <h2 class="text-lg font-semibold">Live Chat</h2>
-                    </div>
-                    <div id="chatMessages" class="p-4 h-48 overflow-y-auto">
-                        <p class="text-gray-400">Welcome to the chat room!</p>
-                    </div>
-                    <div class="p-4 border-t border-gray-700">
-                        <form id="chatForm" class="flex">
-                            <input type="text" id="chatInput" class="flex-grow bg-gray-700 text-white rounded-l-md px-4 py-2 focus:outline-none" placeholder="Send a message">
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white rounded-r-md px-4 py-2 transition-colors">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </form>
-                    </div>
+            <!-- Quick Actions -->
+            <div class="bg-gray-800 rounded-lg p-4 shadow-lg">
+                <h2 class="text-lg font-semibold mb-3">Quick Actions</h2>
+                <div class="grid grid-cols-3 gap-3">
+                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors">
+                        <i class="fas fa-edit mr-2"></i>Edit Stream Info
+                    </button>
+                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors">
+                        <i class="fas fa-film mr-2"></i>Manage Clips
+                    </button>
+                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors">
+                        <i class="fas fa-volume-up mr-2"></i>Sound Alerts
+                    </button>
+                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors">
+                        <i class="fas fa-star mr-2"></i>Create Highlight
+                    </button>
+                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition-colors">
+                        <i class="fas fa-user-plus mr-2"></i>Invite Moderator
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="mt-4 bg-gray-800 rounded-lg p-4">
-            <h2 class="text-lg font-semibold mb-2">Quick Actions</h2>
-            <div class="flex space-x-2">
-                <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md transition-colors flex-1">
-                    <i class="fas fa-edit mr-1"></i> Edit Stream Info
-                </button>
-                <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md transition-colors flex-1">
-                    <i class="fas fa-film mr-1"></i> Manage Clips
-                </button>
-                <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md transition-colors flex-1">
-                    <i class="fas fa-volume-up mr-1"></i> Sound Alerts
-                </button>
-                <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md transition-colors flex-1">
-                    <i class="fas fa-star mr-1"></i> Create Highlight
-                </button>
-                <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md transition-colors flex-1">
-                    <i class="fas fa-user-plus mr-1"></i> Invite Moderator
-                </button>
+        <!-- Right Column (1/3 width) -->
+        <div class="w-1/3 flex flex-col space-y-4">
+            <!-- Activity Feed -->
+            <div class="bg-gray-800 rounded-lg p-4 flex flex-col h-1/2 shadow-lg">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-semibold">Activity Feed</h2>
+                    <button class="text-sm text-gray-400 hover:text-white transition-colors">
+                        <i class="fas fa-filter mr-1"></i>Filter
+                    </button>
+                </div>
+                <div id="activityFeed" class="overflow-y-auto flex-grow text-sm">
+                    <p class="mb-2">New subscriber: User789</p>
+                    <p class="mb-2">User101 bet $100 on your victory! 🎉</p>
+                    <p class="mb-2">User101 is feeling lucky today! Another $100 bet!</p>
+                    <p class="mb-2">Donation: $5 from User456</p>
+                    <p class="mb-2">New follower: User123</p>
+                    <p class="mb-2">Donation: $5 from User456</p>
+                </div>
+            </div>
+
+            <!-- Live Chat -->
+            <div class="bg-gray-800 rounded-lg p-4 flex flex-col h-1/2 shadow-lg">
+                <h2 class="text-lg font-semibold mb-3">Live Chat</h2>
+                <div id="chatMessages" class="overflow-y-auto flex-grow mb-3 text-sm">
+                    <p class="mb-2">Welcome to the chat room!</p>
+                </div>
+                <form id="chatForm" class="flex">
+                    <input type="text" id="chatInput" class="flex-grow bg-gray-700 text-white rounded-l-md px-4 py-2 focus:outline-none" placeholder="Send a message">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white rounded-r-md px-4 py-2 transition-colors">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -124,24 +117,6 @@
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = videoSrc;
         }
-
-        // Session time counter
-        let sessionSeconds = 0;
-        setInterval(() => {
-            sessionSeconds++;
-            const hours = Math.floor(sessionSeconds / 3600);
-            const minutes = Math.floor((sessionSeconds % 3600) / 60);
-            const seconds = sessionSeconds % 60;
-            document.getElementById('sessionTime').textContent = 
-                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }, 1000);
-
-        // Simulating viewer count increase
-        let viewers = 0;
-        setInterval(() => {
-            viewers += Math.floor(Math.random() * 3);
-            document.getElementById('viewers').textContent = viewers;
-        }, 5000);
 
         // Chat functionality
         const chatForm = document.getElementById('chatForm');
@@ -159,24 +134,6 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         });
-
-        // Simulating activity feed
-        const activities = [
-            "New follower: User123",
-            "Donation: $5 from User456",
-            "New subscriber: User789",
-            "Cheer: 100 bits from User101"
-        ];
-
-        const activityFeed = document.getElementById('activityFeed');
-        setInterval(() => {
-            const activity = activities[Math.floor(Math.random() * activities.length)];
-            const activityElement = document.createElement('div');
-            activityElement.className = 'mb-2 text-sm';
-            activityElement.textContent = activity;
-            activityFeed.appendChild(activityElement);
-            activityFeed.scrollTop = activityFeed.scrollHeight;
-        }, 10000);
     </script>
 </body>
 </html>
