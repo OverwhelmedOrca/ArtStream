@@ -403,8 +403,9 @@
                     <img src="https://i.pravatar.cc/150?u=${username}" alt="${username}" class="w-10 h-10 rounded-full cursor-pointer" id="user-menu-button">
                     <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                         <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Profile</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Community</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" id="profile-link">Profile</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" id="community-link">Community</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" id="marketplace-link">Marketplace</a>
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">FAQs</a>
                             <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" id="logout-button">Logout</a>
                         </div>
@@ -430,6 +431,22 @@
                 localStorage.removeItem('username');
                 localStorage.removeItem('token');
                 window.location.reload();
+            });
+
+            // New event listeners for profile, community, and marketplace links
+            document.getElementById('profile-link').addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'dashboard.html';
+            });
+
+            document.getElementById('community-link').addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'community.html';
+            });
+
+            document.getElementById('marketplace-link').addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'marketplace.html';
             });
         }
 
