@@ -3,29 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArtStream Retro Community</title>
+    <title>RetroStream Community</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
 
         :root {
-            --bg-color: #1a1a2e;
-            --text-color: #e1e1e6;
-            --accent-color: #00ff99;
-            --secondary-color: #ff00ff;
+            --bg-color: #0a0a1e;
+            --text-color: #33ff00;
+            --accent-color: #ff00ff;
+            --secondary-color: #00ffff;
         }
 
         body {
-            font-family: 'Roboto Mono', monospace;
+            font-family: 'VT323', monospace;
             background-color: var(--bg-color);
             color: var(--text-color);
+            font-size: 18px;
         }
 
         .retro-container {
             background-image: 
-                linear-gradient(rgba(26, 26, 46, 0.9), rgba(26, 26, 46, 0.9)),
-                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300ff99' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+                linear-gradient(rgba(10, 10, 30, 0.9), rgba(10, 10, 30, 0.9)),
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2333ff00' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
 
         .retro-header {
@@ -74,6 +75,29 @@
             transform: scale(1.1);
             box-shadow: 0 0 20px var(--secondary-color);
         }
+
+        .retro-input {
+            background-color: var(--bg-color);
+            border: 2px solid var(--accent-color);
+            color: var(--text-color);
+            padding: 0.5rem;
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+        }
+
+        .retro-input:focus {
+            outline: none;
+            box-shadow: 0 0 5px var(--secondary-color);
+        }
+
+        .user-card {
+            transition: all 0.3s ease;
+        }
+
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
+        }
     </style>
 </head>
 <body class="retro-container" x-data="retroCommunity()">
@@ -81,12 +105,12 @@
         <h1 class="retro-header text-2xl">Community Feed</h1>
         <div class="flex items-center space-x-4">
             <div class="relative" x-data="{ open: false }">
-                <img @click="open = !open" src="https://i.pravatar.cc/150?u=username" alt="User" class="w-10 h-10 rounded-full cursor-pointer retro-border">
+                <img @click="open = !open" :src="'https://i.pravatar.cc/150?u=' + username" :alt="username" class="w-10 h-10 rounded-full cursor-pointer retro-border">
                 <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 retro-border">
                     <div class="py-1" role="menu">
                         <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Profile</a>
-                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Community</a>
-                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">FAQs</a>
+                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">My Streams</a>
+                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Settings</a>
                         <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem" id="logout-button">Logout</a>
                     </div>
                 </div>
@@ -101,14 +125,14 @@
                 <template x-for="post in posts" :key="post.id">
                     <article class="bg-gray-800 p-4 rounded-lg retro-border">
                         <div class="flex items-center space-x-4 mb-4">
-                            <img :src="post.avatar" :alt="post.username" class="w-12 h-12 rounded-full retro-border">
+                            <img :src="'https://i.pravatar.cc/150?u=' + post.username" :alt="post.username" class="w-12 h-12 rounded-full retro-border">
                             <div>
                                 <h3 x-text="post.username" class="font-bold"></h3>
                                 <p x-text="post.timeAgo" class="text-sm text-gray-400"></p>
                             </div>
                         </div>
                         <p x-text="post.content" class="mb-4"></p>
-                        <img x-show="post.imageUrl" :src="post.imageUrl" :alt="post.username + '\'s artwork'" class="w-full mb-4 rounded-lg">
+                        <img x-show="post.imageUrl" :src="post.imageUrl" :alt="post.username + '\'s content'" class="w-full mb-4 rounded-lg">
                         <div class="flex justify-between items-center">
                             <div class="space-x-4">
                                 <button class="retro-button">
@@ -128,37 +152,33 @@
         <aside class="w-1/3 p-6 border-l-2 border-accent-color overflow-y-auto scrollbar-hide">
             <div class="space-y-6">
                 <div class="bg-gray-800 p-4 rounded-lg retro-border">
-                    <h2 class="retro-header text-lg mb-4">Trending Tags</h2>
-                    <div class="flex flex-wrap gap-2">
-                        <template x-for="tag in trendingTags" :key="tag">
-                            <span x-text="tag" class="bg-accent-color text-bg-color px-2 py-1 rounded text-xs"></span>
+                    <h2 class="retro-header text-lg mb-4">Find Users</h2>
+                    <input type="text" x-model="searchQuery" @input="searchUsers" placeholder="Search users..." class="w-full retro-input mb-4">
+                    <div class="space-y-4">
+                        <template x-for="user in searchResults" :key="user.id">
+                            <div class="flex items-center space-x-2 user-card p-2 rounded retro-border">
+                                <img :src="'https://i.pravatar.cc/150?u=' + user.username" :alt="user.username" class="w-10 h-10 rounded-full retro-border">
+                                <div>
+                                    <p x-text="user.username" class="font-bold"></p>
+                                    <p x-text="user.followers + ' followers'" class="text-sm text-gray-400"></p>
+                                </div>
+                            </div>
                         </template>
                     </div>
                 </div>
-                <div class="bg-gray-800 p-4 rounded-lg retro-border">
-                    <h2 class="retro-header text-lg mb-4">Pixel Masters</h2>
-                    <ul class="space-y-4">
-                        <template x-for="artist in featuredArtists" :key="artist.id">
-                            <li class="flex items-center space-x-2">
-                                <img :src="artist.avatar" :alt="artist.name" class="w-10 h-10 rounded-full retro-border">
+                <div x-show="!searchQuery" class="bg-gray-800 p-4 rounded-lg retro-border">
+                    <h2 class="retro-header text-lg mb-4">Suggested Users</h2>
+                    <div class="space-y-4">
+                        <template x-for="user in suggestedUsers" :key="user.id">
+                            <div class="flex items-center space-x-2 user-card p-2 rounded retro-border">
+                                <img :src="'https://i.pravatar.cc/150?u=' + user.username" :alt="user.username" class="w-10 h-10 rounded-full retro-border">
                                 <div>
-                                    <p x-text="artist.name" class="font-bold"></p>
-                                    <p x-text="artist.specialty" class="text-sm text-gray-400"></p>
+                                    <p x-text="user.username" class="font-bold"></p>
+                                    <p x-text="user.followers + ' followers'" class="text-sm text-gray-400"></p>
                                 </div>
-                            </li>
+                            </div>
                         </template>
-                    </ul>
-                </div>
-                <div class="bg-gray-800 p-4 rounded-lg retro-border">
-                    <h2 class="retro-header text-lg mb-4">Upcoming Quests</h2>
-                    <ul class="space-y-4">
-                        <template x-for="event in upcomingEvents" :key="event.id">
-                            <li>
-                                <h3 x-text="event.title" class="font-bold"></h3>
-                                <p x-text="event.date" class="text-sm text-gray-400"></p>
-                            </li>
-                        </template>
-                    </ul>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -196,11 +216,11 @@
     <script>
         function retroCommunity() {
             return {
+                username: localStorage.getItem('username') || 'RetroUser',
                 posts: [
                     {
                         id: 1,
                         username: 'PixelPioneer',
-                        avatar: 'https://i.pravatar.cc/150?u=PixelPioneer',
                         timeAgo: '2 hours ago',
                         content: 'Just finished this pixelated mouse design! What do you think?',
                         imageUrl: 'https://images.unsplash.com/flagged/photo-1562599838-8cc871c241a5?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8cGl4ZWxzfGVufDB8fDB8fHww',
@@ -210,7 +230,6 @@
                     {
                         id: 2,
                         username: 'SynthWaveSurfer',
-                        avatar: 'https://i.pravatar.cc/150?u=SynthWaveSurfer',
                         timeAgo: '4 hours ago',
                         content: 'Working on a new synthwave album cover. Sketches coming soon!',
                         likes: 45,
@@ -219,7 +238,6 @@
                     {
                         id: 3,
                         username: 'VaporArtist',
-                        avatar: 'https://i.pravatar.cc/150?u=VaporArtist',
                         timeAgo: '6 hours ago',
                         content: 'Check out my latest vaporwave-inspired piece!',
                         imageUrl: 'https://plus.unsplash.com/premium_photo-1685148902854-9b9bb49fff08?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8c3ludGh3YXZlfGVufDB8fDB8fHww',
@@ -227,17 +245,15 @@
                         comments: 23
                     }
                 ],
-                trendingTags: ['#PixelArt', '#Synthwave', '#VaporwaveAesthetics', '#RetroGaming', '#CyberPunk'],
-                featuredArtists: [
-                    { id: 1, name: 'NeonNinja', specialty: 'Cyberpunk Illustrator', avatar: 'https://i.pravatar.cc/150?u=NeonNinja' },
-                    { id: 2, name: 'RetroRascal', specialty: 'Pixel Art Animator', avatar: 'https://i.pravatar.cc/150?u=RetroRascal' },
-                    { id: 3, name: 'SynthSorcerer', specialty: 'Vaporwave Designer', avatar: 'https://i.pravatar.cc/150?u=SynthSorcerer' }
+                suggestedUsers: [
+                    { id: 1, username: 'NeonNinja', followers: 1200 },
+                    { id: 2, username: 'RetroRascal', followers: 980 },
+                    { id: 3, username: 'SynthSorcerer', followers: 1500 },
+                    { id: 4, username: 'PixelPrincess', followers: 2200 },
+                    { id: 5, username: 'WaveRider', followers: 750 }
                 ],
-                upcomingEvents: [
-                    { id: 1, title: 'Retro Game Art Workshop', date: 'July 15, 2024 - 20:00' },
-                    { id: 2, title: 'Synthwave Poster Challenge', date: 'July 20-27, 2024' },
-                    { id: 3, title: 'Pixel Art Portfolio Review', date: 'August 5, 2024 - 15:00' }
-                ],
+                searchQuery: '',
+                searchResults: [],
                 createPostBtn: null,
                 createPostModal: null,
                 closeModal: null,
@@ -289,8 +305,7 @@
                     if (content) {
                         const newPost = {
                             id: this.posts.length + 1,
-                            username: 'CurrentUser', // Replace with actual username
-                            avatar: 'https://i.pravatar.cc/150?u=CurrentUser', // Replace with actual avatar
+                            username: this.username,
                             timeAgo: 'Just now',
                             content: content,
                             imageUrl: this.previewImage.src || null,
@@ -309,6 +324,19 @@
                     this.postImage.value = '';
                     this.imagePreview.classList.add('hidden');
                     this.previewImage.src = '';
+                },
+
+                searchUsers() {
+                    if (this.searchQuery.trim() === '') {
+                        this.searchResults = [];
+                        return;
+                    }
+
+                    // Simulated search functionality
+                    // In a real application, this would typically involve an API call
+                    this.searchResults = this.suggestedUsers.filter(user => 
+                        user.username.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    );
                 },
 
                 $nextTick() { 
