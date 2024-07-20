@@ -158,7 +158,7 @@
                             </div>
                         </div>
                         <p x-text="post.content" class="mb-4"></p>
-                        <template x-if="post.imageUrl">
+                        <template x-if="post.imageUrl && post.imageUrl !== null && post.imageUrl !== undefined && post.imageUrl !== ''">
                             <img :src="post.imageUrl" :alt="post.username + '\'s content'" class="w-full mb-4 rounded-lg">
                         </template>
                         <div class="flex justify-between items-center">
@@ -263,15 +263,18 @@
                         content: 'Just finished this pixelated mouse design! What do you think?',
                         imageUrl: 'https://images.unsplash.com/flagged/photo-1562599838-8cc871c241a5?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8cGl4ZWxzfGVufDB8fDB8fHww',
                         likes: 120,
-                        comments: 25
+                        comments: 25,
+                        isLiked: false
                     },
                     {
                         id: 2,
                         username: 'SynthWaveSurfer',
                         timeAgo: '4 hours ago',
                         content: 'Working on a new synthwave album cover. Sketches coming soon!',
+                        imageUrl: null,
                         likes: 45,
-                        comments: 12
+                        comments: 12,
+                        isLiked: false
                     },
                     {
                         id: 3,
@@ -280,7 +283,8 @@
                         content: 'Check out my latest vaporwave-inspired piece!',
                         imageUrl: 'https://plus.unsplash.com/premium_photo-1685148902854-9b9bb49fff08?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8c3ludGh3YXZlfGVufDB8fDB8fHww',
                         likes: 89,
-                        comments: 23
+                        comments: 23,
+                        isLiked: false
                     }
                 ],
                 suggestedUsers: [
@@ -324,6 +328,7 @@
 
                     this.postImage.addEventListener('change', this.handleImageUpload.bind(this));
                     this.submitPost.addEventListener('click', this.handleSubmitPost.bind(this));
+                    console.log('Initial posts:', JSON.stringify(this.posts));
                 },
 
                 handleImageUpload(event) {
@@ -339,6 +344,7 @@
                 },
 
                 toggleLike(post) {
+                    console.log('Before toggle:', JSON.stringify(post));
                     post.isLiked = !post.isLiked;
                     post.likes += post.isLiked ? 1 : -1;
                     
@@ -347,6 +353,8 @@
                     setTimeout(() => {
                         likeButton.classList.remove('like-animation');
                     }, 300);
+
+                    console.log('After toggle:', JSON.stringify(post));
                 },
 
                 toggleFriendRequest(user) {
@@ -361,11 +369,12 @@
                             username: this.username,
                             timeAgo: 'Just now',
                             content: content,
-                            imageUrl: this.previewImage.src || null,
+                            imageUrl: this.previewImage.src && this.previewImage.src !== window.location.href ? this.previewImage.src : null,
                             likes: 0,
                             comments: 0,
                             isLiked: false
                         };
+                        console.log('New post created:', JSON.stringify(newPost));
                         this.posts.unshift(newPost);
                         this.createPostModal.classList.add('hidden');
                         this.createPostModal.classList.remove('flex');
