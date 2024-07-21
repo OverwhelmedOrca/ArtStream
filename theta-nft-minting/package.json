@@ -8,9 +8,5 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "truffle": "^5.11.5",
-    "web3": "^4.10.0"
-  }
+  "description": ""
 }
