@@ -148,26 +148,26 @@
         <section class="w-2/3 p-6 overflow-y-auto scrollbar-hide">
             <h2 class="retro-header text-xl mb-6">Art Transmissions</h2>
             <div class="space-y-6">
-                <template x-for="post in posts" :key="post.id">
+                <template x-for="post in posts" :key="post._id">
                     <article class="bg-gray-800 p-4 rounded-lg retro-border">
                         <div class="flex items-center space-x-4 mb-4">
                             <img :src="'https://i.pravatar.cc/150?u=' + post.username" :alt="post.username" class="w-12 h-12 rounded-full retro-border">
                             <div>
                                 <h3 x-text="post.username" class="font-bold"></h3>
-                                <p x-text="post.timeAgo" class="text-sm text-gray-400"></p>
+                                <p x-text="formatDate(post.createdAt)" class="text-sm text-gray-400"></p>
                             </div>
                         </div>
                         <p x-text="post.content" class="mb-4"></p>
-                        <template x-if="post.imageUrl">
-                            <img :src="post.imageUrl" :alt="post.username + '\'s content'" class="w-full mb-4 rounded-lg">
+                        <template x-if="post.imagePath">
+                            <img :src="post.imagePath" :alt="post.username + '\'s content'" class="w-full mb-4 rounded-lg">
                         </template>
                         <div class="flex justify-between items-center">
                             <div class="space-x-4">
                                 <button @click="toggleLike(post)" class="retro-button like-button" :class="{ 'liked': post.isLiked }">
-                                    <span x-text="post.likes"></span> Likes
+                                    <span x-text="post.likes.length"></span> Likes
                                 </button>
                                 <button class="retro-button">
-                                    <span x-text="post.comments"></span> Comments
+                                    <span x-text="post.comments.length"></span> Comments
                                 </button>
                             </div>
                             <button class="retro-button">Share</button>
@@ -255,38 +255,7 @@
         function retroCommunity() {
             return {
                 username: localStorage.getItem('username') || 'RetroUser',
-                posts: [
-                    {
-                        id: 1,
-                        username: 'PixelPioneer',
-                        timeAgo: '2 hours ago',
-                        content: 'Just finished this pixelated mouse design! What do you think?',
-                        imageUrl: 'https://images.unsplash.com/flagged/photo-1562599838-8cc871c241a5?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8cGl4ZWxzfGVufDB8fDB8fHww',
-                        likes: 120,
-                        comments: 25,
-                        isLiked: false
-                    },
-                    {
-                        id: 2,
-                        username: 'SynthWaveSurfer',
-                        timeAgo: '4 hours ago',
-                        content: 'Working on a new synthwave album cover. Sketches coming soon!',
-                        imageUrl: null,
-                        likes: 45,
-                        comments: 12,
-                        isLiked: false
-                    },
-                    {
-                        id: 3,
-                        username: 'VaporArtist',
-                        timeAgo: '6 hours ago',
-                        content: 'Check out my latest vaporwave-inspired piece!',
-                        imageUrl: 'https://plus.unsplash.com/premium_photo-1685148902854-9b9bb49fff08?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8c3ludGh3YXZlfGVufDB8fDB8fHww',
-                        likes: 89,
-                        comments: 23,
-                        isLiked: false
-                    }
-                ],
+                posts: [],
                 suggestedUsers: [
                     { id: 1, username: 'NeonNinja', followers: 1200, friendRequested: false },
                     { id: 2, username: 'RetroRascal', followers: 980, friendRequested: false },
@@ -329,6 +298,8 @@
 
                     this.postImage.addEventListener('change', this.handleImageUpload.bind(this));
                     this.submitPost.addEventListener('click', this.handleSubmitPost.bind(this));
+
+                    this.fetchPosts();
                 },
 
                 handleImageUpload(event) {
@@ -348,39 +319,70 @@
                     }
                 },
 
-                toggleLike(post) {
-                    post.isLiked = !post.isLiked;
-                    post.likes += post.isLiked ? 1 : -1;
-                    
-                    const likeButton = event.target.closest('.like-button');
-                    likeButton.classList.add('like-animation');
-                    setTimeout(() => {
-                        likeButton.classList.remove('like-animation');
-                    }, 300);
+                async toggleLike(post) {
+                    try {
+                        const response = await fetch(`/api/posts/${post._id}/like`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            }
+                        });
+
+                        if (response.ok) {
+                            const updatedPost = await response.json();
+                            post.likes = updatedPost.likes;
+                            post.isLiked = !post.isLiked;
+                            
+                            const likeButton = event.target.closest('.like-button');
+                            likeButton.classList.add('like-animation');
+                            setTimeout(() => {
+                                likeButton.classList.remove('like-animation');
+                            }, 300);
+                        } else {
+                            console.error('Error liking post');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
                 },
 
                 toggleFriendRequest(user) {
                     user.friendRequested = !user.friendRequested;
                 },
 
-                handleSubmitPost() {
+                async handleSubmitPost() {
                     const content = this.postContent.value.trim();
                     if (content) {
-                        const newPost = {
-                            id: this.posts.length + 1,
-                            username: this.username,
-                            timeAgo: 'Just now',
-                            content: content,
-                            imageUrl: this.previewImageUrl,
-                            likes: 0,
-                            comments: 0,
-                            isLiked: false
-                        };
-                        console.log('New post created:', JSON.stringify(newPost));
-                        this.posts.unshift(newPost);
-                        this.createPostModal.classList.add('hidden');
-                        this.createPostModal.classList.remove('flex');
-                        this.resetForm();
+                        const formData = new FormData();
+                        formData.append('content', content);
+                        if (this.postImage.files[0]) {
+                            formData.append('image', this.postImage.files[0]);
+                        }
+
+                        try {
+                            const response = await fetch('/api/posts', {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                }
+                            });
+
+                            if (response.ok) {
+                                const newPost = await response.json();
+                                this.posts.unshift(newPost);
+                                this.createPostModal.classList.add('hidden');
+                                this.createPostModal.classList.remove('flex');
+                                this.resetForm();
+                            } else {
+                                const errorData = await response.json();
+                                console.error('Error creating post:', errorData.message);
+                                alert('Error creating post: ' + errorData.message);
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            alert('Error creating post: ' + error.message);
+                        }
                     }
                 },
 
@@ -403,6 +405,42 @@
                     this.searchResults = this.suggestedUsers.filter(user => 
                         user.username.toLowerCase().includes(this.searchQuery.toLowerCase())
                     );
+                },
+
+                async fetchPosts() {
+                    try {
+                        const response = await fetch('/api/posts');
+                        if (response.ok) {
+                            this.posts = await response.json();
+                            this.posts.forEach(post => {
+                                post.isLiked = post.likes.includes(this.username);
+                            });
+                        } else {
+                            console.error('Error fetching posts');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                },
+
+                formatDate(dateString) {
+                    const date = new Date(dateString);
+                    const now = new Date();
+                    const diff = now - date;
+                    const seconds = Math.floor(diff / 1000);
+                    const minutes = Math.floor(seconds / 60);
+                    const hours = Math.floor(minutes / 60);
+                    const days = Math.floor(hours / 24);
+
+                    if (days > 0) {
+                        return `${days} day${days > 1 ? 's' : ''} ago`;
+                    } else if (hours > 0) {
+                        return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+                    } else if (minutes > 0) {
+                        return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+                    } else {
+                        return 'Just now';
+                    }
                 },
 
                 $nextTick() { 

@@ -5,12 +5,18 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const path = require('path');
+const multer = require('multer');
 const app = express();
 const port = 3000;
 const jwtSecret = 'your_jwt_secret';
+const fs = require('fs');
 
 app.use(bodyParser.json());
-app.use(cors());
+
+app.use(cors({
+  origin: '*', // Be cautious with this in production
+  credentials: true
+}));
 
 mongoose.connect('mongodb+srv://yashaggarwal3011:ShEt62UC0T176xru@greenglobe.gyrhabg.mongodb.net/?retryWrites=true&w=majority&appName=greenglobe')
   .then(() => console.log('MongoDB connected'))
@@ -59,6 +65,36 @@ const battleSchema = new mongoose.Schema({
 });
 
 const Battle = mongoose.model('Battle', battleSchema, 'Battles');
+
+// New schema for community posts
+const postSchema = new mongoose.Schema({
+  username: { type: String, required: true },
+  content: { type: String, required: true },
+  imagePath: { type: String },
+  likes: [{ type: String }], // Array of usernames who liked the post
+  comments: [{
+    username: { type: String, required: true },
+    content: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Post = mongoose.model('Post', postSchema, 'Community');
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = 'public/uploads/';
+    fs.mkdirSync(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
 
 app.post('/signup', async (req, res) => {
   const { username, email, password } = req.body;
@@ -403,6 +439,85 @@ app.get('/api/check-opponent', verifyToken, async (req, res) => {
   } catch (err) {
       console.error('Error checking for opponent:', err);
       res.status(500).json({ message: 'Error checking for opponent' });
+  }
+});
+
+// Serve static files from the public directory
+app.use(express.static('public'));
+
+// Create a new post
+app.post('/api/posts', verifyToken, upload.single('image'), async (req, res) => {
+  try {
+    const { content } = req.body;
+    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+    const post = new Post({
+      username: req.user.username,
+      content,
+      imagePath
+    });
+
+    await post.save();
+    res.status(201).json(post);
+  } catch (err) {
+    console.error('Error creating post:', err);
+    res.status(500).json({ message: 'Error creating post', error: err.message });
+  }
+});
+
+// Get all posts
+app.get('/api/posts', async (req, res) => {
+  try {
+    const posts = await Post.find().sort({ createdAt: -1 });
+    res.json(posts);
+  } catch (err) {
+    console.error('Error fetching posts:', err);
+    res.status(500).json({ message: 'Error fetching posts' });
+  }
+});
+
+// Like a post
+app.post('/api/posts/:id/like', verifyToken, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    const userIndex = post.likes.indexOf(req.user.username);
+    if (userIndex === -1) {
+      post.likes.push(req.user.username);
+    } else {
+      post.likes.splice(userIndex, 1);
+    }
+
+    await post.save();
+    res.json(post);
+  } catch (err) {
+    console.error('Error liking post:', err);
+    res.status(500).json({ message: 'Error liking post' });
+  }
+});
+
+// Add a comment to a post
+app.post('/api/posts/:id/comment', verifyToken, async (req, res) => {
+  try {
+    const { content } = req.body;
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    post.comments.push({
+      username: req.user.username,
+      content
+    });
+
+    await post.save();
+    res.json(post);
+  } catch (err) {
+    console.error('Error adding comment:', err);
+    res.status(500).json({ message: 'Error adding comment' });
   }
 });
 
