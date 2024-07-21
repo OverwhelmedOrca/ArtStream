@@ -10,7 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "truffle": "^5.11.5",
-    "web3": "^4.10.0"
+    "ethereumjs-wallet": "^1.0.2",
+    "keythereum": "^2.0.0"
   }
 }
