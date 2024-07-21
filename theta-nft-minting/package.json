@@ -8,5 +8,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "ethereumjs-wallet": "^1.0.2",
+    "keythereum": "^2.0.0"
+  }
 }

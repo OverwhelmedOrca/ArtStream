@@ -8,6 +8,7 @@ const IPFS = require('ipfs-http-client');
 const app = express();
 const port = 3000;
 
+// Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
@@ -19,36 +20,41 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+// Configure Web3 to connect to the Theta testnet
 const web3 = new Web3('https://eth-rpc-api-testnet.thetatoken.org/rpc'); // Theta testnet provider
+
+// Load the contract ABI and address
 const contractABI = JSON.parse(fs.readFileSync(path.join(__dirname, 'SimpleNFT_abi.json')));
-const contractAddress = 'YOUR_DEPLOYED_CONTRACT_ADDRESS';
+const contractAddress = 'YOUR_DEPLOYED_CONTRACT_ADDRESS'; // Replace with your deployed contract address
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
+// Configure IPFS client
 const ipfs = IPFS.create({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' });
 
+// Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Endpoint to handle file upload and minting NFT
 app.post('/upload', upload.single('painting'), async (req, res) => {
   try {
+    // Upload the file to IPFS and get the URL
     const filePath = req.file.path;
     const ipfsUrl = await uploadToIPFS(filePath);
 
-    const nftData = {
-      name: req.body.name,
-      description: req.body.description,
-      image: ipfsUrl,
-    };
+    // Replace with your Theta testnet account and private key
+    const account = '0x8DC37Ac16F7cE87Cc32AEb8fb81972bF7f413d30'; // Replace this with your Theta testnet account
+    const privateKey = '404e5eda7beb729566738308ff05fcd74cff195b124377ba0ac296862eea4f03'; // Replace this with your Theta testnet private key
 
-    const account = 'YOUR_THETA_TESTNET_ACCOUNT';
-    const privateKey = 'YOUR_THETA_TESTNET_PRIVATE_KEY';
-
+    // Add the private key to the wallet
     web3.eth.accounts.wallet.add(privateKey);
 
-    const tx = await contract.methods.mint(account).send({
+    // Mint the NFT on the Theta testnet
+    const tx = await contract.methods.mintNFT(account, ipfsUrl).send({
       from: account,
       gas: 500000,
     });
 
+    // Send the response
     res.status(200).send({ success: true, tx });
   } catch (error) {
     console.error(error);
@@ -56,10 +62,12 @@ app.post('/upload', upload.single('painting'), async (req, res) => {
   }
 });
 
+// Start the server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
 
+// Function to upload a file to IPFS
 async function uploadToIPFS(filePath) {
   const file = fs.readFileSync(filePath);
   const result = await ipfs.add(file);
