@@ -39,7 +39,7 @@ const streamSchema = new mongoose.Schema({
     chatEnabled: { type: Boolean, default: true },
     currentArtists: { type: Number, default: 1 },
     creator: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    hostName: { type: String, required: true }, // Make sure this line is present
+    hostName: { type: String, required: true },
     participants: [{
         userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         username: String
@@ -47,7 +47,10 @@ const streamSchema = new mongoose.Schema({
     isLive: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
     isPrivate: { type: Boolean, default: false },
-    streamKey: { type: String, unique: true }
+    streamKey: { type: String, unique: true },
+    rtmpKey: { type: String },
+    rtmpServer: { type: String },
+    type: { type: String, enum: ['collaboration', 'battle'], default: 'battle' }
 });
 
 const Stream = mongoose.model('Stream', streamSchema, 'Streams');
@@ -322,6 +325,7 @@ app.post('/streams/:id/join', verifyToken, async (req, res) => {
 // Start a stream (go live)
 app.post('/streams/:id/start', verifyToken, async (req, res) => {
   try {
+    const { rtmpKey, rtmpServer, type } = req.body;
     const stream = await Stream.findById(req.params.id);
     if (!stream) {
       return res.status(404).json({ message: 'Stream not found' });
@@ -330,6 +334,9 @@ app.post('/streams/:id/start', verifyToken, async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
     stream.isLive = true;
+    stream.rtmpKey = rtmpKey;
+    stream.rtmpServer = rtmpServer;
+    stream.type = type || 'battle'; // Set type to 'collaboration' if provided, otherwise default to 'battle'
     await stream.save();
     res.json(stream);
   } catch (err) {

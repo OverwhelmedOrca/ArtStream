@@ -377,10 +377,24 @@
                         console.log('Stream server:', stream_server);
                         console.log('Stream key:', stream_key);
 
+                        // Store RTMP key and server in local storage
                         localStorage.setItem('streamId', streamId);
                         localStorage.setItem('streamServer', stream_server);
                         localStorage.setItem('streamKey', stream_key);
                         console.log('Stream info saved to localStorage');
+
+                        // Update the stream in the database
+                        const updateStreamResponse = await axios.post(`/streams/${this.streamId}/start`, {
+                            rtmpKey: stream_key,
+                            rtmpServer: stream_server,
+                            type: 'collaboration'
+                        }, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        console.log('Update stream response:', updateStreamResponse.data);
 
                         // Redirect to the instructions page
                         window.location.href = 'instructions.html';
