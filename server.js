@@ -189,10 +189,10 @@ app.post('/streams', verifyToken, async (req, res) => {
     }
 });
 
-// Update the get streams route to exclude private streams
+// Update the get streams route to include all streams
 app.get('/streams', async (req, res) => {
     try {
-        const streams = await Stream.find({ isLive: false, isPrivate: false });
+        const streams = await Stream.find();
         res.json(streams);
     } catch (err) {
         console.error(err);

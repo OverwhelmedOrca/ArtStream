@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
         
@@ -166,11 +167,11 @@
             </div>
         </section>
 
-        <section class="py-20 bg-black">
+        <section id="live-now" class="section py-20 bg-gray-900">
             <div class="container mx-auto px-6">
                 <h2 class="text-4xl font-bold mb-12 text-center gradient-text">Live Now</h2>
-                <div id="live-streams-container" class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    <!-- Live streams will be dynamically added here -->
+                <div id="live-streams-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Live streams will be populated here dynamically -->
                 </div>
             </div>
         </section>
@@ -324,6 +325,97 @@
             `;
             return streamElement;
         }
+
+        async function fetchLiveStreams() {
+            try {
+                const thetaResponse = await axios.get('https://api.thetavideoapi.com/service_account/srvacc_uaef6ix91e360bvt2zw31n2hf/streams', {
+                    headers: {
+                        'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
+                        'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
+                    }
+                });
+
+                const liveStreams = thetaResponse.data.body.streams.filter(stream => stream.status === 'on');
+                console.log('Live streams from Theta:', liveStreams);
+
+                const container = document.getElementById('live-streams-container');
+                container.innerHTML = ''; // Clear existing content
+
+                for (const stream of liveStreams) {
+                    const streamDetails = await fetchStreamDetails(stream.id);
+                    const streamCard = createStreamCard(streamDetails);
+                    container.appendChild(streamCard);
+                }
+
+                if (container.children.length === 0) {
+                    container.innerHTML = '<p class="text-center text-gray-400 col-span-full">No live streams available at the moment.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching live streams:', error);
+                document.getElementById('live-streams-container').innerHTML = '<p class="text-center text-red-500 col-span-full">Error loading live streams. Please try again later.</p>';
+            }
+        }
+
+        async function fetchStreamDetails(streamId) {
+            try {
+                const thetaResponse = await axios.get(`https://api.thetavideoapi.com/stream/${streamId}`, {
+                    headers: {
+                        'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
+                        'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
+                    }
+                });
+
+                const thetaStreamData = thetaResponse.data.body;
+                console.log('Theta stream data:', thetaStreamData);
+
+                // Fetch all streams from your database
+                const dbStreamsResponse = await axios.get('http://localhost:3000/streams');
+                const dbStreams = dbStreamsResponse.data;
+                console.log('Database streams:', dbStreams);
+
+                // Find the matching stream in your database
+                const matchingStream = dbStreams.find(dbStream => 
+                    dbStream.rtmpKey === thetaStreamData.stream_key
+                );
+
+                if (matchingStream) {
+                    console.log('Matching stream found:', matchingStream);
+                    return { ...thetaStreamData, ...matchingStream };
+                } else {
+                    console.log('No matching stream found in the database. Using Theta data only.');
+                    return thetaStreamData;
+                }
+            } catch (error) {
+                console.error('Error fetching stream details:', error);
+                return null;
+            }
+        }
+
+        function createStreamCard(streamData) {
+            if (!streamData) return null;
+
+            const card = document.createElement('div');
+            card.className = 'bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105';
+            card.innerHTML = `
+                <div class="relative pb-2/3">
+                    <img src="https://i.pravatar.cc/150?u=${streamData.name}" alt="${streamData.name}" class="absolute h-full w-full object-cover">
+                    <div class="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">LIVE</div>
+                </div>
+                <div class="p-4">
+                    <h3 class="text-xl font-semibold text-white mb-2">${streamData.name}</h3>
+                    <p class="text-gray-400 text-sm mb-2">Hosted by: ${streamData.hostName || 'Unknown'}</p>
+                    <p class="text-gray-400 text-sm mb-2">Category: ${streamData.category || 'Unspecified'}</p>
+                    <p class="text-gray-400 text-sm mb-2">Type: ${streamData.type || 'Unspecified'}</p>
+                    <p class="text-gray-400 text-sm">Artists: ${streamData.currentArtists || 'N/A'}/${streamData.maxArtists || 'N/A'}</p>
+                </div>
+            `;
+            card.addEventListener('click', () => {
+                window.location.href = `userwatch.html?streamId=${streamData.id}`;
+            });
+            return card;
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchLiveStreams);
 
         // Sample data with images
         const sampleLiveStreams = [

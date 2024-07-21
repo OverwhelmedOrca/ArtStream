@@ -1,119 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArtStream - Live Art Streaming</title>
+    <title>ArtStream - Live Viewing</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
+        .gradient-bg {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
-
         .custom-scrollbar::-webkit-scrollbar-track {
             background: #2D3748;
         }
-
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: #4A5568;
             border-radius: 3px;
         }
-
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #718096;
         }
-
-        .gradient-bg {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-        }
-
-        .video-wrapper {
-            position: relative;
-            border: 2px solid #3a3a3d;
-            border-radius: 12px;
-            overflow: hidden;
-            flex: 1;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .video-wrapper:hover {
-            transform: scale(1.02);
-        }
-
-        .video-wrapper.small {
-            max-width: 30%;
-        }
-
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .video-controls {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: opacity 0.3s;
-            opacity: 0;
-        }
-
-        .video-wrapper:hover .video-controls {
-            opacity: 1;
-        }
-
-        .video-controls button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2em;
-            cursor: pointer;
-            padding: 5px;
-            transition: color 0.3s;
-        }
-
-        .video-controls button:hover {
-            color: #41a5f0;
-        }
-
-        .video-container {
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-
-        .top-videos {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            height: 25%;
-            min-height: 120px;
-        }
-
-        .main-video {
-            flex: 1;
-            margin-top: 20px;
-        }
-
-        .stream-info {
-            margin-top: 250px;
-        }
     </style>
 </head>
-
 <body class="bg-gray-900 text-white">
     <div class="flex flex-col h-screen">
-        <!-- Header -->
         <header class="gradient-bg p-4 shadow-lg">
             <div class="container mx-auto flex justify-between items-center">
                 <div class="flex items-center">
@@ -130,24 +45,19 @@
             </div>
         </header>
 
-        <!-- Main Content -->
         <div class="flex-grow flex overflow-hidden">
-            <!-- Left Column: Video Player and Info -->
             <div class="w-3/4 flex flex-col overflow-y-auto custom-scrollbar">
-                <!-- Video Container -->
                 <div class="video-container relative bg-black aspect-video max-h-[70vh]">
-                    <div class="top-videos" id="topVideos"></div>
-                    <div class="main-video" id="mainVideo"></div>
+                    <video id="videoPlayer" class="w-full h-full" controls></video>
                 </div>
 
-                <!-- Stream Info and Buttons -->
                 <div class="stream-info bg-gray-800 p-4 shadow-md">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-4">
-                            <img id="channelAvatar" src="https://i.pravatar.cc/100?img=3" alt="Channel Avatar" class="w-12 h-12 rounded-full border-2 border-purple-500">
+                            <img id="channelAvatar" src="/api/placeholder/100/100" alt="Channel Avatar" class="w-12 h-12 rounded-full border-2 border-purple-500">
                             <div>
-                                <h2 id="channelName" class="text-xl font-bold">CanvasRebel</h2>
-                                <p id="channelCategory" class="text-sm text-gray-400">Painting</p>
+                                <h2 id="channelName" class="text-xl font-bold">Loading...</h2>
+                                <p id="channelCategory" class="text-sm text-gray-400">Loading...</p>
                             </div>
                             <div class="flex space-x-2">
                                 <button id="likeBtn" class="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-full transition duration-300">
@@ -163,60 +73,42 @@
                         </div>
                         <div class="flex space-x-4 items-center text-sm">
                             <span class="bg-red-600 px-2 py-1 rounded-full">LIVE</span>
-                            <span><i class="fas fa-user mr-1"></i>3,415</span>
-                            <button class="text-gray-400 hover:text-white transition duration-300">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
+                            <span id="viewerCount"><i class="fas fa-user mr-1"></i>Loading...</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="bg-gray-800 p-4 border-t border-gray-700">
-                    <h3 id="streamTitle" class="font-bold text-lg mb-2">SEN @canvasrebel 🎨 LAST DAY OF THE ART CHALLENGE 🎨 !coaching !artshop !collab</h3>
+                    <h3 id="streamTitle" class="font-bold text-lg mb-2">Loading...</h3>
                     <div id="streamTags" class="flex space-x-4 text-sm">
-                        <span class="bg-gray-700 px-2 py-1 rounded">VALORANT</span>
-                        <span class="bg-gray-700 px-2 py-1 rounded">English</span>
-                        <span class="bg-gray-700 px-2 py-1 rounded">Digital Art</span>
-                        <span class="bg-gray-700 px-2 py-1 rounded">Beginner-Friendly</span>
+                        <!-- Tags will be populated dynamically -->
                     </div>
                 </div>
 
-                <!-- About Section -->
                 <div id="aboutSection" class="bg-gray-800 p-6 mt-4 rounded-lg shadow-md">
-                    <h3 id="aboutTitle" class="text-2xl font-bold mb-4 text-purple-400">About iiTzTimmy</h3>
-                    <p id="aboutDescription" class="text-gray-300 leading-relaxed">Passionate digital artist and illustrator, streaming daily creative sessions filled with vibrant art, interactive tutorials, and community-driven projects. Join me as we explore the colorful world of digital art, one brushstroke at a time!</p>
-                </div>
-
-                <!-- Recommended Videos -->
-                <div class="bg-gray-800 p-6 mt-4 rounded-lg shadow-md">
-                    <h3 class="text-2xl font-bold mb-6 text-purple-400">Recommended Streams</h3>
-                    <div class="grid grid-cols-3 gap-6">
-                        <div class="bg-gray-700 rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
-                            <img src="https://images.unsplash.com/photo-1637416067365-2b5e7e8fe8fa?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8ZGlnaXRhbCUyMGFydHxlbnwwfHwwfHx8MA%3D%3D" alt="Recommended stream 1" class="w-full h-40 object-cover">
-                            <div class="p-4">
-                                <h4 class="font-bold text-lg">ArtisticSoul</h4>
-                                <p class="text-gray-400">Digital Art Creation</p>
-                            </div>
+                    <h3 class="text-2xl font-bold mb-4 text-purple-400">About the Stream</h3>
+                    <p id="streamDescription" class="text-gray-300 leading-relaxed mb-4">Loading...</p>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="font-bold text-purple-400">Host:</span>
+                            <span id="hostName" class="ml-2">Loading...</span>
                         </div>
-                        <div class="bg-gray-700 rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
-                            <img src="https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGFydHxlbnwwfHwwfHx8MA%3D%3D" alt="Recommended stream 2" class="w-full h-40 object-cover">
-                            <div class="p-4">
-                                <h4 class="font-bold text-lg">BrushMaster</h4>
-                                <p class="text-gray-400">Painting Landscapes</p>
-                            </div>
+                        <div>
+                            <span class="font-bold text-purple-400">Category:</span>
+                            <span id="streamCategory" class="ml-2">Loading...</span>
                         </div>
-                        <div class="bg-gray-700 rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
-                            <img src="https://plus.unsplash.com/premium_photo-1677171381977-334fb9dc9a74?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8U2N1bHB0dXJlfGVufDB8fDB8fHww" alt="Recommended stream 3" class="w-full h-40 object-cover">
-                            <div class="p-4">
-                                <h4 class="font-bold text-lg">SculptureWizard</h4>
-                                <p class="text-gray-400">Sculpting Session</p>
-                            </div>
+                        <div>
+                            <span class="font-bold text-purple-400">Type:</span>
+                            <span id="streamType" class="ml-2">Loading...</span>
+                        </div>
+                        <div>
+                            <span class="font-bold text-purple-400">Artists:</span>
+                            <span id="artistCount" class="ml-2">Loading...</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Chat -->
             <div class="w-1/4 bg-gray-800 flex flex-col border-l border-gray-700">
                 <div class="p-4 bg-gray-700 font-bold text-lg">
                     <i class="fas fa-comments mr-2"></i> Stream Chat
@@ -232,162 +124,76 @@
     </div>
 
     <script>
-        const topVideos = document.getElementById('topVideos');
-        const mainVideo = document.getElementById('mainVideo');
+        async function loadStream() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const streamId = urlParams.get('streamId');
 
-        // Sample video data
-        const sampleStreams = [
-            {
-                url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-                title: 'SEN @canvasrebel 🎨 LAST DAY OF THE ART CHALLENGE 🎨 !coaching !artshop !collab',
-                tags: ['VALORANT', 'English', 'Digital Art', 'Beginner-Friendly'],
-                about: {
-                    title: 'About CanvasRebel',
-                    description: 'Passionate digital artist and illustrator, streaming daily creative sessions filled with vibrant art, interactive tutorials, and community-driven projects. Join me as we explore the colorful world of digital art, one brushstroke at a time!',
-                    avatar: 'https://i.pravatar.cc/100?img=3',
-                    name: 'CanvasRebel',
-                    category: 'Painting'
-                }
-            },
-            {
-                url: 'https://test-streams.mux.dev/test_001/stream.m3u8',
-                title: 'Amazing Digital Art Techniques',
-                tags: ['Digital Art', 'Tutorial', 'Procreate', 'English'],
-                about: {
-                    title: 'About ArtisticSoul',
-                    description: 'Exploring the depths of digital art with various techniques and tools. Join ArtisticSoul for in-depth tutorials and live sessions that cater to both beginners and experienced artists.',
-                    avatar: 'https://i.pravatar.cc/100?img=4',
-                    name: 'ArtisticSoul',
-                    category: 'Digital Art'
-                }
-            },
-            {
-                url: 'https://test-streams.mux.dev/dai-discontinuity-deltatre/manifest.m3u8',
-                title: 'Live Sculpting Session with SculptureWizard',
-                tags: ['Sculpting', 'Live', 'Art', 'Creative'],
-                about: {
-                    title: 'About SculptureWizard',
-                    description: 'Live sculpting sessions focusing on techniques, tools, and tips for creating stunning sculptures. Engage with SculptureWizard and the community to learn and share your passion for sculpting.',
-                    avatar: 'https://i.pravatar.cc/100?img=5',
-                    name: 'SculptureWizard',
-                    category: 'Sculpting'
-                }
+            if (!streamId) {
+                console.error('No stream ID provided');
+                return;
             }
-        ];
 
-        let streamUrls = [];
-        let mainVideoIndex = 0;
+            try {
+                const thetaResponse = await axios.get(`https://api.thetavideoapi.com/stream/${streamId}`, {
+                    headers: {
+                        'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
+                        'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
+                    }
+                });
 
-        function addStream(url) {
-            if (streamUrls.length >= 3) return;
-            streamUrls.push(url);
-            updateStreams();
-        }
+                const thetaStreamData = thetaResponse.data.body;
+                console.log('Theta stream data:', thetaStreamData);
 
-        function removeStream(url) {
-            const index = streamUrls.indexOf(url);
-            if (index > -1) {
-                streamUrls.splice(index, 1);
-                updateStreams();
-            }
-        }
+                // Fetch all streams from your database
+                const dbStreamsResponse = await axios.get('http://localhost:3000/streams');
+                const dbStreams = dbStreamsResponse.data;
+                console.log('Database streams:', dbStreams);
 
-        function updateStreams() {
-            topVideos.innerHTML = '';
-            mainVideo.innerHTML = '';
+                // Find the matching stream in your database
+                const matchingStream = dbStreams.find(dbStream => 
+                    dbStream.rtmpKey === thetaStreamData.stream_key
+                );
 
-            streamUrls.forEach((url, index) => {
-                const wrapper = createVideoWrapper(url, index);
-                if (index === mainVideoIndex) {
-                    mainVideo.appendChild(wrapper);
+                const streamData = matchingStream ? { ...thetaStreamData, ...matchingStream } : thetaStreamData;
+                console.log('Final stream data:', streamData);
+
+                // Update stream information
+                document.getElementById('channelName').textContent = streamData.name;
+                document.getElementById('channelCategory').textContent = streamData.category || 'Unspecified';
+                document.getElementById('streamTitle').textContent = streamData.name;
+                document.getElementById('viewerCount').innerHTML = `<i class="fas fa-user mr-1"></i>${streamData.current_viewers || 'N/A'}`;
+                document.getElementById('streamDescription').textContent = streamData.description || 'No description available.';
+                document.getElementById('hostName').textContent = streamData.hostName || 'Unknown';
+                document.getElementById('streamCategory').textContent = streamData.category || 'Unspecified';
+                document.getElementById('streamType').textContent = streamData.type || 'Unspecified';
+                document.getElementById('artistCount').textContent = `${streamData.currentArtists || 'N/A'}/${streamData.maxArtists || 'N/A'}`;
+
+                // Update channel avatar
+                document.getElementById('channelAvatar').src = `https://i.pravatar.cc/150?u=${streamData.hostName || 'default'}`;
+
+                // Set up video player
+                const videoPlayer = document.getElementById('videoPlayer');
+                if (streamData.playback_uri && Hls.isSupported()) {
+                    const hls = new Hls();
+                    hls.loadSource(streamData.playback_uri);
+                    hls.attachMedia(videoPlayer);
+                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                        videoPlayer.play();
+                    });
+                } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+                    videoPlayer.src = streamData.playback_uri;
+                    videoPlayer.addEventListener('loadedmetadata', function() {
+                        videoPlayer.play();
+                    });
                 } else {
-                    wrapper.classList.add('small');
-                    topVideos.appendChild(wrapper);
+                    console.error('HLS is not supported on this browser.');
                 }
-            });
 
-            updateStreamInfo();
-        }
-
-        function createVideoWrapper(url, index) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'video-wrapper';
-
-            const video = document.createElement('video');
-            video.id = `video-${index}`;
-            video.controls = false;
-
-            const controls = document.createElement('div');
-            controls.className = 'video-controls';
-
-            const playPauseBtn = document.createElement('button');
-            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-            playPauseBtn.onclick = (e) => {
-                e.stopPropagation();
-                togglePlayPause(video, playPauseBtn);
-            };
-
-            const maximizeBtn = document.createElement('button');
-            maximizeBtn.innerHTML = '<i class="fas fa-expand"></i>';
-            maximizeBtn.onclick = (e) => {
-                e.stopPropagation();
-                switchMainVideo(index);
-            };
-
-            controls.appendChild(playPauseBtn);
-            controls.appendChild(maximizeBtn);
-
-            wrapper.appendChild(video);
-            wrapper.appendChild(controls);
-
-            if (Hls.isSupported()) {
-                const hls = new Hls();
-                hls.loadSource(url);
-                hls.attachMedia(video);
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = url;
-            }
-
-            return wrapper;
-        }
-
-        function togglePlayPause(video, btn) {
-            if (video.paused) {
-                video.play();
-                btn.innerHTML = '<i class="fas fa-pause"></i>';
-            } else {
-                video.pause();
-                btn.innerHTML = '<i class="fas fa-play"></i>';
+            } catch (error) {
+                console.error('Error loading stream:', error);
+                document.getElementById('streamDescription').textContent = 'Error loading stream information.';
             }
         }
-
-        function switchMainVideo(index) {
-            mainVideoIndex = index;
-            updateStreams();
-        }
-
-        function updateStreamInfo() {
-            const stream = sampleStreams[mainVideoIndex];
-            document.getElementById('streamTitle').textContent = stream.title;
-            const tagsContainer = document.getElementById('streamTags');
-            tagsContainer.innerHTML = '';
-            stream.tags.forEach(tag => {
-                const tagElement = document.createElement('span');
-                tagElement.className = 'bg-gray-700 px-2 py-1 rounded';
-                tagElement.textContent = tag;
-                tagsContainer.appendChild(tagElement);
-            });
-
-            const about = stream.about;
-            document.getElementById('aboutTitle').textContent = about.title;
-            document.getElementById('aboutDescription').textContent = about.description;
-            document.getElementById('channelAvatar').src = about.avatar;
-            document.getElementById('channelName').textContent = about.name;
-            document.getElementById('channelCategory').textContent = about.category;
-        }
-
-        // Add sample streams
-        sampleStreams.forEach(stream => addStream(stream.url));
 
         // Simulated chat messages
         const chatMessages = [
@@ -442,7 +248,9 @@
                 }
             }
         });
+
+        // Load the stream when the page is ready
+        document.addEventListener('DOMContentLoaded', loadStream);
     </script>
 </body>
-
 </html>
