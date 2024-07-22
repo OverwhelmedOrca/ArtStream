@@ -169,14 +169,37 @@
 
         async function initializeStreams() {
             const myThetaId = localStorage.getItem('ThetaID');
-            const opponentThetaId = localStorage.getItem('opponentThetaID');
+            const battleId = localStorage.getItem('battleId');
 
-            if (!myThetaId || !opponentThetaId) {
-                console.error('Missing ThetaID information');
+            if (!myThetaId || !battleId) {
+                console.error('Missing ThetaID or battleId information');
                 return;
             }
 
             try {
+                // Fetch the latest battle data
+                const response = await fetch(`/api/battles/${battleId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch battle data');
+                }
+
+                const battleData = await response.json();
+                const opponentThetaId = battleData.username === localStorage.getItem('username') 
+                    ? battleData.opponentThetaStreamID 
+                    : battleData.thetaStreamID;
+
+                if (!opponentThetaId) {
+                    console.log('Opponent stream not started yet. Waiting...');
+                    // You might want to implement a polling mechanism here to check for updates
+                    return;
+                }
+
                 myStream = await getStreamInfo(myThetaId, 'My Stream');
                 opponentStream = await getStreamInfo(opponentThetaId, 'Opponent\'s Stream');
 
