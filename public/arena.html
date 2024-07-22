@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Art Battle Arena</title>
+    <title>Creative Battle Arena</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/2.3.0/alpine.js" integrity="sha512-nIwdJlD5/vHj23CbO2iHCXtsqzdTTx3e3uAmpTm4x2Y8xCIFyWu4cSIV8GaGe2UNVq86/1h9EgUZy7tn243qdA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
@@ -32,12 +32,35 @@
         .animate-spin {
             animation: spin 1s linear infinite;
         }
+        .category-card {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease-in-out;
+        }
+        .category-card:hover {
+            transform: scale(1.05);
+        }
+        .category-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+        }
+        .category-card img {
+            transition: transform 0.3s ease-in-out;
+        }
+        .category-card:hover img {
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white" x-data="arenaApp()">
     <header class="bg-gray-900 p-4 shadow-lg">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-3xl font-bold text-blue-400">Art Battle Arena</h1>
+            <h1 class="text-3xl font-bold text-blue-400">Creative Battle Arena</h1>
             <div class="relative" x-data="{ open: false, username: '' }" x-init="username = localStorage.getItem('username') || 'default'">
                 <img :src="'https://i.pravatar.cc/150?u=' + username" class="w-10 h-10 rounded-full cursor-pointer border-2 border-blue-400" @click="open = !open">
                 <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5">
@@ -52,10 +75,21 @@
     </header>
 
     <div class="container mx-auto px-4 py-12" role="main">
-        <h2 class="text-4xl font-bold mb-8 text-center text-blue-400">Choose Your Arena</h2>
+        <h2 class="text-4xl font-bold mb-8 text-center text-blue-400">Choose Your Category</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+            <template x-for="category in categories" :key="category.name">
+                <div class="category-card rounded-lg overflow-hidden shadow-lg cursor-pointer" @click="selectCategory(category.name)">
+                    <img :src="category.image" :alt="category.name" class="w-full h-48 object-cover">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <h3 x-text="category.name" class="text-3xl font-bold text-white z-10"></h3>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <h2 id="arenas" class="text-4xl font-bold mb-8 text-center text-blue-400">Choose Your Arena</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Arena cards -->
-            <template x-for="arena in arenas" :key="arena.name">
+            <template x-for="arena in filteredArenas" :key="arena.name">
                 <div class="card bg-gray-800 rounded-lg overflow-hidden shadow-lg">
                     <img :src="arena.image" :alt="arena.name" class="w-full h-48 object-cover">
                     <div class="p-6">
@@ -140,50 +174,200 @@
                 opponentName: '',
                 opponentAvatar: '',
                 battleId: null,
+                selectedCategory: 'art',
+                categories: [
+                    { name: 'Art', image: 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80' },
+                    { name: 'Music', image: 'https://images.unsplash.com/photo-1511735111819-9a3f7709049c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80' },
+                    { name: 'Stand-up', image: 'https://images.unsplash.com/photo-1585699324551-f6c309eedeca?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80' },
+                    { name: 'Acting', image: 'https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1476&q=80' }
+                ],
                 arenas: [
+                    // Art Arenas
                     {
                         name: "Friendly Skirmish",
                         stake: 0,
                         image: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-                        description: "Unleash your creativity without breaking the bank. Perfect for warming up those artistic muscles!"
+                        description: "Unleash your creativity without breaking the bank. Perfect for warming up those artistic muscles!",
+                        category: "Art"
                     },
                     {
                         name: "Street Showdown",
                         stake: 2,
                         image: "https://images.unsplash.com/photo-1561214115-f2f134cc4912?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-                        description: "Bring your A-game to the streets. Show 'em what you've got for the price of a coffee!"
+                        description: "Bring your A-game to the streets. Show 'em what you've got for the price of a coffee!",
+                        category: "Art"
                     },
                     {
                         name: "Gallery Grudge",
                         stake: 5,
                         image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-                        description: "Step it up a notch. Your art might just end up on someone's wall... or their meme collection!"
+                        description: "Step it up a notch. Your art might just end up on someone's wall... or their meme collection!",
+                        category: "Art"
                     },
                     {
                         name: "Canvas Clash",
                         stake: 10,
                         image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-                        description: "Getting serious now. Time to show those brushes who's boss!"
+                        description: "Getting serious now. Time to show those brushes who's boss!",
+                        category: "Art"
                     },
                     {
                         name: "Masterpiece Mayhem",
                         stake: 25,
                         image: "https://images.unsplash.com/photo-1501084817091-a4f3d1d19e07?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
-                        description: "The big leagues. Your art vs theirs. May the best masterpiece win!"
+                        description: "The big leagues. Your art vs theirs. May the best masterpiece win!",
+                        category: "Art"
                     },
                     {
                         name: "Louvre Legends",
                         stake: 100,
                         image: "https://images.unsplash.com/photo-1567095761054-7a02e69e5c43?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8YWJzdHJhY3QlMjBzY3VscHR1cmV8ZW58MHx8MHx8fDA%3D",
-                        description: "The ultimate showdown. Winner gets a spot next to Mona Lisa... well, almost!"
+                        description: "The ultimate showdown. Winner gets a spot next to Mona Lisa... well, almost!",
+                        category: "Art"
+                    },
+                    // Music Arenas
+                    {
+                        name: "Shower Serenade",
+                        stake: 0,
+                        image: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                        description: "Start your musical journey where all greats begin - in the shower!",
+                        category: "Music"
+                    },
+                    {
+                        name: "Karaoke Knockout",
+                        stake: 2,
+                        image: "https://images.unsplash.com/photo-1516280030429-27679b3dc9a7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                        description: "Step out of the shower and onto the karaoke stage. Time to face an audience!",
+                        category: "Music"
+                    },
+                    {
+                        name: "Open Mic Night",
+                        stake: 5,
+                        image: "https://images.unsplash.com/photo-1468164016595-6108e4c60c8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                        description: "Your first gig! Impress the local crowd and maybe score a free drink.",
+                        category: "Music"
+                    },
+                    {
+                        name: "Battle of the Bands",
+                        stake: 10,
+                        image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                        description: "Bring your band and battle it out. Winner takes home glory (and a small cash prize)!",
+                        category: "Music"
+                    },
+                    {
+                        name: "Festival Frenzy",
+                        stake: 25,
+                        image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                        description: "You've made it to the big stage! Thousands of fans await your performance.",
+                        category: "Music"
+                    },
+                    {
+                        name: "Grammy Gladiators",
+                        stake: 100,
+                        image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1474&q=80",
+                        description: "The pinnacle of musical achievement. Battle for the golden gramophone!",
+                        category: "Music"
+                    },
+                    // Stand-up Arenas
+                    {
+                        name: "Mirror Monologue",
+                        stake: 0,
+                        image: "https://images.unsplash.com/photo-1596005554384-d293674c91d7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                        description: "Start your comedy career in front of your toughest critic - yourself!",
+                        category: "Stand-up"
+                    },
+                    {
+                        name: "Family Dinner Roast",
+                        stake: 2,
+                        image: "https://images.unsplash.com/photo-1545494097-1545e22ee878?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                        description: "Test your material on your captive audience. Make Uncle Bob laugh!",
+                        category: "Stand-up"
+                    },
+                    {
+                        name: "Open Mic Mayhem",
+                        stake: 5,
+                        image: "https://images.unsplash.com/photo-1585699324551-f6c309eedeca?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                        description: "Your first real gig! Try not to sweat through your shirt.",
+                        category: "Stand-up"
+                    },
+                    {
+                        name: "Comedy Club Clash",
+                        stake: 10,
+                        image: "https://images.unsplash.com/photo-1527224538127-2104bb71c51b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80",
+                        description: "You're climbing the ranks! Battle it out at a real comedy club.",
+                        category: "Stand-up"
+                    },
+                    {
+                        name: "Netflix Special Showdown",
+                        stake: 25,
+                        image: "https://images.unsplash.com/photo-1586899028174-e7098604235b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80",
+                        description: "The big leagues! Compete for your very own Netflix special.",
+                        category: "Stand-up"
+                    },
+                    {
+                        name: "Comedy Central Colosseum",
+                        stake: 100,
+                        image: "https://images.unsplash.com/photo-1619229667009-e7e51684e8e4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                        description: "The ultimate comedy battle. Winner gets their own primetime show!",
+                        category: "Stand-up"
+                    },
+                    // Acting Arenas
+                    {
+                        name: "Bathroom Mirror Monologue",
+                        stake: 0,
+                        image: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1515&q=80",
+                        description: "Every actor's first stage. Nail that monologue in front of your mirror!",
+                        category: "Acting"
+                    },
+                    {
+                        name: "School Play Skirmish",
+                        stake: 2,
+                        image: "https://images.unsplash.com/photo-1460518451285-97b6aa326961?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                        description: "Battle for the lead role in your school's production of 'Grease'!",
+                        category: "Acting"
+                    },
+                    {
+                        name: "Community Theater Challenge",
+                        stake: 5,
+                        image: "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1469&q=80",
+                        description: "Your first 'real' gig! Prove yourself on the community stage.",
+                        category: "Acting"
+                    },
+                    {
+                        name: "Off-Broadway Bout",
+                        stake: 10,
+                        image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                        description: "You've made it to the Big Apple! Now fight for that breakthrough role.",
+                        category: "Acting"
+                    },
+                    {
+                        name: "Hollywood Hustle",
+                        stake: 25,
+                        image: "https://images.unsplash.com/photo-1490604001847-b712b0c2f967?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1748&q=80",
+                        description: "Lights, camera, action! Compete for a role in a major motion picture.",
+                        category: "Acting"
+                    },
+                    {
+                        name: "Oscar Odyssey",
+                        stake: 100,
+                        image: "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+                        description: "The pinnacle of acting achievement. Battle for the golden statuette!",
+                        category: "Acting"
                     }
                 ],
-
+                get filteredArenas() {
+                    return this.arenas.filter(arena => arena.category.toLowerCase() === this.selectedCategory.toLowerCase());
+                },
+                selectCategory(category) {
+                    this.selectedCategory = category;
+                    this.$nextTick(() => {
+                        document.getElementById('arenas').scrollIntoView({ behavior: 'smooth' });
+                    });
+                },
                 enterArena(arena) {
                     this.currentArena = arena;
                     this.showModal = true;
                 },
-
                 async findOpponent() {
                     this.showModal = false;
                     this.showLoading = true;
@@ -195,7 +379,8 @@
                         stakeAmount: this.currentArena.stake,
                         aiAllowed: this.aiAllowed,
                         liveStream: this.liveStream,
-                        timeLimit: parseInt(this.timeLimit)
+                        timeLimit: parseInt(this.timeLimit),
+                        category: this.selectedCategory
                     };
 
                     try {
@@ -288,6 +473,7 @@
                     localStorage.setItem('timeLimit', this.timeLimit);
                     localStorage.setItem('arenaName', this.currentArena.name);
                     localStorage.setItem('liveStream', this.liveStream);
+                    localStorage.setItem('category', this.selectedCategory);
 
                     // Redirect after 3 seconds
                     setTimeout(() => {
