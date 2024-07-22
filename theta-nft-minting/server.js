@@ -1,9 +1,10 @@
 const express = require('express');
 const multer = require('multer');
-const Web3 = require('web3');
+const Web3 = require('web3'); // Ensure correct import
 const fs = require('fs');
 const path = require('path');
-const IPFS = require('ipfs-http-client');
+const axios = require('axios');
+const FormData = require('form-data');
 
 const app = express();
 const port = 3000;
@@ -20,16 +21,17 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Configure Web3 to connect to the Theta testnet
-const web3 = new Web3('https://eth-rpc-api-testnet.thetatoken.org/rpc'); // Theta testnet provider
+// Correctly instantiate Web3
+const web3 = new Web3(new Web3.providers.HttpProvider('https://eth-rpc-api-testnet.thetatoken.org/rpc')); // Theta testnet provider
 
 // Load the contract ABI and address
 const contractABI = JSON.parse(fs.readFileSync(path.join(__dirname, 'SimpleNFT_abi.json')));
 const contractAddress = '0xD7ACd2a9FD159E69Bb102A1ca21C9a3e3A5F771B'; // Replace with your deployed contract address
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
-// Configure IPFS client
-const ipfs = IPFS.create({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' });
+// Pinata API keys
+const pinataApiKey = 'e4a866872b4d5fee9f82'; // Replace with your Pinata API key
+const pinataSecretApiKey = 'e91f348197beeb8014a66809004f0bb899cc1a25c2ddfff8159b10f63dbf1232'; // Replace with your Pinata secret API key
 
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -37,9 +39,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Endpoint to handle file upload and minting NFT
 app.post('/upload', upload.single('painting'), async (req, res) => {
   try {
-    // Upload the file to IPFS and get the URL
+    // Upload the file to Pinata and get the URL
     const filePath = req.file.path;
-    const ipfsUrl = await uploadToIPFS(filePath);
+    const pinataUrl = await uploadToPinata(filePath);
 
     // Replace with your Theta testnet account and private key
     const account = '0x8DC37Ac16F7cE87Cc32AEb8fb81972bF7f413d30'; // Replace this with your Theta testnet account
@@ -49,7 +51,7 @@ app.post('/upload', upload.single('painting'), async (req, res) => {
     web3.eth.accounts.wallet.add(privateKey);
 
     // Mint the NFT on the Theta testnet
-    const tx = await contract.methods.mintNFT(account, ipfsUrl).send({
+    const tx = await contract.methods.mintNFT(account, pinataUrl).send({
       from: account,
       gas: 500000,
     });
@@ -67,9 +69,21 @@ app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
 
-// Function to upload a file to IPFS
-async function uploadToIPFS(filePath) {
-  const file = fs.readFileSync(filePath);
-  const result = await ipfs.add(file);
-  return `https://ipfs.infura.io/ipfs/${result.path}`;
+// Function to upload a file to Pinata
+async function uploadToPinata(filePath) {
+  const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
+  const formData = new FormData();
+  formData.append('file', fs.createReadStream(filePath));
+
+  const response = await axios.post(url, formData, {
+    maxContentLength: 'Infinity', // this is needed to prevent axios from erroring out with large files
+    headers: {
+      'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
+      'pinata_api_key': pinataApiKey,
+      'pinata_secret_api_key': pinataSecretApiKey,
+    },
+  });
+
+  const ipfsHash = response.data.IpfsHash;
+  return `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
 }
