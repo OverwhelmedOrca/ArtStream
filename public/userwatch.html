@@ -8,120 +8,217 @@
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B5CF6',
+                        secondary: '#A78BFA',
+                        background: '#1E1E2E',
+                        surface: '#2A2A3C',
+                        accent: '#FF79C6',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
     <style>
-        .gradient-bg {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            background-color: #1E1E2E;
+            color: #E2E8F0;
         }
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: #2D3748;
+            background: #2A2A3C;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #4A5568;
+            background: #4B5563;
             border-radius: 3px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #718096;
+            background: #6B7280;
+        }
+        .stream-container {
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+        }
+        .chat-message {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .glow {
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #FF79C6, 0 0 10px #FF79C6; }
+            to { text-shadow: 0 0 10px #FF79C6, 0 0 20px #FF79C6; }
         }
     </style>
 </head>
-<body class="bg-gray-900 text-white">
-    <div class="flex flex-col h-screen">
-        <header class="gradient-bg p-4 shadow-lg">
-            <div class="container mx-auto flex justify-between items-center">
-                <div class="flex items-center">
-                    <img src="/api/placeholder/40/40" alt="Logo" class="w-10 h-10 mr-2 rounded-full">
-                    <h1 class="text-2xl font-bold text-white">ArtStream</h1>
-                </div>
-                <nav>
-                    <ul class="flex space-x-6">
-                        <li><a href="#" class="hover:text-purple-300 transition duration-300">Browse</a></li>
-                        <li><a href="#" class="hover:text-purple-300 transition duration-300">Following</a></li>
-                        <li><a href="#" class="hover:text-purple-300 transition duration-300">Categories</a></li>
-                    </ul>
-                </nav>
+<body class="font-sans">
+    <header class="bg-primary py-4 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <img src="/api/placeholder/50/50" alt="ArtStream Logo" class="w-10 h-10 rounded-full border-2 border-white">
+                <h1 class="text-2xl font-bold text-white">ArtStream</h1>
             </div>
-        </header>
+            <nav>
+                <ul class="flex space-x-8">
+                    <li><a href="#" class="text-white hover:text-secondary transition duration-300">Browse</a></li>
+                    <li><a href="#" class="text-white hover:text-secondary transition duration-300">Following</a></li>
+                    <li><a href="#" class="text-white hover:text-secondary transition duration-300">Categories</a></li>
+                    <li><a href="#" class="bg-accent text-background hover:bg-secondary hover:text-white px-4 py-2 rounded-full transition duration-300">Sign In</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
-        <div class="flex-grow flex overflow-hidden">
-            <div class="w-3/4 flex flex-col overflow-y-auto custom-scrollbar">
-                <div class="video-container relative bg-black aspect-video max-h-[70vh]">
+    <main class="flex h-[calc(100vh-72px)]">
+        <div class="w-3/4 overflow-y-auto custom-scrollbar p-6 bg-background">
+            <div class="stream-container bg-surface rounded-lg overflow-hidden mb-6">
+                <div class="relative bg-black aspect-video">
                     <video id="videoPlayer" class="w-full h-full" controls></video>
+                    <div class="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold glow">LIVE</div>
+                    <div id="viewerCount" class="absolute top-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                        <i class="fas fa-user mr-2"></i>N/A
+                    </div>
                 </div>
+            </div>
 
-                <div class="stream-info bg-gray-800 p-4 shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-4">
-                            <img id="channelAvatar" src="/api/placeholder/100/100" alt="Channel Avatar" class="w-12 h-12 rounded-full border-2 border-purple-500">
-                            <div>
-                                <h2 id="channelName" class="text-xl font-bold">Loading...</h2>
-                                <p id="channelCategory" class="text-sm text-gray-400">Loading...</p>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button id="likeBtn" class="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-full transition duration-300">
-                                    <i class="far fa-heart"></i>
-                                </button>
-                                <button class="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-full transition duration-300">
-                                    <i class="fas fa-share"></i>
-                                </button>
-                                <button id="followBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1 px-4 rounded-full text-sm transition duration-300">
-                                    Follow
-                                </button>
-                            </div>
+            <div class="bg-surface rounded-lg p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-4">
+                        <img id="channelAvatar" src="/api/placeholder/100/100" alt="Channel Avatar" class="w-16 h-16 rounded-full border-4 border-primary">
+                        <div>
+                            <h2 id="channelName" class="text-2xl font-bold text-white">Loading...</h2>
+                            <p id="channelCategory" class="text-secondary">Loading...</p>
                         </div>
-                        <div class="flex space-x-4 items-center text-sm">
-                            <span class="bg-red-600 px-2 py-1 rounded-full">LIVE</span>
-                            <span id="viewerCount"><i class="fas fa-user mr-1"></i>Loading...</span>
-                        </div>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button id="followBtn" class="bg-accent hover:bg-secondary text-background font-bold py-2 px-6 rounded-full transition duration-300">
+                            Follow
+                        </button>
+                        <button id="likeBtn" class="bg-surface hover:bg-gray-700 text-white p-2 rounded-full transition duration-300">
+                            <i class="far fa-heart text-xl"></i>
+                        </button>
+                        <button class="bg-surface hover:bg-gray-700 text-white p-2 rounded-full transition duration-300">
+                            <i class="fas fa-share text-xl"></i>
+                        </button>
                     </div>
                 </div>
 
-                <div class="bg-gray-800 p-4 border-t border-gray-700">
-                    <h3 id="streamTitle" class="font-bold text-lg mb-2">Loading...</h3>
-                    <div id="streamTags" class="flex space-x-4 text-sm">
-                        <!-- Tags will be populated dynamically -->
-                    </div>
+                <h3 id="streamTitle" class="text-2xl font-bold mb-4 text-white">Loading...</h3>
+                <div id="streamTags" class="flex flex-wrap gap-2 mb-4">
+                    <!-- Tags will be populated dynamically -->
                 </div>
+                <p id="streamDescription" class="text-gray-300 leading-relaxed mb-6">Loading...</p>
 
-                <div id="aboutSection" class="bg-gray-800 p-6 mt-4 rounded-lg shadow-md">
-                    <h3 class="text-2xl font-bold mb-4 text-purple-400">About the Stream</h3>
-                    <p id="streamDescription" class="text-gray-300 leading-relaxed mb-4">Loading...</p>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="grid grid-cols-2 gap-6 text-sm bg-background rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-user-circle text-accent text-xl mr-3"></i>
                         <div>
-                            <span class="font-bold text-purple-400">Host:</span>
-                            <span id="hostName" class="ml-2">Loading...</span>
+                            <span class="font-bold text-secondary">Host</span>
+                            <p id="hostName" class="text-white">Loading...</p>
                         </div>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-palette text-accent text-xl mr-3"></i>
                         <div>
-                            <span class="font-bold text-purple-400">Category:</span>
-                            <span id="streamCategory" class="ml-2">Loading...</span>
+                            <span class="font-bold text-secondary">Category</span>
+                            <p id="streamCategory" class="text-white">Loading...</p>
                         </div>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-paint-brush text-accent text-xl mr-3"></i>
                         <div>
-                            <span class="font-bold text-purple-400">Type:</span>
-                            <span id="streamType" class="ml-2">Loading...</span>
+                            <span class="font-bold text-secondary">Type</span>
+                            <p id="streamType" class="text-white">Loading...</p>
                         </div>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-users text-accent text-xl mr-3"></i>
                         <div>
-                            <span class="font-bold text-purple-400">Artists:</span>
-                            <span id="artistCount" class="ml-2">Loading...</span>
+                            <span class="font-bold text-secondary">Artists</span>
+                            <p id="artistCount" class="text-white">Loading...</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="w-1/4 bg-gray-800 flex flex-col border-l border-gray-700">
-                <div class="p-4 bg-gray-700 font-bold text-lg">
-                    <i class="fas fa-comments mr-2"></i> Stream Chat
+            <div class="bg-surface rounded-lg p-6 mb-6">
+                <h3 class="text-2xl font-bold mb-4 text-white">About the Artist</h3>
+                <p class="text-gray-300 leading-relaxed mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-accent hover:text-secondary transition duration-300">
+                        <i class="fab fa-instagram text-2xl"></i>
+                    </a>
+                    <a href="#" class="text-accent hover:text-secondary transition duration-300">
+                        <i class="fab fa-twitter text-2xl"></i>
+                    </a>
+                    <a href="#" class="text-accent hover:text-secondary transition duration-300">
+                        <i class="fab fa-youtube text-2xl"></i>
+                    </a>
                 </div>
-                <div id="chatMessages" class="flex-grow overflow-y-auto p-4 custom-scrollbar">
-                    <!-- Chat messages will be inserted here -->
-                </div>
-                <div class="p-4 border-t border-gray-700">
-                    <input type="text" id="chatInput" placeholder="Send a message" class="w-full p-3 rounded-full bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+
+            <div class="bg-surface rounded-lg p-6">
+                <h3 class="text-2xl font-bold mb-4 text-white">Recommended Streams</h3>
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="bg-background rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition duration-300">
+                        <img src="/api/placeholder/320/180" alt="Stream Thumbnail" class="w-full h-40 object-cover">
+                        <div class="p-4">
+                            <h4 class="font-bold mb-2 text-white">Watercolor Landscapes</h4>
+                            <p class="text-sm text-gray-400">by ArtistName</p>
+                        </div>
+                    </div>
+                    <div class="bg-background rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition duration-300">
+                        <img src="/api/placeholder/320/180" alt="Stream Thumbnail" class="w-full h-40 object-cover">
+                        <div class="p-4">
+                            <h4 class="font-bold mb-2 text-white">Digital Character Design</h4>
+                            <p class="text-sm text-gray-400">by DigitalArtPro</p>
+                        </div>
+                    </div>
+                    <div class="bg-background rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition duration-300">
+                        <img src="/api/placeholder/320/180" alt="Stream Thumbnail" class="w-full h-40 object-cover">
+                        <div class="p-4">
+                            <h4 class="font-bold mb-2 text-white">Oil Painting Masterclass</h4>
+                            <p class="text-sm text-gray-400">by ClassicPainter</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+
+        <div class="w-1/4 bg-surface flex flex-col border-l border-gray-700">
+            <div class="p-4 bg-background font-bold text-lg flex items-center justify-between">
+                <span><i class="fas fa-comments mr-2 text-accent"></i> Stream Chat</span>
+                <button class="text-secondary hover:text-white transition duration-300">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+            <div id="chatMessages" class="flex-grow overflow-y-auto p-4 custom-scrollbar space-y-4">
+                <!-- Chat messages will be inserted here -->
+            </div>
+            <div class="p-4 border-t border-gray-700">
+                <div class="relative">
+                    <input type="text" id="chatInput" placeholder="Send a message" class="w-full p-3 pr-12 rounded-full bg-background text-white focus:outline-none focus:ring-2 focus:ring-accent">
+                    <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-accent hover:text-white transition duration-300">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <script>
         async function loadStream() {
@@ -161,96 +258,145 @@
                 document.getElementById('channelName').textContent = streamData.name;
                 document.getElementById('channelCategory').textContent = streamData.category || 'Unspecified';
                 document.getElementById('streamTitle').textContent = streamData.name;
-                document.getElementById('viewerCount').innerHTML = `<i class="fas fa-user mr-1"></i>${streamData.current_viewers || 'N/A'}`;
+                document.getElementById('viewerCount').innerHTML = `<i class="fas fa-user mr-2"></i>${streamData.current_viewers || 'N/A'}`;
                 document.getElementById('streamDescription').textContent = streamData.description || 'No description available.';
                 document.getElementById('hostName').textContent = streamData.hostName || 'Unknown';
                 document.getElementById('streamCategory').textContent = streamData.category || 'Unspecified';
                 document.getElementById('streamType').textContent = streamData.type || 'Unspecified';
                 document.getElementById('artistCount').textContent = `${streamData.currentArtists || 'N/A'}/${streamData.maxArtists || 'N/A'}`;
 
-                // Update channel avatar
-                document.getElementById('channelAvatar').src = `https://i.pravatar.cc/150?u=${streamData.hostName || 'default'}`;
+            // Update channel avatar
+            document.getElementById('channelAvatar').src = `https://i.pravatar.cc/150?u=${streamData.hostName || 'default'}`;
 
-                // Set up video player
-                const videoPlayer = document.getElementById('videoPlayer');
-                if (streamData.playback_uri && Hls.isSupported()) {
-                    const hls = new Hls();
-                    hls.loadSource(streamData.playback_uri);
-                    hls.attachMedia(videoPlayer);
-                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                        videoPlayer.play();
-                    });
-                } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-                    videoPlayer.src = streamData.playback_uri;
-                    videoPlayer.addEventListener('loadedmetadata', function() {
-                        videoPlayer.play();
-                    });
-                } else {
-                    console.error('HLS is not supported on this browser.');
-                }
-
-            } catch (error) {
-                console.error('Error loading stream:', error);
-                document.getElementById('streamDescription').textContent = 'Error loading stream information.';
-            }
-        }
-
-        // Simulated chat messages
-        const chatMessages = [
-            { user: 'ArtLover99', message: 'This stream is amazing!' },
-            { user: 'CreativeSoul', message: 'How long have you been doing digital art?' },
-            { user: 'ColorMaster', message: 'The color palette you\'re using is fantastic!' },
-        ];
-
-        // Function to add a chat message
-        function addChatMessage(user, message) {
-            const chatContainer = document.getElementById('chatMessages');
-            const messageElement = document.createElement('div');
-            messageElement.className = 'mb-3 p-2 bg-gray-700 rounded-lg';
-            messageElement.innerHTML = `<span class="font-bold text-purple-400">${user}:</span> ${message}`;
-            chatContainer.appendChild(messageElement);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        // Initialize chat with simulated messages
-        chatMessages.forEach(msg => addChatMessage(msg.user, msg.message));
-
-        // Event listeners for buttons
-        document.getElementById('likeBtn').addEventListener('click', function () {
-            this.querySelector('i').classList.toggle('fas');
-            this.querySelector('i').classList.toggle('far');
-            this.querySelector('i').classList.toggle('text-red-500');
-        });
-
-        document.querySelector('button i.fa-share').parentElement.addEventListener('click', function () {
-            alert('Share functionality would be implemented here.');
-        });
-
-        document.getElementById('followBtn').addEventListener('click', function () {
-            if (this.textContent === 'Follow') {
-                this.textContent = 'Following';
-                this.classList.add('bg-purple-600');
-                this.classList.remove('bg-purple-700');
+            // Set up video player
+            const videoPlayer = document.getElementById('videoPlayer');
+            if (streamData.playback_uri && Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(streamData.playback_uri);
+                hls.attachMedia(videoPlayer);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    videoPlayer.play();
+                });
+            } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+                videoPlayer.src = streamData.playback_uri;
+                videoPlayer.addEventListener('loadedmetadata', function() {
+                    videoPlayer.play();
+                });
             } else {
-                this.textContent = 'Follow';
-                this.classList.add('bg-purple-700');
-                this.classList.remove('bg-purple-600');
+                console.error('HLS is not supported on this browser.');
             }
-        });
 
-        // Chat input functionality
-        document.getElementById('chatInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                const message = this.value.trim();
-                if (message) {
-                    addChatMessage('You', message);
-                    this.value = '';
-                }
+            // Populate stream tags
+            const tagsContainer = document.getElementById('streamTags');
+            if (streamData.tags && streamData.tags.length > 0) {
+                streamData.tags.forEach(tag => {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'bg-background text-secondary px-3 py-1 rounded-full text-sm';
+                    tagElement.textContent = tag;
+                    tagsContainer.appendChild(tagElement);
+                });
+            } else {
+                tagsContainer.innerHTML = '<span class="text-gray-400">No tags available</span>';
             }
-        });
 
-        // Load the stream when the page is ready
-        document.addEventListener('DOMContentLoaded', loadStream);
+        } catch (error) {
+            console.error('Error loading stream:', error);
+            document.getElementById('streamDescription').textContent = 'Error loading stream information.';
+        }
+    }
+
+    // Simulated chat messages
+    const chatMessages = [
+        { user: 'ArtLover99', message: 'This stream is amazing!' },
+        { user: 'CreativeSoul', message: 'How long have you been doing digital art?' },
+        { user: 'ColorMaster', message: 'The color palette you\'re using is fantastic!' },
+    ];
+
+    // Function to add a chat message
+    function addChatMessage(user, message) {
+        const chatContainer = document.getElementById('chatMessages');
+        const messageElement = document.createElement('div');
+        messageElement.className = 'chat-message bg-background rounded-lg p-3';
+        messageElement.innerHTML = `
+            <span class="font-bold text-accent">${user}:</span>
+            <span class="text-gray-300">${message}</span>
+        `;
+        chatContainer.appendChild(messageElement);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // Initialize chat with simulated messages
+    function initializeChat() {
+        chatMessages.forEach(msg => addChatMessage(msg.user, msg.message));
+    }
+
+    // Event listeners for buttons
+    document.getElementById('likeBtn').addEventListener('click', function () {
+        this.querySelector('i').classList.toggle('fas');
+        this.querySelector('i').classList.toggle('far');
+        this.classList.toggle('text-accent');
+    });
+
+    document.querySelector('button i.fa-share').parentElement.addEventListener('click', function () {
+        alert('Share functionality would be implemented here.');
+    });
+
+    document.getElementById('followBtn').addEventListener('click', function () {
+        if (this.textContent.trim() === 'Follow') {
+            this.textContent = 'Following';
+            this.classList.remove('bg-accent', 'hover:bg-secondary');
+            this.classList.add('bg-secondary', 'hover:bg-accent');
+        } else {
+            this.textContent = 'Follow';
+            this.classList.remove('bg-secondary', 'hover:bg-accent');
+            this.classList.add('bg-accent', 'hover:bg-secondary');
+        }
+    });
+
+    // Chat input functionality
+    document.getElementById('chatInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            sendChatMessage();
+        }
+    });
+
+    document.querySelector('#chatInput + button').addEventListener('click', sendChatMessage);
+
+    function sendChatMessage() {
+        const chatInput = document.getElementById('chatInput');
+        const message = chatInput.value.trim();
+        if (message) {
+            addChatMessage('You', message);
+            chatInput.value = '';
+        }
+    }
+
+    // Load the stream when the page is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        loadStream();
+        initializeChat();
+    });
+
+    // Responsive design adjustments
+    function handleResponsiveLayout() {
+        const mainContainer = document.querySelector('main');
+        const chatContainer = document.querySelector('main > div:last-child');
+        
+        if (window.innerWidth < 1024) {
+            mainContainer.classList.remove('flex');
+            mainContainer.classList.add('block');
+            chatContainer.classList.remove('w-1/4');
+            chatContainer.classList.add('w-full');
+        } else {
+            mainContainer.classList.add('flex');
+            mainContainer.classList.remove('block');
+            chatContainer.classList.add('w-1/4');
+            chatContainer.classList.remove('w-full');
+        }
+    }
+
+    window.addEventListener('resize', handleResponsiveLayout);
+    document.addEventListener('DOMContentLoaded', handleResponsiveLayout);
     </script>
 </body>
 </html>
