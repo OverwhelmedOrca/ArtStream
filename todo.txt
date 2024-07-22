@@ -3,7 +3,7 @@
 3. putting it online (x)
 4. figuring out a video storage system
 5. linking community, profile and marketplace places together (50% x)
-6. minting nfts
+6. minting nfts (x)
 7. displaying in marketplace and gallery
 8. mute and unmute in userwatch page (x)
 9. redesigning the website to incorporate new categories
