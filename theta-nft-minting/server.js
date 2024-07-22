@@ -25,7 +25,7 @@ const web3 = new Web3('https://eth-rpc-api-testnet.thetatoken.org/rpc'); // Thet
 
 // Load the contract ABI and address
 const contractABI = JSON.parse(fs.readFileSync(path.join(__dirname, 'SimpleNFT_abi.json')));
-const contractAddress = 'YOUR_DEPLOYED_CONTRACT_ADDRESS'; // Replace with your deployed contract address
+const contractAddress = '0xD7ACd2a9FD159E69Bb102A1ca21C9a3e3A5F771B'; // Replace with your deployed contract address
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
 // Configure IPFS client
