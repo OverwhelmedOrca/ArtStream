@@ -1,18 +1,23 @@
+Pranav:
+
 1. fixing the 3d page
 2. deploying the contracts
 3. putting it online (x)
 4. figuring out a video storage system
-5. linking community, profile and marketplace places together (50% x)
 6. minting nfts (x)
 7. displaying in marketplace and gallery
-8. mute and unmute in userwatch page (x)
-9. redesigning the website to incorporate new categories
-10. making sure that users can like streams and follow artists and it is linked to the backend
-11. battle page prompts
-12. voting functionality
-13. linking ai tools for artists
-14. displaying live streams in stream preview pages
-15. how to delete streams from theta, when it reaches limit
+8. how to delete streams from theta, when it reaches limit
+
+Yash:
+
+1. mute and unmute in userwatch page (x)
+2. redesigning the website to incorporate new categories
+3. making sure that users can like streams and follow artists and it is linked to the backend
+4. battle page prompts
+5. voting functionality
+6. linking ai tools for artists
+7. displaying live streams in stream preview pages
+8. linking community, profile and marketplace places together (50% x)
 
 AIzaSyDCxq-CSoFyziFcEVskDXib91sIsVMQU3g
 
