@@ -11,6 +11,7 @@
 11. battle page prompts
 12. voting functionality
 13. linking ai tools for artists
+14. displaying live streams in stream preview pages
 14. how to delete streams from theta, when it reaches limit
 
 AIzaSyDCxq-CSoFyziFcEVskDXib91sIsVMQU3g
