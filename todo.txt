@@ -1,11 +1,11 @@
 1. fixing the 3d page
 2. deploying the contracts
-3. putting it online
+3. putting it online (x)
 4. figuring out a video storage system
-5. linking community, profile and marketplace places together
+5. linking community, profile and marketplace places together (50% x)
 6. minting nfts
 7. displaying in marketplace and gallery
-8. mute and unmute in userwatch page
+8. mute and unmute in userwatch page (x)
 9. redesigning the website to incorporate new categories
 10. making sure that users can like streams and follow artists and it is linked to the backend
 11. battle page prompts
