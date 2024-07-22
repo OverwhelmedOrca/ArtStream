@@ -510,6 +510,17 @@
                         // Save thetaStreamID to localStorage
                         localStorage.setItem('ThetaID', streamId);
 
+                        // Update ThetaID in the backend
+                        const battleId = localStorage.getItem('battleId');
+                        await fetch('/api/update-theta-id', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            },
+                            body: JSON.stringify({ battleId, thetaStreamID: streamId })
+                        });
+
                         console.log('Listing ingestors...');
                         const ingestorsResponse = await axios.get('https://api.thetavideoapi.com/ingestor/filter', {
                             headers: {
