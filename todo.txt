@@ -9,3 +9,4 @@
 9. redesigning the website to incorporate new categories
 10. making sure that users can like streams and follow artists and it is linked to the backend
 11. battle page prompts
+12. linking ai tools for artists
