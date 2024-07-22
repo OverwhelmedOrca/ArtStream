@@ -371,7 +371,7 @@
                 async findOpponent() {
                     this.showModal = false;
                     this.showLoading = true;
-                    this.battleId = null; // Reset battleId
+                    this.battleId = null;
 
                     const battleData = {
                         username: localStorage.getItem('username'),
@@ -380,7 +380,8 @@
                         aiAllowed: this.aiAllowed,
                         liveStream: this.liveStream,
                         timeLimit: parseInt(this.timeLimit),
-                        category: this.selectedCategory
+                        category: this.selectedCategory,
+                        thetaStreamID: localStorage.getItem('ThetaID') // Add this line
                     };
 
                     try {
@@ -503,6 +504,9 @@
 
                         const streamId = createStreamResponse.data.body.id;
                         console.log('Stream ID:', streamId);
+
+                        // Save thetaStreamID to localStorage
+                        localStorage.setItem('ThetaID', streamId);
 
                         console.log('Listing ingestors...');
                         const ingestorsResponse = await axios.get('https://api.thetavideoapi.com/ingestor/filter', {
