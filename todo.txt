@@ -10,6 +10,7 @@
 10. making sure that users can like streams and follow artists and it is linked to the backend
 11. battle page prompts
 12. linking ai tools for artists
-
+13. how to delete streams from theta, when it reaches limit
 
 AIzaSyDCxq-CSoFyziFcEVskDXib91sIsVMQU3g
+
