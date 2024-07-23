@@ -341,10 +341,24 @@
                 const container = document.getElementById('live-streams-container');
                 container.innerHTML = ''; // Clear existing content
 
+                const processedBattles = new Set(); // To keep track of processed battle IDs
+
                 for (const stream of liveStreams) {
                     const streamDetails = await fetchStreamDetails(stream.id);
-                    const streamCard = createStreamCard(streamDetails);
-                    container.appendChild(streamCard);
+                    if (streamDetails && streamDetails.type === 'battle') {
+                        if (!processedBattles.has(streamDetails.battleId)) {
+                            const streamCard = createStreamCard(streamDetails);
+                            if (streamCard) {
+                                container.appendChild(streamCard);
+                            }
+                            processedBattles.add(streamDetails.battleId);
+                        }
+                    } else if (streamDetails) {
+                        const streamCard = createStreamCard(streamDetails);
+                        if (streamCard) {
+                            container.appendChild(streamCard);
+                        }
+                    }
                 }
 
                 if (container.children.length === 0) {
@@ -358,6 +372,8 @@
 
         async function fetchStreamDetails(streamId) {
             try {
+                console.log(`Fetching details for stream ID: ${streamId}`);
+
                 const thetaResponse = await axios.get(`https://api.thetavideoapi.com/stream/${streamId}`, {
                     headers: {
                         'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
@@ -375,18 +391,49 @@
 
                 // Find the matching stream in your database
                 const matchingStream = dbStreams.find(dbStream => 
-                    dbStream.rtmpKey === thetaStreamData.stream_key
+                    dbStream.rtmpKey === thetaStreamData.stream_key && 
+                    dbStream.rtmpServer === thetaStreamData.stream_server
                 );
 
                 if (matchingStream) {
                     console.log('Matching stream found:', matchingStream);
-                    return { ...thetaStreamData, ...matchingStream };
+                    return { ...thetaStreamData, ...matchingStream, type: 'stream' };
                 } else {
-                    console.log('No matching stream found in the database. Using Theta data only.');
-                    return thetaStreamData;
+                    // If no match in streams, check the battles database
+                    console.log(`Checking for battle stream: ${streamId}`);
+                    const token = localStorage.getItem('token');
+                    const battlesResponse = await axios.get(`http://localhost:3000/api/check-battle-stream/${streamId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    console.log('Battle check response:', battlesResponse.data);
+                    
+                    if (battlesResponse.data.battle) {
+                        console.log('Matching battle found:', battlesResponse.data.battle);
+                        return { 
+                            ...thetaStreamData, 
+                            ...battlesResponse.data.battle, 
+                            type: 'battle',
+                            battleId: battlesResponse.data.battle.battleId // Ensure battleId is included
+                        };
+                    } else {
+                        console.log('No matching stream or battle found. Using Theta data only.');
+                        return { ...thetaStreamData, type: 'unknown' };
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching stream details:', error);
+                if (error.response) {
+                    console.error('Error response:', error.response.data);
+                    console.error('Error status:', error.response.status);
+                    console.error('Error headers:', error.response.headers);
+                } else if (error.request) {
+                    console.error('Error request:', error.request);
+                } else {
+                    console.error('Error message:', error.message);
+                }
                 return null;
             }
         }
@@ -396,22 +443,56 @@
 
             const card = document.createElement('div');
             card.className = 'bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105';
-            card.innerHTML = `
-                <div class="relative pb-2/3">
-                    <img src="https://i.pravatar.cc/150?u=${streamData.name}" alt="${streamData.name}" class="absolute h-full w-full object-cover">
-                    <div class="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">LIVE</div>
-                </div>
-                <div class="p-4">
-                    <h3 class="text-xl font-semibold text-white mb-2">${streamData.name}</h3>
-                    <p class="text-gray-400 text-sm mb-2">Hosted by: ${streamData.hostName || 'Unknown'}</p>
-                    <p class="text-gray-400 text-sm mb-2">Category: ${streamData.category || 'Unspecified'}</p>
-                    <p class="text-gray-400 text-sm mb-2">Type: ${streamData.type || 'Unspecified'}</p>
-                    <p class="text-gray-400 text-sm">Artists: ${streamData.currentArtists || 'N/A'}/${streamData.maxArtists || 'N/A'}</p>
-                </div>
-            `;
+
+            let cardContent;
+            if (streamData.type === 'stream') {
+                cardContent = `
+                    <div class="relative pb-2/3">
+                        <img src="https://i.pravatar.cc/150?u=${streamData.name}" alt="${streamData.name}" class="absolute h-full w-full object-cover">
+                        <div class="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">LIVE</div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-semibold text-white mb-2">${streamData.name}</h3>
+                        <p class="text-gray-400 text-sm mb-2">Hosted by: ${streamData.hostName || 'Unknown'}</p>
+                        <p class="text-gray-400 text-sm mb-2">Category: ${streamData.category || 'Unspecified'}</p>
+                        <p class="text-gray-400 text-sm mb-2">Type: ${streamData.type || 'Unspecified'}</p>
+                        <p class="text-gray-400 text-sm">Artists: ${streamData.currentArtists || 'N/A'}/${streamData.maxArtists || 'N/A'}</p>
+                    </div>
+                `;
+            } else if (streamData.type === 'battle') {
+                cardContent = `
+                    <div class="relative pb-2/3">
+                        <img src="https://i.pravatar.cc/150?u=${streamData.arenaName || streamData.id}" alt="${streamData.arenaName || 'Battle Arena'}" class="absolute h-full w-full object-cover">
+                        <div class="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">LIVE BATTLE</div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-semibold text-white mb-2">${streamData.username || 'Artist'} vs ${streamData.opponentName || 'Opponent'}</h3>
+                        <p class="text-gray-400 text-sm mb-2">Arena: ${streamData.arenaName || 'Unknown Arena'}</p>
+                        <p class="text-gray-400 text-sm mb-2">Stake: ${streamData.stakeAmount || 'N/A'}</p>
+                    </div>
+                `;
+            } else {
+                cardContent = `
+                    <div class="relative pb-2/3">
+                        <img src="https://i.pravatar.cc/150?u=${streamData.id}" alt="Stream" class="absolute h-full w-full object-cover">
+                        <div class="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">LIVE</div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-semibold text-white mb-2">${streamData.name || 'Live Stream'}</h3>
+                        <p class="text-gray-400 text-sm mb-2">ID: ${streamData.id}</p>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = cardContent;
             card.addEventListener('click', () => {
-                window.location.href = `userwatch.html?streamId=${streamData.id}`;
+                if (streamData.type === 'battle') {
+                    window.location.href = `battlewatch.html?battleId=${streamData.battleId}`;
+                } else {
+                    window.location.href = `userwatch.html?streamId=${streamData.id}`;
+                }
             });
+
             return card;
         }
 

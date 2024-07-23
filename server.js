@@ -550,6 +550,34 @@ app.post('/api/posts/:id/comment', verifyToken, async (req, res) => {
   }
 });
 
+// Update this route in server.js
+app.get('/api/check-battle-stream/:streamId', async (req, res) => {
+  const { streamId } = req.params;
+  
+  try {
+      // Remove the verifyToken middleware if it's not needed for this public route
+      // If authentication is required, ensure the token is being sent correctly from the client
+
+      const battle = await Battle.findOne({
+          $or: [
+              { thetaStreamID: streamId },
+              { opponentThetaStreamID: streamId }
+          ]
+      });
+
+      if (battle) {
+          console.log(`Battle found for stream ID ${streamId}:`, battle);
+          res.json({ battle });
+      } else {
+          console.log(`No battle found for stream ID ${streamId}`);
+          res.json({ message: 'No matching battle found' });
+      }
+  } catch (err) {
+      console.error('Error checking for battle stream:', err);
+      res.status(500).json({ message: 'Error checking for battle stream', error: err.message });
+  }
+});
+
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
 

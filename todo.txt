@@ -6,7 +6,19 @@ Pranav:
 4. figuring out a video storage system
 6. minting nfts (x)
 7. displaying in marketplace and gallery
-8. mute and unmute in userwatch page
-9. redesigning the website to incorporate new categories
-10. making sure that users can like streams and follow artists and it is linked to the backend
-11. battle page prompts
+8. how to delete streams from theta, when it reaches limit
+
+Yash:
+
+1. mute and unmute in userwatch page (x)
+2. redesigning the website to incorporate new categories (x)
+3. making sure that users can like streams and follow artists and it is linked to the backend
+4. battle page prompts
+5. voting functionality
+6. linking ai tools for artists
+7. displaying live streams in stream preview pages (50 %)
+8. linking all pages to all pages
+9. fixing everything in the battlewatch page
+
+AIzaSyDCxq-CSoFyziFcEVskDXib91sIsVMQU3g
+
