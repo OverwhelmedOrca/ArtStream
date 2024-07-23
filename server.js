@@ -64,8 +64,7 @@ const battleSchema = new mongoose.Schema({
   timeLimit: { type: Number, required: true },
   opponentFound: { type: Boolean, default: false },
   opponentName: { type: String, default: null },
-  thetaStreamID: { type: String, default: null },
-  opponentThetaStreamID: { type: String, default: null },
+  thetaStreamID: { type: String }, // New field
   createdAt: { type: Date, default: Date.now, expires: '1h' }
 });
 
@@ -348,7 +347,7 @@ app.post('/streams/:id/start', verifyToken, async (req, res) => {
 });
 
 app.post('/api/find-opponent', verifyToken, async (req, res) => {
-  const { username, arenaName, stakeAmount, aiAllowed, liveStream, timeLimit } = req.body;
+  const { username, arenaName, stakeAmount, aiAllowed, liveStream, timeLimit, thetaStreamID } = req.body;
 
   try {
       // Validate incoming data
@@ -358,55 +357,58 @@ app.post('/api/find-opponent', verifyToken, async (req, res) => {
 
       // Check for an existing opponent
       const existingBattle = await Battle.findOne({
-        arenaName,
-        stakeAmount,
-        aiAllowed,
-        liveStream,
-        timeLimit,
-        opponentFound: false,
-        username: { $ne: username }
-      });
-  
-      if (existingBattle) {
-        existingBattle.opponentFound = true;
-        existingBattle.opponentName = username;
-        await existingBattle.save();
-  
-        const newBattle = new Battle({
-          username,
           arenaName,
           stakeAmount,
           aiAllowed,
           liveStream,
           timeLimit,
-          opponentFound: true,
-          opponentName: existingBattle.username
+          opponentFound: false,
+          username: { $ne: username }
         });
-        await newBattle.save();
-  
-        return res.json({ 
-          opponentFound: true, 
-          opponent: { username: existingBattle.username },
-          battleId: newBattle._id
-        });
-      } else {
-        const newBattle = new Battle({
-          username,
-          arenaName,
-          stakeAmount,
-          aiAllowed,
-          liveStream,
-          timeLimit
-        });
-        await newBattle.save();
-  
-        return res.json({ opponentFound: false, battleId: newBattle._id });
+    
+        if (existingBattle) {
+          existingBattle.opponentFound = true;
+          existingBattle.opponentName = username;
+          await existingBattle.save();
+    
+          const newBattle = new Battle({
+            username,
+            arenaName,
+            stakeAmount,
+            aiAllowed,
+            liveStream,
+            timeLimit,
+            opponentFound: true,
+            opponentName: existingBattle.username,
+            thetaStreamID // Add this line
+          });
+          await newBattle.save();
+    
+          return res.json({ 
+            opponentFound: true, 
+            opponent: { username: existingBattle.username },
+            battleId: newBattle._id,
+            thetaStreamID // Add this line
+          });
+        } else {
+          const newBattle = new Battle({
+            username,
+            arenaName,
+            stakeAmount,
+            aiAllowed,
+            liveStream,
+            timeLimit,
+            thetaStreamID // Add this line
+          });
+          await newBattle.save();
+    
+          return res.json({ opponentFound: false, battleId: newBattle._id, thetaStreamID });
+        }
+      } catch (err) {
+        console.error('Error finding opponent:', err);
+        res.status(500).json({ message: 'Error finding opponent', error: err.message });
       }
-    } catch (err) {
-      console.error('Error finding opponent:', err);
-      res.status(500).json({ message: 'Error finding opponent', error: err.message });
-    }
-  });
+    });
 
 app.get('/api/check-opponent/:battleId', verifyToken, async (req, res) => {
   const { battleId } = req.params;
@@ -525,56 +527,6 @@ app.post('/api/posts/:id/comment', verifyToken, async (req, res) => {
   } catch (err) {
     console.error('Error adding comment:', err);
     res.status(500).json({ message: 'Error adding comment' });
-  }
-});
-
-// Update ThetaID route
-app.post('/api/update-theta-id', verifyToken, async (req, res) => {
-  const { battleId, thetaStreamID } = req.body;
-
-  if (!battleId || !mongoose.Types.ObjectId.isValid(battleId)) {
-    return res.status(400).json({ message: 'Invalid battle ID' });
-  }
-
-  try {
-    const battle = await Battle.findById(battleId);
-    if (!battle) {
-      return res.status(404).json({ message: 'Battle not found' });
-    }
-
-    if (battle.username === req.user.username) {
-      battle.thetaStreamID = thetaStreamID;
-    } else if (battle.opponentName === req.user.username) {
-      battle.opponentThetaStreamID = thetaStreamID;
-    } else {
-      return res.status(403).json({ message: 'Not authorized to update this battle' });
-    }
-
-    await battle.save();
-    res.json({ message: 'ThetaID updated successfully', battle });
-  } catch (err) {
-    console.error('Error updating ThetaID:', err);
-    res.status(500).json({ message: 'Error updating ThetaID', error: err.message });
-  }
-});
-
-// Fetch battle data route
-app.get('/api/battles/:id', verifyToken, async (req, res) => {
-  const { id } = req.params;
-
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: 'Invalid battle ID' });
-  }
-
-  try {
-    const battle = await Battle.findById(id);
-    if (!battle) {
-      return res.status(404).json({ message: 'Battle not found' });
-    }
-    res.json(battle);
-  } catch (err) {
-    console.error('Error fetching battle data:', err);
-    res.status(500).json({ message: 'Error fetching battle data', error: err.message });
   }
 });
 

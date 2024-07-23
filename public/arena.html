@@ -451,8 +451,6 @@
                     this.showOpponentModal = true;
                     this.opponentName = opponent.username;
                     this.opponentAvatar = `https://i.pravatar.cc/150?u=${opponent.username}`;
-                    // Store opponent's ThetaID
-                    localStorage.setItem('opponentThetaID', opponent.thetaStreamID);
                     
                     const redirectMessage = this.liveStream ? "Setting up live stream... \n (it can take a few seconds)" : "Redirecting to battle...";
                     const redirectElement = document.getElementById('redirectMessage');
@@ -509,26 +507,6 @@
 
                         // Save thetaStreamID to localStorage
                         localStorage.setItem('ThetaID', streamId);
-
-                        // Update ThetaID in the backend
-                        const battleId = localStorage.getItem('battleId');
-                        if (battleId) {
-                            try {
-                                await fetch('/api/update-theta-id', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                                    },
-                                    body: JSON.stringify({ battleId, thetaStreamID: streamId })
-                                });
-                                console.log('ThetaID updated in the backend');
-                            } catch (error) {
-                                console.error('Error updating ThetaID in the backend:', error);
-                            }
-                        } else {
-                            console.error('Battle ID not found in localStorage');
-                        }
 
                         console.log('Listing ingestors...');
                         const ingestorsResponse = await axios.get('https://api.thetavideoapi.com/ingestor/filter', {
