@@ -309,8 +309,8 @@
                 async init() {
                     await this.loadStreamData();
                     this.initBackgroundAnimation();
-                    this.initWebSocket();
                     this.getInspirationQuote();
+                    this.pollStreamStatus();
                 },
                 async loadStreamData() {
                     try {
@@ -352,6 +352,102 @@
                         console.error('Error loading stream data:', error);
                     }
                 },
+
+                async startArtistStream() {
+                    try {
+                        console.log('Starting artist stream...');
+                        const createStreamResponse = await axios.post('https://api.thetavideoapi.com/stream', 
+                            { name: `${this.streamName} - ${this.hostName}` },
+                            {
+                                headers: {
+                                    'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
+                                    'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb',
+                                    'Content-Type': 'application/json'
+                                }
+                            }
+                        );
+                        console.log('Create stream response:', createStreamResponse.data);
+
+                        const streamId = createStreamResponse.data.body.id;
+                        console.log('Artist Stream ID:', streamId);
+
+                        console.log('Listing ingestors...');
+                        const ingestorsResponse = await axios.get('https://api.thetavideoapi.com/ingestor/filter', {
+                            headers: {
+                                'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
+                                'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
+                            }
+                        });
+                        console.log('Ingestors response:', ingestorsResponse.data);
+
+                        const ingestorId = ingestorsResponse.data.body.ingestors[0].id;
+                        console.log('Selected ingestor ID:', ingestorId);
+
+                        console.log('Selecting ingestor...');
+                        const selectIngestorResponse = await axios.put(`https://api.thetavideoapi.com/ingestor/${ingestorId}/select`,
+                            { tva_stream: streamId },
+                            {
+                                headers: {
+                                    'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
+                                    'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb',
+                                    'Content-Type': 'application/json'
+                                }
+                            }
+                        );
+                        console.log('Select ingestor response:', selectIngestorResponse.data);
+
+                        const { stream_server, stream_key } = selectIngestorResponse.data.body;
+                        console.log('Stream server:', stream_server);
+                        console.log('Stream key:', stream_key);
+
+                        // Store RTMP key and server in local storage
+                        localStorage.setItem('artistStreamId', streamId);
+                        localStorage.setItem('artistStreamServer', stream_server);
+                        localStorage.setItem('artistStreamKey', stream_key);
+                        console.log('Artist stream info saved to localStorage');
+
+                        // Update the backend
+                        const token = localStorage.getItem('token');
+                        const username = localStorage.getItem('username');
+                        console.log('Username from localStorage:', username);
+                        console.log('Stream ID:', this.streamId);
+                        console.log('Theta Stream ID:', streamId);
+                        console.log('RTMP Key:', stream_key);
+                        console.log('RTMP Server:', stream_server);
+
+                        console.log('Sending update request to server...');
+                        const updateStreamResponse = await axios.post(`/streams/${this.streamId}/update-artist-stream`, {
+                            username: username,
+                            thetaID: streamId,
+                            rtmpKey: stream_key,
+                            rtmpServer: stream_server
+                        }, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        console.log('Update artist stream response:', updateStreamResponse.data);
+
+                        // Redirect to the instructions page
+                        window.location.href = `instructions_stream.html?streamId=${streamId}`;
+
+                    } catch (error) {
+                        console.error('Error in startArtistStream:', error);
+                        if (error.response) {
+                            console.error('Error response:', error.response.data);
+                            console.error('Error status:', error.response.status);
+                            console.error('Error headers:', error.response.headers);
+                        } else if (error.request) {
+                            console.error('Error request:', error.request);
+                        } else {
+                            console.error('Error message:', error.message);
+                        }
+                        console.error('Error config:', error.config);
+                        this.statusMessage = 'Error starting stream. Please try again or contact support.';
+                    }
+                },
+
                 initBackgroundAnimation() {
                     const scene = new THREE.Scene();
                     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -521,17 +617,22 @@
                     });
                 },
                 pollStreamStatus() {
+                    let streamStarted = false;
                     setInterval(async () => {
+                        if (streamStarted) return; // Stop polling once the stream has started
+
                         try {
-                            const response = await axios.get(`https://api.thetavideoapi.com/stream/${this.streamId}`, {
+                            const token = localStorage.getItem('token');
+                            const response = await axios.get(`/streams/${this.streamId}/status`, {
                                 headers: {
-                                    'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
-                                    'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
+                                    'Authorization': `Bearer ${token}`
                                 }
                             });
                             
-                            if (response.data.body.status === 'on') {
-                                window.location.href = 'stream.html';
+                            if (response.data.status === 'live') {
+                                streamStarted = true;
+                                this.statusMessage = 'Host has started the stream';
+                                await this.startArtistStream();
                             }
                         } catch (error) {
                             console.error('Error polling stream status:', error);

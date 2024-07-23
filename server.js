@@ -41,9 +41,12 @@ const streamSchema = new mongoose.Schema({
     creator: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     hostName: { type: String, required: true },
     participants: [{
-        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        username: String
-    }],
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      username: String,
+      thetaID: String,
+      rtmpKey: String,
+      rtmpServer: String
+  }],
     isLive: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
     isPrivate: { type: Boolean, default: false },
@@ -252,6 +255,67 @@ app.get('/join-streams', async (req, res) => {
   } catch (err) {
       console.error(err);
       res.status(500).json({ message: 'Error fetching streams' });
+  }
+});
+
+app.get('/streams/:id/status', verifyToken, async (req, res) => {
+  try {
+      const stream = await Stream.findById(req.params.id);
+      if (!stream) {
+          return res.status(404).json({ message: 'Stream not found' });
+      }
+
+      res.json({ status: stream.isLive ? 'live' : 'waiting' });
+  } catch (err) {
+      console.error('Error fetching stream status:', err);
+      res.status(500).json({ message: 'Error fetching stream status', error: err.message });
+  }
+});
+
+// Update the existing route or add this if it doesn't exist
+app.post('/streams/:id/update-artist-stream', verifyToken, async (req, res) => {
+  try {
+    console.log('Received update artist stream request');
+    console.log('Stream ID:', req.params.id);
+    console.log('Request body:', req.body);
+    console.log('User from token:', req.user);
+
+    const { username, thetaID, rtmpKey, rtmpServer } = req.body;
+    const stream = await Stream.findById(req.params.id);
+    if (!stream) {
+      console.log('Stream not found');
+      return res.status(404).json({ message: 'Stream not found' });
+    }
+
+    console.log('Stream found:', stream);
+    console.log('Stream participants:', stream.participants);
+
+    const artistIndex = stream.participants.findIndex(p => p.username === username);
+    console.log('Artist index:', artistIndex);
+    console.log('Searching for username:', username);
+
+    if (artistIndex === -1) {
+      console.log('Artist not found in stream participants');
+      return res.status(404).json({ message: 'Artist not found in stream participants' });
+    }
+
+    // Update the participant's information while preserving existing data
+    stream.participants[artistIndex] = {
+      ...stream.participants[artistIndex],
+      username, // Ensure username is included
+      thetaID,
+      rtmpKey,
+      rtmpServer
+    };
+
+    console.log('Updated stream participants:', stream.participants);
+
+    await stream.save();
+    console.log('Stream saved successfully');
+    res.json({ message: 'Artist stream information updated successfully', stream });
+  } catch (err) {
+    console.error('Error updating artist stream information:', err);
+    res.status(500).json({ message: 'Error updating artist stream information', error: err.message });
   }
 });
 
