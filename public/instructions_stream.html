@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream Setup - ArtistStream</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #4DB6AC;
+            --background-color: #1A1A2E;
+            --card-color: #16213E;
+            --text-color: #E0E0E0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-color);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        h1, h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        .stream-info {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .stream-info:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .stream-key {
+            font-family: 'Courier New', monospace;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            user-select: all;
+            display: inline-block;
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .stream-key:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .copy-icon {
+            cursor: pointer;
+            color: var(--secondary-color);
+            transition: color 0.3s;
+        }
+
+        .copy-icon:hover {
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .step {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        a:hover {
+            color: var(--primary-color);
+        }
+
+        .auto-load-message {
+            margin-top: 2rem;
+            font-style: italic;
+            text-align: center;
+            color: var(--secondary-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stream Setup</h1>
+        <div class="stream-info">
+            <h2>Your Stream Information</h2>
+            <p>
+                <strong>Server URL:</strong> 
+                <span id="streamServer" class="stream-key"></span>
+                <i class="fas fa-copy copy-icon" onclick="copyToClipboard('streamServer')"></i>
+            </p>
+            <p>
+                <strong>Stream Key:</strong> 
+                <span id="streamKey" class="stream-key"></span>
+                <i class="fas fa-copy copy-icon" onclick="copyToClipboard('streamKey')"></i>
+            </p>
+        </div>
+        <button id="learnHowToStream">Learn How to Stream</button>
+        <div id="streamInstructions" style="display: none;">
+            <div class="tabs">
+                <div class="tab active" data-tab="getStarted">Get Started</div>
+                <div class="tab" data-tab="streamSetup">Stream Setup</div>
+            </div>
+            <div id="getStarted" class="tab-content active">
+                <h2>Get Started with OBS</h2>
+                <div class="step">
+                    <h3>1. Download OBS</h3>
+                    <p>Visit the official OBS website to download the latest version:</p>
+                    <a href="https://obsproject.com/" target="_blank">https://obsproject.com/</a>
+                </div>
+                <div class="step">
+                    <h3>2. Install OBS</h3>
+                    <p>Run the installer and follow the on-screen instructions to complete the installation.</p>
+                </div>
+                <div class="step">
+                    <h3>3. Launch OBS</h3>
+                    <p>Once installed, launch OBS Studio to begin setting up your stream.</p>
+                </div>
+            </div>
+            <div id="streamSetup" class="tab-content">
+                <h2>Stream Using OBS</h2>
+                <div class="step">
+                    <h3>1. Open OBS Settings</h3>
+                    <p>Click on "Settings" in the bottom right corner of the OBS window.</p>
+                </div>
+                <div class="step">
+                    <h3>2. Configure Stream Settings</h3>
+                    <p>- In the Settings window, click on "Stream" in the left sidebar.</p>
+                    <p>- Select "Custom" from the Service dropdown menu.</p>
+                    <p>- Enter the Server URL and Stream Key provided above.</p>
+                    <p>- Click "Apply" then "OK" to save the settings.</p>
+                </div>
+                <div class="step">
+                    <h3>3. Set Up Your Scene</h3>
+                    <p>- In the main OBS window, click the "+" icon in the Scenes box to create a new scene.</p>
+                    <p>- Click the "+" icon in the Sources box to add your video and audio sources.</p>
+                </div>
+                <div class="step">
+                    <h3>4. Start Streaming</h3>
+                    <p>When you're ready, click the "Start Streaming" button in the main OBS window to go live!</p>
+                </div>
+            </div>
+        </div>
+        <p class="auto-load-message">
+            Once you click "Start Streaming" in OBS, your livestream page will automatically load. Get ready to showcase your artistry to the world!
+        </p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const streamServer = localStorage.getItem('streamServer');
+            const streamKey = localStorage.getItem('streamKey');
+            const urlParams = new URLSearchParams(window.location.search);
+            const streamId = urlParams.get('streamId');
+    
+            document.getElementById('streamServer').textContent = streamServer;
+            document.getElementById('streamKey').textContent = streamKey;
+    
+            // Function to check stream status
+            async function checkStreamStatus() {
+                try {
+                    const response = await axios.get(`https://api.thetavideoapi.com/stream/${streamId}`, {
+                        headers: {
+                            'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
+                            'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
+                        }
+                    });
+    
+                    console.log('Stream status response:', response.data);
+    
+                    if (response.data.body.status === 'on') {
+                        console.log('Stream is live! Redirecting to stream page...');
+                        clearInterval(statusCheckInterval);
+                        window.location.href = `collab.html?streamId=${streamId}`;
+                    }
+                } catch (error) {
+                    console.error('Error checking stream status:', error);
+                }
+            }
+    
+            // Check stream status every 2 seconds
+            const statusCheckInterval = setInterval(checkStreamStatus, 2000);
+    
+            // Initial check
+            checkStreamStatus();
+        });
+    
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+    
+        document.getElementById('learnHowToStream').addEventListener('click', function() {
+            document.getElementById('streamInstructions').style.display = 'block';
+            this.style.display = 'none';
+        });
+    
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+    
+        // Initialize tabs
+        document.addEventListener('DOMContentLoaded', () => {
+            const defaultTab = document.querySelector('.tab');
+            if (defaultTab) {
+                defaultTab.click();
+            }
+        });
+    </script>
+</body>
+</html>

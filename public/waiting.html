@@ -396,8 +396,8 @@
                         });
                         console.log('Update stream response:', updateStreamResponse.data);
 
-                        // Redirect to the instructions page
-                        window.location.href = 'instructions.html';
+                        // Update the redirection line
+                        window.location.href = `instructions_stream.html?streamId=${streamId}`;
 
                     } catch (error) {
                         console.error('Error starting stream:', error);
