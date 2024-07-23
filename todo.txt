@@ -17,7 +17,7 @@ Yash:
 5. voting functionality (x)
 6. linking ai tools for artists
 7. displaying live streams in stream preview pages (50 %)
-8. linking all pages to all pages
+8. linking all pages to all pages (x)
 9. fixing everything in the battlewatch page (x)
 10. P2P implementation
 
