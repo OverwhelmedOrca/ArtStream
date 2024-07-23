@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blacksmith NFT Minter</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        button, input {
+            margin: 10px 0;
+            padding: 5px;
+        }
+        #nftInfo {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Blacksmith NFT Minter</h1>
+    <button id="connectWallet">Connect Wallet</button>
+    <button id="checkContract">Check Contract</button>
+    <div id="walletInfo"></div>
+    <input type="text" id="imageUrl" placeholder="Enter image URL">
+    <button id="mintNft">Mint NFT</button>
+    <div id="nftInfo"></div>
+
+    <script>
+        const contractAddress = "0x5FD6eB55D12E759a21C09eF703fe0CBa1DC9d88D";
+        const contractABI = [
+    "function safeMint(address to, uint256 tokenId, string memory uri) public onlyOwner",
+    "function tokenURI(uint256 tokenId) public view returns (string memory)",
+    "function balanceOf(address owner) public view returns (uint256)",
+    "function tokenOfOwnerByIndex(address owner, uint256 index) public view returns (uint256)",
+    "function ownerOf(uint256 tokenId) public view returns (address)",
+    "function name() public view returns (string memory)",
+    "function symbol() public view returns (string memory)"
+];
+
+        let signer, contract;
+
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    signer = provider.getSigner();
+                    contract = new ethers.Contract(contractAddress, contractABI, signer);
+                    
+                    const address = await signer.getAddress();
+                    document.getElementById('walletInfo').innerText = `Connected: ${address}`;
+                } catch (error) {
+                    console.error("Error connecting wallet:", error);
+                }
+            } else {
+                alert("Please install MetaMask!");
+            }
+        }
+
+        async function mintNft() {
+            const imageUrl = document.getElementById('imageUrl').value;
+            if (!imageUrl) {
+                alert("Please enter an image URL");
+                return;
+            }
+
+            try {
+                const address = await signer.getAddress();
+                const tokenId = Date.now(); // Using timestamp as a simple unique ID
+                const tx = await contract.safeMint(address, tokenId, imageUrl);
+                await tx.wait();
+                alert("NFT minted successfully!");
+                displayNftInfo();
+            } catch (error) {
+                console.error("Error minting NFT:", error);
+                alert("Error minting NFT. Check console for details.");
+            }
+        }
+
+        async function displayNftInfo() {
+            try {
+                const address = await signer.getAddress();
+                console.log("Fetching balance for address:", address);
+                
+                const balance = await contract.balanceOf(address);
+                console.log("Balance:", balance.toString());
+        
+                let nftInfo = `You own ${balance} NFTs<br>`;
+        
+                for (let i = 0; i < balance; i++) {
+                    console.log("Fetching token ID for index:", i);
+                    const tokenId = await contract.tokenOfOwnerByIndex(address, i);
+                    console.log("Token ID:", tokenId.toString());
+        
+                    console.log("Fetching token URI for token ID:", tokenId.toString());
+                    const tokenUri = await contract.tokenURI(tokenId);
+                    console.log("Token URI:", tokenUri);
+        
+                    nftInfo += `NFT #${tokenId}: ${tokenUri}<br>`;
+                }
+        
+                document.getElementById('nftInfo').innerHTML = nftInfo;
+            } catch (error) {
+                console.error("Error displaying NFT info:", error);
+                if (error.reason) console.error("Error reason:", error.reason);
+                if (error.code) console.error("Error code:", error.code);
+                if (error.data) console.error("Error data:", error.data);
+                document.getElementById('nftInfo').innerHTML = "Error fetching NFT information";
+            }
+        }
+        async function checkContract() {
+            try {
+                const name = await contract.name();
+                const symbol = await contract.symbol();
+                console.log("Contract name:", name);
+                console.log("Contract symbol:", symbol);
+                alert(`Contract connected successfully. Name: ${name}, Symbol: ${symbol}`);
+            } catch (error) {
+                console.error("Error checking contract:", error);
+                alert("Error connecting to the contract. Check console for details.");
+            }
+        }
+        document.getElementById('connectWallet').addEventListener('click', connectWallet);
+        document.getElementById('mintNft').addEventListener('click', mintNft);
+        document.getElementById('checkContract').addEventListener('click', checkContract);
+    </script>
+</body>
+</html>

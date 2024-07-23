@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFuel Transfer</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Send 2 Testnet TFuel</h1>
+    <button id="connectButton">Connect to MetaMask</button>
+    <button id="sendButton" style="display:none;">Send 2 TFuel</button>
+    <p id="status"></p>
+
+    <script>
+        const connectButton = document.getElementById('connectButton');
+        const sendButton = document.getElementById('sendButton');
+        const statusText = document.getElementById('status');
+        let web3;
+        let userAccount;
+
+        connectButton.addEventListener('click', async () => {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    web3 = new Web3(window.ethereum);
+                    const accounts = await web3.eth.getAccounts();
+                    userAccount = accounts[0];
+                    statusText.textContent = 'Connected to MetaMask';
+                    connectButton.style.display = 'none';
+                    sendButton.style.display = 'block';
+                } catch (error) {
+                    statusText.textContent = 'Failed to connect: ' + error.message;
+                }
+            } else {
+                statusText.textContent = 'Please install MetaMask';
+            }
+        });
+
+        sendButton.addEventListener('click', async () => {
+            const recipientAddress = '0x8DC37Ac16F7cE87Cc32AEb8fb81972bF7f413d30';
+            const amountInTFuel = '2';
+            const amountInWei = web3.utils.toWei(amountInTFuel, 'ether');
+
+            try {
+                const result = await web3.eth.sendTransaction({
+                    from: userAccount,
+                    to: recipientAddress,
+                    value: amountInWei,
+                    gas: 21000,
+                    gasPrice: await web3.eth.getGasPrice()
+                });
+                statusText.textContent = 'Transaction successful! TX Hash: ' + result.transactionHash;
+            } catch (error) {
+                statusText.textContent = 'Transaction failed: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>
