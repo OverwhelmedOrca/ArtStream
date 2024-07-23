@@ -190,7 +190,7 @@
         ];
 
         async function fetchStreamPlaybackUrl(stream) {
-            if (stream.playbackUrl) return; // Skip if we already have the playback URL
+            if (stream.playbackUrl) return true; // Skip if we already have the playback URL
 
             try {
                 console.log(`Fetching playback URL for stream ID: ${stream.id}`);
@@ -212,11 +212,14 @@
                 if (data.body.status === 'on' && data.body.playback_uri) {
                     console.log(`Got playback URL for stream ID ${stream.id}: ${data.body.playback_uri}`);
                     stream.playbackUrl = data.body.playback_uri;
+                    return true;
                 } else {
                     console.log(`Stream ${stream.id} is not live yet or playback_uri is not available`);
+                    return false;
                 }
             } catch (error) {
                 console.error('Error retrieving livestream:', error);
+                return false;
             }
         }
 
@@ -320,9 +323,10 @@
             let updatedStreams = false;
             for (const stream of streams) {
                 if (!stream.playbackUrl) {
-                    await fetchStreamPlaybackUrl(stream);
-                    if (stream.playbackUrl) {
+                    const success = await fetchStreamPlaybackUrl(stream);
+                    if (success) {
                         updatedStreams = true;
+                        break; // Only fetch one stream at a time
                     }
                 }
             }
@@ -354,13 +358,15 @@
                 await fetchStreamPlaybackUrl(stream);
             }
             setupStreams('sideBySide');
+            
+            // Start periodic checks only if not all streams are available
+            if (!streams.every(stream => stream.playbackUrl)) {
+                streamCheckInterval = setInterval(checkAndUpdateStreams, 5000); // Check every 5 seconds
+            }
         }
 
         // Start the initialization process
         initializeStreams();
-
-        // Periodically check and update streams
-        const streamCheckInterval = setInterval(checkAndUpdateStreams, 5000); // Check every 5 seconds
 
         // Chat functionality
         const chatForm = document.getElementById('chatForm');
