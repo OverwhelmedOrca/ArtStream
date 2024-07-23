@@ -64,8 +64,7 @@ const battleSchema = new mongoose.Schema({
   timeLimit: { type: Number, required: true },
   opponentFound: { type: Boolean, default: false },
   opponentName: { type: String, default: null },
-  thetaStreamID: { type: String, default: null },
-  opponentThetaStreamID: { type: String, default: null },
+  thetaStreamID: { type: String }, // New field
   createdAt: { type: Date, default: Date.now, expires: '1h' }
 });
 
@@ -348,7 +347,7 @@ app.post('/streams/:id/start', verifyToken, async (req, res) => {
 });
 
 app.post('/api/find-opponent', verifyToken, async (req, res) => {
-  const { username, arenaName, stakeAmount, aiAllowed, liveStream, timeLimit } = req.body;
+  const { username, arenaName, stakeAmount, aiAllowed, liveStream, timeLimit, thetaStreamID } = req.body;
 
   try {
       // Validate incoming data
@@ -370,6 +369,7 @@ app.post('/api/find-opponent', verifyToken, async (req, res) => {
       if (existingBattle) {
         existingBattle.opponentFound = true;
         existingBattle.opponentName = username;
+        existingBattle.opponentThetaStreamID = thetaStreamID; // Add this line
         await existingBattle.save();
   
         const newBattle = new Battle({
@@ -380,14 +380,20 @@ app.post('/api/find-opponent', verifyToken, async (req, res) => {
           liveStream,
           timeLimit,
           opponentFound: true,
-          opponentName: existingBattle.username
+          opponentName: existingBattle.username,
+          thetaStreamID,
+          opponentThetaStreamID: existingBattle.thetaStreamID // Add this line
         });
         await newBattle.save();
   
         return res.json({ 
           opponentFound: true, 
-          opponent: { username: existingBattle.username },
-          battleId: newBattle._id
+          opponent: { 
+            username: existingBattle.username,
+            thetaStreamID: existingBattle.thetaStreamID // Add this line
+          },
+          battleId: newBattle._id,
+          thetaStreamID
         });
       } else {
         const newBattle = new Battle({
@@ -396,11 +402,12 @@ app.post('/api/find-opponent', verifyToken, async (req, res) => {
           stakeAmount,
           aiAllowed,
           liveStream,
-          timeLimit
+          timeLimit,
+          thetaStreamID
         });
         await newBattle.save();
   
-        return res.json({ opponentFound: false, battleId: newBattle._id });
+        return res.json({ opponentFound: false, battleId: newBattle._id, thetaStreamID });
       }
     } catch (err) {
       console.error('Error finding opponent:', err);
@@ -525,46 +532,6 @@ app.post('/api/posts/:id/comment', verifyToken, async (req, res) => {
   } catch (err) {
     console.error('Error adding comment:', err);
     res.status(500).json({ message: 'Error adding comment' });
-  }
-});
-
-// Add a new route to update ThetaID
-app.post('/api/update-theta-id', verifyToken, async (req, res) => {
-  const { battleId, thetaStreamID } = req.body;
-
-  try {
-    const battle = await Battle.findById(battleId);
-    if (!battle) {
-      return res.status(404).json({ message: 'Battle not found' });
-    }
-
-    if (battle.username === req.user.username) {
-      battle.thetaStreamID = thetaStreamID;
-    } else if (battle.opponentName === req.user.username) {
-      battle.opponentThetaStreamID = thetaStreamID;
-    } else {
-      return res.status(403).json({ message: 'Not authorized to update this battle' });
-    }
-
-    await battle.save();
-    res.json({ message: 'ThetaID updated successfully', battle });
-  } catch (err) {
-    console.error('Error updating ThetaID:', err);
-    res.status(500).json({ message: 'Error updating ThetaID', error: err.message });
-  }
-});
-
-// Add a new route to fetch battle data
-app.get('/api/battles/:id', verifyToken, async (req, res) => {
-  try {
-    const battle = await Battle.findById(req.params.id);
-    if (!battle) {
-      return res.status(404).json({ message: 'Battle not found' });
-    }
-    res.json(battle);
-  } catch (err) {
-    console.error('Error fetching battle data:', err);
-    res.status(500).json({ message: 'Error fetching battle data', error: err.message });
   }
 });
 
