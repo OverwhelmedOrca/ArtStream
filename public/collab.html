@@ -75,21 +75,19 @@
                     </div>
                 </div>
 
-                <!-- Stream Details -->
+               <!-- Stream Details -->
                 <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
                     <div class="flex items-center space-x-4 mb-4">
-                        <img src="https://i.pravatar.cc/150?u=artistname" alt="Artist" class="w-16 h-16 rounded-full border-2 border-blue-500 glow">
+                        <img id="hostAvatar" src="https://i.pravatar.cc/150?u=placeholder" alt="Host" class="w-16 h-16 rounded-full border-2 border-blue-500 glow">
                         <div>
-                            <h2 class="text-2xl font-bold text-blue-300">Artist Name</h2>
-                            <p class="text-sm text-gray-400">Music</p>
+                            <h2 id="hostName" class="text-2xl font-bold text-blue-300">Loading...</h2>
+                            <p id="streamCategory" class="text-sm text-gray-400">Loading...</p>
                         </div>
                     </div>
-                    <h1 class="text-3xl font-bold mb-2 text-blue-100">Live Music Session</h1>
-                    <p class="text-gray-400 mb-4">Join us for an amazing live music performance! We'll be playing some of our favorite tunes and taking requests from the audience.</p>
-                    <div class="flex space-x-4">
-                        <span class="bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm">#LiveMusic</span>
-                        <span class="bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm">#AcousticSession</span>
-                        <span class="bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm">#IndieArtist</span>
+                    <h1 id="streamTitle" class="text-3xl font-bold mb-2 text-blue-100">Loading...</h1>
+                    <p id="streamDescription" class="text-gray-400 mb-4">Loading stream details...</p>
+                    <div id="streamTags" class="flex space-x-4">
+                        <!-- Tags will be dynamically inserted here -->
                     </div>
                 </div>
 
@@ -153,36 +151,85 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const streamId = urlParams.get('streamId');
+            const urlParams = new URLSearchParams(window.location.search);
+            const streamId = urlParams.get('streamId');
 
-        if (streamId) {
-            try {
-                const response = await axios.get(`https://api.thetavideoapi.com/stream/${streamId}`, {
-                    headers: {
-                        'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
-                        'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
+            if (streamId) {
+                try {
+                    // Fetch stream data from Theta API
+                    const thetaResponse = await axios.get(`https://api.thetavideoapi.com/stream/${streamId}`, {
+                        headers: {
+                            'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
+                            'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
+                        }
+                    });
+
+                    console.log('Theta stream data:', thetaResponse.data);
+
+                    if (thetaResponse.data.body.playback_uri) {
+                        const video = document.getElementById('video');
+                        video.src = thetaResponse.data.body.playback_uri;
+                        video.play();
+                    } else {
+                        console.error('Playback URI not available');
                     }
-                });
 
-                console.log('Stream data:', response.data);
+                    // Fetch stream details from your database
+                    const token = localStorage.getItem('token');
+                    const dbResponse = await axios.get(`/streams/by-theta-id/${streamId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
 
-                if (response.data.body.playback_uri) {
-                    const video = document.getElementById('video');
-                    video.src = response.data.body.playback_uri;
-                    video.play();
-                } else {
-                    console.error('Playback URI not available');
+                    console.log('Database stream data:', dbResponse.data);
+
+                    const streamData = dbResponse.data;
+
+                    // Update UI with stream details
+                    document.getElementById('hostName').textContent = streamData.hostName;
+                    document.getElementById('streamCategory').textContent = streamData.category;
+                    document.getElementById('streamTitle').textContent = streamData.name;
+                    document.getElementById('streamDescription').textContent = streamData.description;
+
+                    // Update host avatar
+                    document.getElementById('hostAvatar').src = `https://i.pravatar.cc/150?u=${streamData.hostName}`;
+
+                    // Update tags based on category
+                    const tagsContainer = document.getElementById('streamTags');
+                    tagsContainer.innerHTML = ''; // Clear existing tags
+
+                    const categoryTags = {
+                        'art': ['#LiveArt', '#CreativeProcess', '#ArtisticExpression'],
+                        'music': ['#LiveMusic', '#AcousticSession', '#IndieArtist'],
+                        'stand-up': ['#LiveComedy', '#StandUpNight', '#ComedyClub'],
+                        'acting': ['#LiveTheater', '#ActingWorkshop', '#DramaPerformance']
+                    };
+
+                    const tags = categoryTags[streamData.category.toLowerCase()] || ['#LiveStream', '#CreativeContent', '#OnlineEvent'];
+
+                    tags.forEach(tag => {
+                        const span = document.createElement('span');
+                        span.className = 'bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm';
+                        span.textContent = tag;
+                        tagsContainer.appendChild(span);
+                    });
+
+                } catch (error) {
+                    console.error('Error fetching stream data:', error);
+                    // Update UI to show error state
+                    document.getElementById('hostName').textContent = 'Error loading stream';
+                    document.getElementById('streamDescription').textContent = 'There was an error loading the stream details. Please try refreshing the page.';
                 }
-            } catch (error) {
-                console.error('Error fetching stream data:', error);
+            } else {
+                console.error('No streamId provided in URL');
+                // Update UI to show error state
+                document.getElementById('hostName').textContent = 'Stream not found';
+                document.getElementById('streamDescription').textContent = 'No stream ID was provided. Please check the URL and try again.';
             }
-        } else {
-            console.error('No streamId provided in URL');
-        }
 
-        // ... (rest of your existing code)
-    });
+            // ... (rest of your existing code)
+        });
 
         // Chat functionality
         const chatForm = document.getElementById('chatForm');

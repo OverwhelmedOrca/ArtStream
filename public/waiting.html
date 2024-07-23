@@ -387,7 +387,8 @@
                         const updateStreamResponse = await axios.post(`/streams/${this.streamId}/start`, {
                             rtmpKey: stream_key,
                             rtmpServer: stream_server,
-                            type: 'collaboration'
+                            type: 'collaboration',
+                            thetaID: streamId  // Add the thetaID to the request body
                         }, {
                             headers: {
                                 'Authorization': `Bearer ${token}`,

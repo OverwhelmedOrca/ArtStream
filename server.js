@@ -50,7 +50,8 @@ const streamSchema = new mongoose.Schema({
     streamKey: { type: String, unique: true },
     rtmpKey: { type: String },
     rtmpServer: { type: String },
-    type: { type: String, enum: ['collaboration', 'battle'], default: 'battle' }
+    type: { type: String, enum: ['collaboration', 'battle'], default: 'battle' },
+    thetaID: { type: String, default: null }
 });
 
 const Stream = mongoose.model('Stream', streamSchema, 'Streams');
@@ -179,7 +180,8 @@ app.post('/streams', verifyToken, async (req, res) => {
         hostName,
         isPrivate,
         streamKey,
-        participants: [{ userId: req.user.userId, username: hostName }] // Add the creator as the first participant
+        participants: [{ userId: req.user.userId, username: hostName }],
+        thetaID: null // Initialize thetaID as null
       });
   
       const validationError = stream.validateSync();
@@ -195,6 +197,41 @@ app.post('/streams', verifyToken, async (req, res) => {
       console.error('Error creating stream:', err);
       res.status(500).json({ message: 'Error creating stream', details: err.message });
     }
+});
+
+// Add a new route to update the thetaID
+app.put('/streams/:id/update-theta-id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const { thetaID } = req.body;
+
+  try {
+      const stream = await Stream.findById(id);
+      if (!stream) {
+          return res.status(404).json({ message: 'Stream not found' });
+      }
+
+      stream.thetaID = thetaID;
+      await stream.save();
+
+      res.json({ message: 'ThetaID updated successfully', stream });
+  } catch (err) {
+      console.error('Error updating thetaID:', err);
+      res.status(500).json({ message: 'Error updating thetaID', error: err.message });
+  }
+});
+
+// Add this new route to server.js
+app.get('/streams/by-theta-id/:thetaId', verifyToken, async (req, res) => {
+  try {
+      const stream = await Stream.findOne({ thetaID: req.params.thetaId });
+      if (!stream) {
+          return res.status(404).json({ message: 'Stream not found' });
+      }
+      res.json(stream);
+  } catch (err) {
+      console.error('Error fetching stream by thetaID:', err);
+      res.status(500).json({ message: 'Error fetching stream', error: err.message });
+  }
 });
 
 // Update the get streams route to include all streams
@@ -333,7 +370,7 @@ app.post('/streams/:id/join', verifyToken, async (req, res) => {
 // Start a stream (go live)
 app.post('/streams/:id/start', verifyToken, async (req, res) => {
   try {
-    const { rtmpKey, rtmpServer, type } = req.body;
+    const { rtmpKey, rtmpServer, type, thetaID } = req.body;
     const stream = await Stream.findById(req.params.id);
     if (!stream) {
       return res.status(404).json({ message: 'Stream not found' });
@@ -344,7 +381,8 @@ app.post('/streams/:id/start', verifyToken, async (req, res) => {
     stream.isLive = true;
     stream.rtmpKey = rtmpKey;
     stream.rtmpServer = rtmpServer;
-    stream.type = type || 'battle'; // Set type to 'collaboration' if provided, otherwise default to 'battle'
+    stream.type = type || 'battle';
+    stream.thetaID = thetaID;  // Add this line to update the thetaID
     await stream.save();
     res.json(stream);
   } catch (err) {
