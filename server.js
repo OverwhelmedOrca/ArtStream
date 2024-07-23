@@ -600,6 +600,82 @@ app.get('/api/battle/:battleId', async (req, res) => {
   }
 });
 
+// Update the voting route
+app.post('/api/vote/:battleId', verifyToken, async (req, res) => {
+  const { battleId } = req.params;
+  const { artist, username, action } = req.body;
+
+  try {
+    const battle = await Battle.findOne({ battleId });
+
+    if (!battle) {
+      return res.status(404).json({ message: 'Battle not found' });
+    }
+
+    const isVotedForArtist1 = battle.votedBy.includes(username);
+    const isVotedForArtist2 = battle.opponentVotedBy.includes(username);
+
+    if (action === 'add') {
+      if (isVotedForArtist1 || isVotedForArtist2) {
+        return res.status(400).json({ message: 'You have already voted' });
+      }
+
+      if (artist === 'artist1') {
+        battle.votes += 1;
+        battle.votedBy.push(username);
+      } else if (artist === 'artist2') {
+        battle.opponentVotes += 1;
+        battle.opponentVotedBy.push(username);
+      } else {
+        return res.status(400).json({ message: 'Invalid artist' });
+      }
+    } else if (action === 'remove') {
+      if (artist === 'artist1' && isVotedForArtist1) {
+        battle.votes -= 1;
+        battle.votedBy = battle.votedBy.filter(voter => voter !== username);
+      } else if (artist === 'artist2' && isVotedForArtist2) {
+        battle.opponentVotes -= 1;
+        battle.opponentVotedBy = battle.opponentVotedBy.filter(voter => voter !== username);
+      } else {
+        return res.status(400).json({ message: 'No vote to remove' });
+      }
+    } else {
+      return res.status(400).json({ message: 'Invalid action' });
+    }
+
+    await battle.save();
+
+    res.json({ 
+      artist1Votes: battle.votes, 
+      artist2Votes: battle.opponentVotes
+    });
+  } catch (err) {
+    console.error('Error voting:', err);
+    res.status(500).json({ message: 'Error voting', error: err.message });
+  }
+});
+
+// Add a new route to fetch current vote counts
+app.get('/api/battle/:battleId/votes', async (req, res) => {
+  const { battleId } = req.params;
+
+  try {
+    const battle = await Battle.findOne({ battleId });
+
+    if (!battle) {
+      return res.status(404).json({ message: 'Battle not found' });
+    }
+
+    res.json({
+      artist1Votes: battle.votes,
+      artist2Votes: battle.opponentVotes
+    });
+  } catch (err) {
+    console.error('Error fetching vote counts:', err);
+    res.status(500).json({ message: 'Error fetching vote counts', error: err.message });
+  }
+});
+
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
 
