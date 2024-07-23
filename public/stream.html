@@ -185,14 +185,16 @@
         const pipBtn = document.getElementById('pipBtn');
 
         let streams = [
-            { id: localStorage.getItem('ThetaID'), title: 'Your Stream' },
-            { id: localStorage.getItem('opponentThetaID'), title: 'Opponent Stream' }
+            { id: localStorage.getItem('ThetaID'), title: 'Your Stream', playbackUrl: null },
+            { id: localStorage.getItem('opponentThetaID'), title: 'Opponent Stream', playbackUrl: null }
         ];
 
-        async function fetchStreamPlaybackUrl(streamId) {
+        async function fetchStreamPlaybackUrl(stream) {
+            if (stream.playbackUrl) return; // Skip if we already have the playback URL
+
             try {
-                console.log(`Fetching playback URL for stream ID: ${streamId}`);
-                const response = await fetch(`https://api.thetavideoapi.com/stream/${streamId}`, {
+                console.log(`Fetching playback URL for stream ID: ${stream.id}`);
+                const response = await fetch(`https://api.thetavideoapi.com/stream/${stream.id}`, {
                     method: 'GET',
                     headers: {
                         'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
@@ -208,79 +210,41 @@
                 console.log('Retrieve stream response:', data);
 
                 if (data.body.status === 'on' && data.body.playback_uri) {
-                    console.log(`Got playback URL for stream ID ${streamId}: ${data.body.playback_uri}`);
-                    return data.body.playback_uri;
+                    console.log(`Got playback URL for stream ID ${stream.id}: ${data.body.playback_uri}`);
+                    stream.playbackUrl = data.body.playback_uri;
                 } else {
-                    console.log(`Stream ${streamId} is not live yet or playback_uri is not available`);
-                    return null;
+                    console.log(`Stream ${stream.id} is not live yet or playback_uri is not available`);
                 }
             } catch (error) {
                 console.error('Error retrieving livestream:', error);
-                return null;
             }
         }
 
-        function createVideoWrapper(url, title) {
+        function createVideoWrapper(stream) {
             const wrapper = document.createElement('div');
             wrapper.className = 'video-wrapper';
 
-            if (url) {
+            if (stream.playbackUrl) {
                 const video = document.createElement('video');
-                video.controls = false;
+                video.controls = true; // Enable default video controls
                 video.autoplay = true;
                 video.muted = true;
+                video.src = stream.playbackUrl;
 
                 const titleElement = document.createElement('div');
                 titleElement.className = 'absolute top-0 left-0 bg-black bg-opacity-50 text-white p-2 rounded-br';
-                titleElement.textContent = title;
-
-                const controls = document.createElement('div');
-                controls.className = 'video-controls';
-
-                const playPauseBtn = document.createElement('button');
-                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-                playPauseBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    togglePlayPause(video, playPauseBtn);
-                };
-
-                controls.appendChild(playPauseBtn);
+                titleElement.textContent = stream.title;
 
                 wrapper.appendChild(video);
                 wrapper.appendChild(titleElement);
-                wrapper.appendChild(controls);
-
-                if (Hls.isSupported()) {
-                    const hls = new Hls();
-                    hls.loadSource(url);
-                    hls.attachMedia(video);
-                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                        video.play();
-                    });
-                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                    video.src = url;
-                    video.addEventListener('loadedmetadata', function() {
-                        video.play();
-                    });
-                }
             } else {
                 const waitingMessage = document.createElement('div');
                 waitingMessage.className = 'flex items-center justify-center w-full h-full bg-gray-700 text-white text-2xl';
-                waitingMessage.textContent = `Waiting for ${title} to start...`;
+                waitingMessage.textContent = `Waiting for ${stream.title} to start...`;
                 wrapper.appendChild(waitingMessage);
             }
 
             return wrapper;
-        }
-
-        function togglePlayPause(video, btn) {
-            if (video.paused) {
-                video.play();
-                btn.innerHTML = '<i class="fas fa-pause"></i>';
-            } else {
-                video.pause();
-                btn.innerHTML = '<i class="fas fa-play"></i>';
-            }
         }
 
         async function setupStreams(mode) {
@@ -296,8 +260,8 @@
 
             for (let i = 0; i < streams.length; i++) {
                 const stream = streams[i];
-                const playbackUrl = await fetchStreamPlaybackUrl(stream.id);
-                const wrapper = createVideoWrapper(playbackUrl, stream.title);
+                await fetchStreamPlaybackUrl(stream);
+                const wrapper = createVideoWrapper(stream);
                 
                 if (mode === 'sideBySide') {
                     wrapper.style.flex = '1';
@@ -334,8 +298,23 @@
             }
         }
 
-        function checkAndUpdateStreams() {
-            setupStreams(sideBySideBtn.classList.contains('bg-purple-600') ? 'sideBySide' : 'pip');
+        async function checkAndUpdateStreams() {
+            let updatedStreams = false;
+            for (const stream of streams) {
+                if (!stream.playbackUrl) {
+                    await fetchStreamPlaybackUrl(stream);
+                    if (stream.playbackUrl) {
+                        updatedStreams = true;
+                    }
+                }
+            }
+            if (updatedStreams) {
+                setupStreams(sideBySideBtn.classList.contains('bg-purple-600') ? 'sideBySide' : 'pip');
+            }
+            if (streams.every(stream => stream.playbackUrl)) {
+                clearInterval(streamCheckInterval);
+                console.log('All streams are available. Stopping periodic checks.');
+            }
         }
 
         // Set up event listeners for mode buttons
@@ -355,7 +334,7 @@
         setupStreams('sideBySide');
 
         // Periodically check and update streams
-        setInterval(checkAndUpdateStreams, 1000); // Check every 1 seconds
+        const streamCheckInterval = setInterval(checkAndUpdateStreams, 5000); // Check every 5 seconds
 
         // Chat functionality
         const chatForm = document.getElementById('chatForm');
