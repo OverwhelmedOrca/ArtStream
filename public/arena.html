@@ -380,8 +380,8 @@
                         aiAllowed: this.aiAllowed,
                         liveStream: this.liveStream,
                         timeLimit: parseInt(this.timeLimit),
-                        category: this.selectedCategory,
-                        thetaStreamID: localStorage.getItem('ThetaID') // Add this line
+                        category: this.selectedCategory
+                        // Remove thetaStreamID from here
                     };
 
                     try {
@@ -401,7 +401,7 @@
                         const result = await response.json();
 
                         if (result.opponentFound) {
-                            this.showOpponentFound(result.opponent);
+                            this.showOpponentFound(result.opponent, result.battleId);
                         } else {
                             this.battleId = result.battleId;
                             this.checkForOpponent();
@@ -434,7 +434,7 @@
                         const result = await response.json();
 
                         if (result.opponentFound) {
-                            this.showOpponentFound(result.opponent);
+                            this.showOpponentFound(result.opponent, this.battleId);
                         } else {
                             // Keep checking every 5 seconds
                             setTimeout(() => this.checkForOpponent(), 5000);
@@ -446,12 +446,13 @@
                     }
                 },
 
-                async showOpponentFound(opponent) {
+                async showOpponentFound(opponent, battleId) {
                     this.showLoading = false;
                     this.showOpponentModal = true;
                     this.opponentName = opponent.username;
                     this.opponentAvatar = `https://i.pravatar.cc/150?u=${opponent.username}`;
-                    
+                    this.battleId = battleId; // Store the new battleId
+
                     const redirectMessage = this.liveStream ? "Setting up live stream... \n (it can take a few seconds)" : "Redirecting to battle...";
                     const redirectElement = document.getElementById('redirectMessage');
                     if (redirectElement) {
@@ -461,6 +462,8 @@
                     try {
                         if (this.liveStream) {
                             await this.setupLiveStream();
+                            // Update the backend with the thetaStreamID after it's created
+                            await this.updateBattleWithStreamId();
                         }
                     } catch (error) {
                         console.error('Error setting up live stream:', error);
@@ -485,6 +488,34 @@
                         }
                     }, 3000);
                 },
+
+                async updateBattleWithStreamId() {
+                    try {
+                        const response = await fetch(`/api/update-battle-stream/${this.battleId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            },
+                            body: JSON.stringify({ thetaStreamID: localStorage.getItem('ThetaID') })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Failed to update battle with stream ID');
+                        }
+
+                        const result = await response.json();
+                        console.log('Battle updated with stream ID:', result);
+
+                        // Store opponent's ThetaID if available
+                        if (result.battle.opponentThetaStreamID) {
+                            localStorage.setItem('opponentThetaID', result.battle.opponentThetaStreamID);
+                        }
+                    } catch (error) {
+                        console.error('Error updating battle with stream ID:', error);
+                    }
+                },
+
 
                 async setupLiveStream() {
                     try {

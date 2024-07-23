@@ -40,6 +40,24 @@
             50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
         }
+        .video-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+        .video-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+        .video-controls button {
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="text-gray-300 h-full flex flex-col">
@@ -67,12 +85,23 @@
         <!-- Left Column (2/3 width) -->
         <div class="w-2/3 p-6 overflow-y-auto custom-scrollbar">
             <div class="space-y-6">
-                <!-- Stream Preview -->
-                <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg glow relative">
-                    <div class="aspect-video">
-                        <video id="video" class="w-full h-full object-cover" controls autoplay></video>
+                <!-- Stream Viewer Controls -->
+                <div class="p-4 bg-gray-800">
+                    <div class="flex justify-center space-x-4">
+                        <button id="sideBySideBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition duration-300">
+                            Side by Side
+                        </button>
+                        <button id="pipBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition duration-300">
+                            Picture in Picture
+                        </button>
                     </div>
                 </div>
+
+                <!-- Video Container -->
+                <div id="videoContainer" class="flex-grow p-4 bg-gray-800 flex items-center justify-center">
+                    <!-- Videos will be dynamically inserted here -->
+                </div>
+
 
                 <!-- Stream Details -->
                 <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
@@ -151,18 +180,18 @@
     </div>
 
     <script>
-        // Initialize video player
-        const video = document.getElementById('video');
+        const videoContainer = document.getElementById('videoContainer');
+        const sideBySideBtn = document.getElementById('sideBySideBtn');
+        const pipBtn = document.getElementById('pipBtn');
 
-        async function initializeStream() {
-            const thetaId = localStorage.getItem('ThetaID');
-            if (!thetaId) {
-                console.error('No ThetaID found in localStorage');
-                return;
-            }
+        let streams = [
+            { id: localStorage.getItem('ThetaID'), title: 'Your Stream' },
+            { id: localStorage.getItem('opponentThetaID'), title: 'Opponent Stream' }
+        ];
 
+        async function fetchStreamPlaybackUrl(streamId) {
             try {
-                const response = await fetch(`https://api.thetavideoapi.com/stream/${thetaId}`, {
+                const response = await fetch(`https://api.thetavideoapi.com/stream/${streamId}`, {
                     method: 'GET',
                     headers: {
                         'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
@@ -178,30 +207,142 @@
                 console.log('Retrieve stream response:', data);
 
                 if (data.body.status === 'on' && data.body.playback_uri) {
-                    const videoSrc = data.body.playback_uri;
-                    if (Hls.isSupported()) {
-                        const hls = new Hls();
-                        hls.loadSource(videoSrc);
-                        hls.attachMedia(video);
-                        hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                            video.play();
-                        });
-                    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                        video.src = videoSrc;
-                        video.addEventListener('loadedmetadata', function() {
-                            video.play();
-                        });
-                    }
+                    return data.body.playback_uri;
                 } else {
                     console.log('Stream is not live yet or playback_uri is not available');
-                    // You might want to implement a retry mechanism or show a message to the user
+                    return null;
                 }
             } catch (error) {
                 console.error('Error retrieving livestream:', error);
+                return null;
             }
         }
 
-        initializeStream();
+        function createVideoWrapper(url, title) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'video-wrapper';
+
+            const video = document.createElement('video');
+            video.controls = false;
+            video.autoplay = true;
+            video.muted = true;
+
+            const titleElement = document.createElement('div');
+            titleElement.className = 'absolute top-0 left-0 bg-black bg-opacity-50 text-white p-2 rounded-br';
+            titleElement.textContent = title;
+
+            const controls = document.createElement('div');
+            controls.className = 'video-controls';
+
+            const playPauseBtn = document.createElement('button');
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            playPauseBtn.onclick = (e) => {
+                e.stopPropagation();
+                togglePlayPause(video, playPauseBtn);
+            };
+
+            controls.appendChild(playPauseBtn);
+
+            wrapper.appendChild(video);
+            wrapper.appendChild(titleElement);
+            wrapper.appendChild(controls);
+
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play();
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+                video.addEventListener('loadedmetadata', function() {
+                    video.play();
+                });
+            }
+
+            return wrapper;
+        }
+
+        function togglePlayPause(video, btn) {
+            if (video.paused) {
+                video.play();
+                btn.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                video.pause();
+                btn.innerHTML = '<i class="fas fa-play"></i>';
+            }
+        }
+
+        async function setupSideBySide() {
+            videoContainer.innerHTML = '';
+            videoContainer.className = 'flex-grow p-4 bg-gray-800 flex items-center justify-center';
+
+            const videoWrapper = document.createElement('div');
+            videoWrapper.className = 'flex items-stretch space-x-4 w-full h-full';
+
+            for (const stream of streams) {
+                const playbackUrl = await fetchStreamPlaybackUrl(stream.id);
+                if (playbackUrl) {
+                    const wrapper = createVideoWrapper(playbackUrl, stream.title);
+                    wrapper.style.flex = '1';
+                    videoWrapper.appendChild(wrapper);
+                }
+            }
+
+            videoContainer.appendChild(videoWrapper);
+        }
+
+        async function setupPictureInPicture() {
+            videoContainer.innerHTML = '';
+            videoContainer.className = 'flex-grow p-4 bg-gray-800 relative';
+
+            const playbackUrls = await Promise.all(streams.map(stream => fetchStreamPlaybackUrl(stream.id)));
+
+            if (playbackUrls[0]) {
+                const mainWrapper = createVideoWrapper(playbackUrls[0], streams[0].title);
+                mainWrapper.style.width = '100%';
+                mainWrapper.style.height = '100%';
+                videoContainer.appendChild(mainWrapper);
+            }
+
+            if (playbackUrls[1]) {
+                const pipWrapper = createVideoWrapper(playbackUrls[1], streams[1].title);
+                pipWrapper.style.position = 'absolute';
+                pipWrapper.style.width = '30%';
+                pipWrapper.style.height = '30%';
+                pipWrapper.style.bottom = '20px';
+                pipWrapper.style.right = '20px';
+                pipWrapper.style.zIndex = '10';
+                videoContainer.appendChild(pipWrapper);
+            }
+
+            // Add swap button
+            const swapButton = document.createElement('button');
+            swapButton.innerHTML = '<i class="fas fa-exchange-alt"></i>';
+            swapButton.className = 'absolute top-4 right-4 bg-gray-800 text-white p-2 rounded-full z-20';
+            swapButton.onclick = () => {
+                [streams[0], streams[1]] = [streams[1], streams[0]];
+                setupPictureInPicture();
+            };
+            videoContainer.appendChild(swapButton);
+        }
+
+        // Set up event listeners for mode buttons
+        sideBySideBtn.addEventListener('click', () => {
+            sideBySideBtn.classList.add('bg-purple-600');
+            pipBtn.classList.remove('bg-purple-600');
+            setupSideBySide();
+        });
+
+        pipBtn.addEventListener('click', () => {
+            pipBtn.classList.add('bg-purple-600');
+            sideBySideBtn.classList.remove('bg-purple-600');
+            setupPictureInPicture();
+        });
+
+        // Initialize with side-by-side view
+        setupSideBySide();
 
         // Chat functionality
         const chatForm = document.getElementById('chatForm');
