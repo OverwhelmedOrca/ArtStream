@@ -185,8 +185,8 @@
         const pipBtn = document.getElementById('pipBtn');
 
         let streams = [
+            { id: localStorage.getItem('opponentThetaID'), title: 'Opponent Stream', playbackUrl: null },
             { id: localStorage.getItem('ThetaID'), title: 'Your Stream', playbackUrl: null },
-            { id: localStorage.getItem('opponentThetaID'), title: 'Opponent Stream', playbackUrl: null }
         ];
 
         async function fetchStreamPlaybackUrl(stream) {
