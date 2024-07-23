@@ -18,7 +18,7 @@ Yash:
 6. linking ai tools for artists
 7. displaying live streams in stream preview pages (50 %)
 8. linking all pages to all pages
-9. fixing everything in the battlewatch page
+9. fixing everything in the battlewatch page (x)
 
 AIzaSyDCxq-CSoFyziFcEVskDXib91sIsVMQU3g
 
