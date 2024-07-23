@@ -130,19 +130,18 @@
     <header class="p-4 flex justify-between items-center border-b-2 border-accent-color">
         <h1 class="retro-header text-2xl">Community Feed</h1>
         <div class="flex items-center space-x-4">
-            <div class="relative" x-data="{ open: false }">
-                <img @click="open = !open" :src="'https://i.pravatar.cc/150?u=' + username" :alt="username" class="w-10 h-10 rounded-full cursor-pointer retro-border">
-                <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 retro-border">
-                    <div class="py-1" role="menu">
-                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Profile</a>
-                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">My Streams</a>
-                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Settings</a>
-                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem" id="logout-button">Logout</a>
-                    </div>
-                </div>
+          <div class="relative" x-data="{ open: false }">
+            <img @click="open = !open" :src="'https://i.pravatar.cc/150?u=' + username" :alt="username" class="w-10 h-10 rounded-full cursor-pointer retro-border">
+            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 retro-border">
+              <div class="py-1" role="menu">
+                <a href="index.html" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Home</a>
+                <a href="dashboard.html" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Profile</a>
+                <a href="marketplace.html" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Marketplace</a>
+              </div>
             </div>
+          </div>
         </div>
-    </header>
+      </header>
 
     <main class="flex h-[calc(100vh-80px)]">
         <section class="w-2/3 p-6 overflow-y-auto scrollbar-hide">
