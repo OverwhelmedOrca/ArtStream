@@ -623,6 +623,34 @@
             });
         }
 
+        // Add this function to check for existing token and update UI
+        async function checkAuthStatus() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const response = await fetch('http://localhost:3000/verify-token', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        updateHeaderAfterLogin(data.username);
+                    } else {
+                        // If token is invalid, clear localStorage
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('username');
+                    }
+                } catch (error) {
+                    console.error('Error verifying token:', error);
+                }
+            }
+        }
+
+        // Call this function when the page loads
+        document.addEventListener('DOMContentLoaded', checkAuthStatus);
+
         // Form submissions
         document.getElementById('login-form').onsubmit = async function(e) {
             e.preventDefault();
@@ -638,7 +666,6 @@
                 if (response.ok) {
                     localStorage.setItem('username', username);
                     localStorage.setItem('token', data.token);
-                    console.log('Token stored:', data.token); // For debugging
                     closeModal(loginModal);
                     updateHeaderAfterLogin(username);
                 } else {

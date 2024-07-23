@@ -22,6 +22,23 @@ mongoose.connect('mongodb+srv://yashaggarwal3011:ShEt62UC0T176xru@greenglobe.gyr
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
+// Define the verifyToken middleware
+const verifyToken = (req, res, next) => {
+  const authHeader = req.header('Authorization');
+  if (!authHeader) return res.status(401).json({ message: 'Access denied' });
+
+  const token = authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'Access denied' });
+
+  try {
+      const verified = jwt.verify(token, jwtSecret);
+      req.user = verified;
+      next();
+  } catch (err) {
+      res.status(400).json({ message: 'Invalid token' });
+  }
+};
+
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
@@ -129,6 +146,12 @@ app.post('/signup', async (req, res) => {
   }
 });
 
+// Verify token route
+app.get('/verify-token', verifyToken, (req, res) => {
+  res.json({ username: req.user.username });
+});
+
+// Login route
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -140,30 +163,17 @@ app.post('/login', async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
-    const token = jwt.sign({ userId: user._id, username: user.username }, jwtSecret, { expiresIn: '1h' });
+    const token = jwt.sign(
+      { userId: user._id, username: user.username },
+      jwtSecret,
+      { expiresIn: '7d' } // Token expires in 7 days
+    );
     res.json({ token, userId: user._id, username: user.username });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-// Middleware to verify JWT token
-const verifyToken = (req, res, next) => {
-    const authHeader = req.header('Authorization');
-    if (!authHeader) return res.status(401).json({ message: 'Access denied' });
-
-    const token = authHeader.split(' ')[1];
-    if (!token) return res.status(401).json({ message: 'Access denied' });
-
-    try {
-        const verified = jwt.verify(token, jwtSecret);
-        req.user = verified;
-        next();
-    } catch (err) {
-        res.status(400).json({ message: 'Invalid token' });
-    }
-};
 
 // Create a new stream
 app.post('/streams', verifyToken, async (req, res) => {
