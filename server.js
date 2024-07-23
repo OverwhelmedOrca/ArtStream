@@ -528,13 +528,9 @@ app.post('/api/posts/:id/comment', verifyToken, async (req, res) => {
   }
 });
 
-// Update ThetaID route
+// Add a new route to update ThetaID
 app.post('/api/update-theta-id', verifyToken, async (req, res) => {
   const { battleId, thetaStreamID } = req.body;
-
-  if (!battleId || !mongoose.Types.ObjectId.isValid(battleId)) {
-    return res.status(400).json({ message: 'Invalid battle ID' });
-  }
 
   try {
     const battle = await Battle.findById(battleId);
@@ -558,16 +554,10 @@ app.post('/api/update-theta-id', verifyToken, async (req, res) => {
   }
 });
 
-// Fetch battle data route
+// Add a new route to fetch battle data
 app.get('/api/battles/:id', verifyToken, async (req, res) => {
-  const { id } = req.params;
-
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: 'Invalid battle ID' });
-  }
-
   try {
-    const battle = await Battle.findById(id);
+    const battle = await Battle.findById(req.params.id);
     if (!battle) {
       return res.status(404).json({ message: 'Battle not found' });
     }

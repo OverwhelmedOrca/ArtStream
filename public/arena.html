@@ -512,23 +512,14 @@
 
                         // Update ThetaID in the backend
                         const battleId = localStorage.getItem('battleId');
-                        if (battleId) {
-                            try {
-                                await fetch('/api/update-theta-id', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                                    },
-                                    body: JSON.stringify({ battleId, thetaStreamID: streamId })
-                                });
-                                console.log('ThetaID updated in the backend');
-                            } catch (error) {
-                                console.error('Error updating ThetaID in the backend:', error);
-                            }
-                        } else {
-                            console.error('Battle ID not found in localStorage');
-                        }
+                        await fetch('/api/update-theta-id', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            },
+                            body: JSON.stringify({ battleId, thetaStreamID: streamId })
+                        });
 
                         console.log('Listing ingestors...');
                         const ingestorsResponse = await axios.get('https://api.thetavideoapi.com/ingestor/filter', {

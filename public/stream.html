@@ -171,15 +171,8 @@
             const myThetaId = localStorage.getItem('ThetaID');
             const battleId = localStorage.getItem('battleId');
 
-            if (!myThetaId) {
-                console.error('Missing ThetaID information');
-                displayError('Your stream has not been set up yet. Please start your stream first.');
-                return;
-            }
-
-            if (!battleId) {
-                console.error('Missing battleId information');
-                displayError('Battle information is missing. Please go back to the arena page and try again.');
+            if (!myThetaId || !battleId) {
+                console.error('Missing ThetaID or battleId information');
                 return;
             }
 
@@ -203,8 +196,7 @@
 
                 if (!opponentThetaId) {
                     console.log('Opponent stream not started yet. Waiting...');
-                    displayWaitingMessage('Waiting for opponent to start their stream...');
-                    // Implement a polling mechanism here to check for updates
+                    // You might want to implement a polling mechanism here to check for updates
                     return;
                 }
 
@@ -214,28 +206,8 @@
                 setupSideBySide(); // Default view
             } catch (error) {
                 console.error('Error initializing streams:', error);
-                displayError('An error occurred while setting up the streams. Please try refreshing the page.');
             }
         }
-
-        function displayError(message) {
-            const errorElement = document.createElement('div');
-            errorElement.className = 'bg-red-500 text-white p-4 rounded-md';
-            errorElement.textContent = message;
-            videoContainer.innerHTML = '';
-            videoContainer.appendChild(errorElement);
-        }
-
-        function displayWaitingMessage(message) {
-            const waitingElement = document.createElement('div');
-            waitingElement.className = 'bg-blue-500 text-white p-4 rounded-md';
-            waitingElement.textContent = message;
-            videoContainer.innerHTML = '';
-            videoContainer.appendChild(waitingElement);
-        }
-
-        // Call initializeStreams when the page loads
-        document.addEventListener('DOMContentLoaded', initializeStreams);
 
         async function getStreamInfo(thetaId, title) {
             const response = await fetch(`https://api.thetavideoapi.com/stream/${thetaId}`, {
