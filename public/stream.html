@@ -226,10 +226,9 @@
 
             if (stream.playbackUrl) {
                 const video = document.createElement('video');
-                video.controls = true; // Enable default video controls
+                video.controls = true;
                 video.autoplay = true;
                 video.muted = true;
-                video.src = stream.playbackUrl;
 
                 const titleElement = document.createElement('div');
                 titleElement.className = 'absolute top-0 left-0 bg-black bg-opacity-50 text-white p-2 rounded-br';
@@ -237,6 +236,26 @@
 
                 wrapper.appendChild(video);
                 wrapper.appendChild(titleElement);
+
+                if (Hls.isSupported()) {
+                    const hls = new Hls();
+                    hls.loadSource(stream.playbackUrl);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                        video.play();
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = stream.playbackUrl;
+                    video.addEventListener('loadedmetadata', function() {
+                        video.play();
+                    });
+                } else {
+                    console.error('This browser does not support HLS playback');
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'error-message';
+                    errorMessage.textContent = 'Your browser does not support this video format.';
+                    wrapper.appendChild(errorMessage);
+                }
             } else {
                 const waitingMessage = document.createElement('div');
                 waitingMessage.className = 'flex items-center justify-center w-full h-full bg-gray-700 text-white text-2xl';
@@ -260,7 +279,6 @@
 
             for (let i = 0; i < streams.length; i++) {
                 const stream = streams[i];
-                await fetchStreamPlaybackUrl(stream);
                 const wrapper = createVideoWrapper(stream);
                 
                 if (mode === 'sideBySide') {
@@ -330,8 +348,16 @@
             setupStreams('pip');
         });
 
-        // Initialize with side-by-side view
-        setupStreams('sideBySide');
+        // Initialize streams
+        async function initializeStreams() {
+            for (const stream of streams) {
+                await fetchStreamPlaybackUrl(stream);
+            }
+            setupStreams('sideBySide');
+        }
+
+        // Start the initialization process
+        initializeStreams();
 
         // Periodically check and update streams
         const streamCheckInterval = setInterval(checkAndUpdateStreams, 5000); // Check every 5 seconds
