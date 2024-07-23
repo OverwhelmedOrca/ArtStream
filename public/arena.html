@@ -451,8 +451,6 @@
                     this.showOpponentModal = true;
                     this.opponentName = opponent.username;
                     this.opponentAvatar = `https://i.pravatar.cc/150?u=${opponent.username}`;
-                    // Store opponent's ThetaID
-                    localStorage.setItem('opponentThetaID', opponent.thetaStreamID);
                     
                     const redirectMessage = this.liveStream ? "Setting up live stream... \n (it can take a few seconds)" : "Redirecting to battle...";
                     const redirectElement = document.getElementById('redirectMessage');
