@@ -578,6 +578,23 @@ app.get('/api/check-battle-stream/:streamId', async (req, res) => {
   }
 });
 
+app.get('/api/battle/:battleId', async (req, res) => {
+  const { battleId } = req.params;
+
+  try {
+    const battle = await Battle.findOne({ battleId });
+
+    if (!battle) {
+      return res.status(404).json({ message: 'Battle not found' });
+    }
+
+    res.json(battle);
+  } catch (err) {
+    console.error('Error fetching battle data:', err);
+    res.status(500).json({ message: 'Error fetching battle data', error: err.message });
+  }
+});
+
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
 

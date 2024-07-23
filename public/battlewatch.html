@@ -225,25 +225,29 @@
 
                 <!-- Battle Info -->
                 <div class="bg-gray-800 p-6 mt-4 rounded-lg shadow-md">
-                    <h2 class="text-2xl font-bold mb-4 text-center text-purple-400">Epic Art Showdown</h2>
+                    <h2 id="arenaName" class="text-2xl font-bold mb-4 text-center text-purple-400">Loading...</h2>
                     <div class="flex justify-between items-center mb-4">
                         <div class="text-center">
-                            <img src="https://i.pravatar.cc/100?img=3" alt="Artist 1" class="w-20 h-20 rounded-full mx-auto mb-2 border-4 border-purple-500">
-                            <h3 class="font-bold text-lg">CanvasRebel</h3>
-                            <p class="text-sm text-gray-400">Digital Painter</p>
+                            <img id="artist1Image" src="" alt="Artist 1" class="w-20 h-20 rounded-full mx-auto mb-2 border-4 border-purple-500">
+                            <h3 id="artist1Name" class="font-bold text-lg">Loading...</h3>
+                            <p class="text-sm text-gray-400">Artist</p>
                         </div>
                         <div class="text-4xl font-bold text-red-500">VS</div>
                         <div class="text-center">
-                            <img src="https://i.pravatar.cc/100?img=4" alt="Artist 2" class="w-20 h-20 rounded-full mx-auto mb-2 border-4 border-purple-500">
-                            <h3 class="font-bold text-lg">BrushMaster</h3>
-                            <p class="text-sm text-gray-400">Illustrator</p>
+                            <img id="artist2Image" src="" alt="Artist 2" class="w-20 h-20 rounded-full mx-auto mb-2 border-4 border-purple-500">
+                            <h3 id="artist2Name" class="font-bold text-lg">Loading...</h3>
+                            <p class="text-sm text-gray-400">Artist</p>
                         </div>
                     </div>
                     <div class="progress-container mb-2">
                         <div id="battleProgress" class="progress-bar"></div>
-                        <div class="progress-text"><span id="battleTimeRemaining">10:00</span></div>
+                        <div class="progress-text"><span id="battleTimeRemaining">Loading...</span></div>
                     </div>
                     <div id="battlePrompt" class="text-center text-yellow-300 font-bold"></div>
+                    <div id="battleDetails" class="mt-4 text-center">
+                        <p>Stake: <span id="stakeAmount">Loading...</span></p>
+                        <p>AI Allowed: <span id="aiAllowed">Loading...</span></p>
+                    </div>
                 </div>
 
                 <!-- Voting and Betting Section -->
@@ -300,16 +304,16 @@
                     <h3 class="text-2xl font-bold mb-6 text-center text-purple-400">Battle Stats</h3>
                     <div class="flex justify-between items-center">
                         <div class="text-center">
-                            <p class="text-2xl font-bold">1,234</p>
-                            <p class="text-sm text-gray-400">Votes for CanvasRebel</p>
+                            <p id="artist1Votes" class="text-2xl font-bold">0</p>
+                            <p class="text-sm text-gray-400">Votes for <span id="artist1VotesName">Artist 1</span></p>
                         </div>
                         <div class="text-center">
-                            <p class="text-2xl font-bold">5,678</p>
+                            <p id="totalBets" class="text-2xl font-bold">0</p>
                             <p class="text-sm text-gray-400">Total Bets Placed</p>
                         </div>
                         <div class="text-center">
-                            <p class="text-2xl font-bold">987</p>
-                            <p class="text-sm text-gray-400">Votes for BrushMaster</p>
+                            <p id="artist2Votes" class="text-2xl font-bold">0</p>
+                            <p class="text-sm text-gray-400">Votes for <span id="artist2VotesName">Artist 2</span></p>
                         </div>
                     </div>
                 </div>
@@ -336,24 +340,95 @@
         const sideBySideBtn = document.getElementById('sideBySideBtn');
         const pipBtn = document.getElementById('pipBtn');
 
-        // Sample video data
-        const sampleStreams = [
-            {
-                url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-                title: 'CanvasRebel\'s Stream',
-            },
-            {
-                url: 'https://test-streams.mux.dev/test_001/stream.m3u8',
-                title: 'BrushMaster\'s Stream',
-            },
-        ];
+        let battleData = null;
+        let streamUrls = [];
+        let streamTitles = [];
 
+        // Function to get URL parameters
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // Get battleId from URL
+        const battleId = getUrlParameter('battleId');
+        console.log('Battle ID:', battleId);
+
+        // Function to fetch battle data
+        async function fetchBattleData() {
+            try {
+                const response = await fetch(`/api/battle/${battleId}`);
+                battleData = await response.json();
+                console.log('Battle data:', battleData);
+                updateBattleInfo(battleData);
+                await setupVideoStreams(battleData.thetaStreamID, battleData.opponentThetaStreamID);
+                setupSideBySide(); // Initial setup after fetching data
+            } catch (error) {
+                console.error('Error fetching battle data:', error);
+            }
+        }
+
+        // Function to update battle info
+        function updateBattleInfo(data) {
+            document.getElementById('arenaName').textContent = data.arenaName;
+            document.getElementById('artist1Name').textContent = data.username;
+            document.getElementById('artist2Name').textContent = data.opponentName;
+            document.getElementById('artist1Image').src = `https://i.pravatar.cc/150?u=${data.username}`;
+            document.getElementById('artist2Image').src = `https://i.pravatar.cc/150?u=${data.opponentName}`;
+            document.getElementById('stakeAmount').textContent = `$${data.stakeAmount}`;
+            document.getElementById('aiAllowed').textContent = data.aiAllowed ? 'Yes' : 'No';
+            document.getElementById('battlePrompt').textContent = `Prompt: ${data.prompt}`;
+            document.getElementById('artist1VotesName').textContent = data.username;
+            document.getElementById('artist2VotesName').textContent = data.opponentName;
+
+            // Set up the battle duration and start the timer
+            battleDuration = data.timeLimit * 60; // Convert minutes to seconds
+            battleTimeRemaining = battleDuration;
+            updateBattleProgress();
+        }
+
+        // Function to set up video streams
+        async function setupVideoStreams(streamId1, streamId2) {
+            streamUrls = [
+                await getPlaybackUrl(streamId1),
+                await getPlaybackUrl(streamId2)
+            ];
+            streamTitles = [
+                battleData.username + "'s Stream",
+                battleData.opponentName + "'s Stream"
+            ];
+            console.log('Stream URLs:', streamUrls);
+            console.log('Stream Titles:', streamTitles);
+        }
+
+        // Function to get playback URL from Theta API
+        async function getPlaybackUrl(streamId) {
+            try {
+                const response = await fetch(`https://api.thetavideoapi.com/stream/${streamId}`, {
+                    headers: {
+                        'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
+                        'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
+                    }
+                });
+                const data = await response.json();
+                console.log('Theta API response:', data);
+                return data.body.playback_uri || null;
+            } catch (error) {
+                console.error('Error fetching playback URL:', error);
+                return null;
+            }
+        }
+
+        // Function to create video wrapper
         function createVideoWrapper(url, title) {
             const wrapper = document.createElement('div');
             wrapper.className = 'video-wrapper';
 
             const video = document.createElement('video');
-            video.controls = false;
+            video.src = url;
+            video.controls = true;
             video.autoplay = true;
             video.muted = true;
 
@@ -361,49 +436,13 @@
             titleElement.className = 'absolute top-0 left-0 bg-black bg-opacity-50 text-white p-2 rounded-br';
             titleElement.textContent = title;
 
-            const controls = document.createElement('div');
-            controls.className = 'video-controls';
-
-            const playPauseBtn = document.createElement('button');
-            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-            playPauseBtn.onclick = (e) => {
-                e.stopPropagation();
-                togglePlayPause(video, playPauseBtn);
-            };
-
-            controls.appendChild(playPauseBtn);
-
             wrapper.appendChild(video);
             wrapper.appendChild(titleElement);
-            wrapper.appendChild(controls);
-
-            if (Hls.isSupported()) {
-                const hls = new Hls();
-                hls.loadSource(url);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play();
-                });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = url;
-                video.addEventListener('loadedmetadata', function() {
-                    video.play();
-                });
-            }
 
             return wrapper;
         }
 
-        function togglePlayPause(video, btn) {
-            if (video.paused) {
-                video.play();
-                btn.innerHTML = '<i class="fas fa-pause"></i>';
-            } else {
-                video.pause();
-                btn.innerHTML = '<i class="fas fa-play"></i>';
-            }
-        }
-
+        // Function to set up side-by-side view
         function setupSideBySide() {
             videoContainer.innerHTML = '';
             videoContainer.className = 'flex-grow p-4 bg-gray-800 flex items-center justify-center';
@@ -411,8 +450,8 @@
             const videoWrapper = document.createElement('div');
             videoWrapper.className = 'flex items-stretch space-x-4 w-full h-full';
 
-            sampleStreams.forEach((stream) => {
-                const wrapper = createVideoWrapper(stream.url, stream.title);
+            streamUrls.forEach((url, index) => {
+                const wrapper = createVideoWrapper(url, streamTitles[index]);
                 wrapper.style.flex = '1';
                 videoWrapper.appendChild(wrapper);
             });
@@ -420,15 +459,16 @@
             videoContainer.appendChild(videoWrapper);
         }
 
+        // Function to set up picture-in-picture view
         function setupPictureInPicture() {
             videoContainer.innerHTML = '';
             videoContainer.className = 'flex-grow p-4 bg-gray-800 relative';
 
-            const mainWrapper = createVideoWrapper(sampleStreams[0].url, sampleStreams[0].title);
+            const mainWrapper = createVideoWrapper(streamUrls[0], streamTitles[0]);
             mainWrapper.style.width = '100%';
             mainWrapper.style.height = '100%';
 
-            const pipWrapper = createVideoWrapper(sampleStreams[1].url, sampleStreams[1].title);
+            const pipWrapper = createVideoWrapper(streamUrls[1], streamTitles[1]);
             pipWrapper.style.position = 'absolute';
             pipWrapper.style.width = '30%';
             pipWrapper.style.height = '30%';
@@ -444,21 +484,9 @@
             swapButton.innerHTML = '<i class="fas fa-exchange-alt"></i>';
             swapButton.className = 'absolute top-4 right-4 bg-gray-800 text-white p-2 rounded-full z-20';
             swapButton.onclick = () => {
-                const tempUrl = mainWrapper.querySelector('video').src;
-                const tempTitle = mainWrapper.querySelector('div').textContent;
-
-                const mainHls = new Hls();
-                mainHls.loadSource(sampleStreams[1].url);
-                mainHls.attachMedia(mainWrapper.querySelector('video'));
-                mainWrapper.querySelector('div').textContent = sampleStreams[1].title;
-
-                const pipHls = new Hls();
-                pipHls.loadSource(sampleStreams[0].url);
-                pipHls.attachMedia(pipWrapper.querySelector('video'));
-                pipWrapper.querySelector('div').textContent = sampleStreams[0].title;
-
-                // Swap the stream objects
-                [sampleStreams[0], sampleStreams[1]] = [sampleStreams[1], sampleStreams[0]];
+                [streamUrls[0], streamUrls[1]] = [streamUrls[1], streamUrls[0]];
+                [streamTitles[0], streamTitles[1]] = [streamTitles[1], streamTitles[0]];
+                setupPictureInPicture();
             };
             videoContainer.appendChild(swapButton);
         }
@@ -640,19 +668,23 @@
         const battleTimeRemainingElement = document.getElementById('battleTimeRemaining');
         const battlePromptElement = document.getElementById('battlePrompt');
 
+        // Update battle progress function
         function updateBattleProgress() {
             const progress = ((battleDuration - battleTimeRemaining) / battleDuration) * 100;
-            battleProgress.style.width = `${progress}%`;
+            document.getElementById('battleProgress').style.width = `${progress}%`;
             
             const minutes = Math.floor(battleTimeRemaining / 60);
             const seconds = battleTimeRemaining % 60;
-            battleTimeRemainingElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('battleTimeRemaining').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             
             if (battleTimeRemaining > 0) {
                 battleTimeRemaining--;
                 setTimeout(updateBattleProgress, 1000);
             }
         }
+
+        // Initialize the page
+        fetchBattleData();
 
         // Set battle prompt
         const prompts = [
