@@ -66,7 +66,12 @@ const battleSchema = new mongoose.Schema({
   opponentFound: { type: Boolean, default: false },
   opponentName: { type: String, default: null },
   thetaStreamID: { type: String, default: null },
-  opponentThetaStreamID: { type: String, default: null }, // New field
+  opponentThetaStreamID: { type: String, default: null },
+  votes: { type: Number, default: 0 },
+  votedBy: [{ type: String }],
+  opponentVotes: { type: Number, default: 0 },
+  opponentVotedBy: [{ type: String }],
+  prompt: { type: String, default: 'Abstract emotions' },
   createdAt: { type: Date, default: Date.now, expires: '1h' }
 });
 
