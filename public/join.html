@@ -254,7 +254,7 @@
                 async loadStreams() {
                     try {
                         const token = localStorage.getItem('token');
-                        const response = await axios.get('/streams', {
+                        const response = await axios.get('/join-streams', {
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             }

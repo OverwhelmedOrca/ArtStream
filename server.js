@@ -245,6 +245,16 @@ app.get('/streams', async (req, res) => {
     }
 });
 
+app.get('/join-streams', async (req, res) => {
+  try {
+      const streams = await Stream.find({isLive: false, isPrivate: false});
+      res.json(streams);
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Error fetching streams' });
+  }
+});
+
 // Add a route to join private streams
 app.post('/join-private-stream', verifyToken, async (req, res) => {
   const { streamKey } = req.body;
