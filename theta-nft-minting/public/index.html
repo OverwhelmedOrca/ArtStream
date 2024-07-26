@@ -1,33 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NFT Marketplace on Theta</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mint NFT with MetaMask</title>
 </head>
 <body>
-  <h1>NFT Marketplace on Theta</h1>
-  <button id="connectWallet">Connect MetaMask</button>
-  <div id="walletAddress"></div>
-  
-  <h2>Mint NFT</h2>
-  <form id="uploadForm" enctype="multipart/form-data">
-    <label for="name">Name:</label>
-    <input type="text" id="name" name="name" required><br><br>
-    <label for="description">Description:</label>
-    <input type="text" id="description" name="description" required><br><br>
-    <label for="price">Price (in TFUEL):</label>
-    <input type="number" id="price" name="price" required><br><br>
-    <label for="painting">Painting:</label>
-    <input type="file" id="painting" name="painting" accept="image/*" required><br><br>
-    <button type="submit">Upload and Mint NFT</button>
-  </form>
-  <div id="result"></div>
-  
-  <h2>Marketplace</h2>
-  <div id="marketplace"></div>
-  
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
-  <script src="script.js"></script>
+    <h1>Mint NFT with MetaMask</h1>
+    <button id="connectWallet">Connect to MetaMask</button>
+    <p id="walletAddress"></p>
+    
+    <form id="uploadForm" enctype="multipart/form-data" style="display:none;">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="description" required><br><br>
+        <label for="painting">Painting:</label>
+        <input type="file" id="painting" name="painting" accept="image/*" required><br><br>
+        <button type="submit">Mint NFT</button>
+    </form>
+    <div id="result"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
