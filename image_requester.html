@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retrieve NFTs by Address</title>
+</head>
+<body>
+  <h1>Retrieve NFTs by Address</h1>
+  <form id="nftForm">
+    <label for="ownerAddress">Owner Address:</label>
+    <input type="text" id="ownerAddress" name="ownerAddress" required><br><br>
+    <button type="submit">Get NFTs</button>
+  </form>
+  <div id="result"></div>
+
+  <script>
+    document.getElementById('nftForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const ownerAddress = document.getElementById('ownerAddress').value;
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = 'Loading...';
+
+      try {
+        const web3 = new Web3(new Web3.providers.HttpProvider('https://eth-rpc-api-testnet.thetatoken.org/rpc')); // Theta testnet provider
+
+        const contractABI = [{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"owner","type":"address"},{"name":"index","type":"uint256"}],"name":"tokenOfOwnerByIndex","outputs":[{"name":"tokenId","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"name":"uri","type":"string"}],"payable":false,"stateMutability":"view","type":"function"}]; // Replace with your contract ABI
+        const contractAddress = '0xe2899bddFD890e320e643044c6b95b9b0b84157A'; // Replace with your deployed contract address
+        const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+        const balance = await contract.methods.balanceOf(ownerAddress).call();
+
+        const tokenDetails = [];
+        for (let i = 0; i < balance; i++) {
+          const tokenId = await contract.methods.tokenOfOwnerByIndex(ownerAddress, i).call();
+          const tokenURI = await contract.methods.tokenURI(tokenId).call();
+          const response = await fetch(tokenURI);
+          const metadata = await response.json();
+          tokenDetails.push({ tokenId, tokenURI, metadata });
+        }
+
+        resultDiv.innerHTML = `<h2>NFTs owned by ${ownerAddress}:</h2>`;
+        tokenDetails.forEach((nft) => {
+          resultDiv.innerHTML += `
+            <div>
+              <p>Token ID: ${nft.tokenId}</p>
+              <p>Token URI: <a href="${nft.tokenURI}" target="_blank">${nft.tokenURI}</a></p>
+              <p>Metadata: ${JSON.stringify(nft.metadata)}</p>
+              <img src="${nft.metadata.image}" alt="NFT Image" style="max-width:200px;">
+              <hr>
+            </div>
+          `;
+        });
+      } catch (error) {
+        console.error(error);
+        resultDiv.innerHTML = 'Failed to retrieve NFTs';
+      }
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+</body>
+</html>

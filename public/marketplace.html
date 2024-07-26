@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400;700&display=swap');
-
         :root {
             --neon-blue: #00ffff;
             --neon-pink: #ff00ff;
@@ -18,18 +17,15 @@
             --dark-bg: #0a0a0f;
             --cyber-grid: rgba(0, 255, 255, 0.1);
         }
-
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--dark-bg);
             color: #ffffff;
             overflow-x: hidden;
         }
-
         .orbitron {
             font-family: 'Orbitron', sans-serif;
         }
-
         .cyber-grid {
             background-image: 
                 linear-gradient(to right, var(--cyber-grid) 1px, transparent 1px),
@@ -42,7 +38,6 @@
             bottom: 0;
             z-index: -1;
         }
-
         .neon-text {
             text-shadow: 
                 0 0 5px var(--neon-blue),
@@ -50,7 +45,6 @@
                 0 0 20px var(--neon-blue),
                 0 0 40px var(--neon-blue);
         }
-
         .neon-border {
             box-shadow:
                 0 0 5px var(--neon-blue),
@@ -58,21 +52,18 @@
                 inset 0 0 5px var(--neon-blue),
                 inset 0 0 10px var(--neon-blue);
         }
-
         .cyber-card {
             background: rgba(10, 10, 15, 0.8);
             border: 2px solid var(--neon-blue);
             box-shadow: 0 0 10px var(--neon-blue);
             transition: all 0.3s ease;
         }
-
         .cyber-card:hover {
             transform: translateY(-5px) scale(1.02);
             box-shadow: 
                 0 0 20px var(--neon-blue),
                 0 0 40px var(--neon-pink);
         }
-
         .cyber-btn {
             background: transparent;
             border: 2px solid var(--neon-blue);
@@ -85,7 +76,6 @@
             overflow: hidden;
             transition: all 0.3s ease;
         }
-
         .cyber-btn::before {
             content: '';
             position: absolute;
@@ -101,28 +91,23 @@
             );
             transition: all 0.3s ease;
         }
-
         .cyber-btn:hover::before {
             left: 100%;
         }
-
         .cyber-btn:hover {
             background: var(--neon-blue);
             color: var(--dark-bg);
             box-shadow: 0 0 20px var(--neon-blue);
         }
-
         #heroCanvas {
             position: fixed;
             top: 0;
             left: 0;
             z-index: -1;
         }
-
         .glitch {
             position: relative;
         }
-
         .glitch::before,
         .glitch::after {
             content: attr(data-text);
@@ -132,21 +117,18 @@
             width: 100%;
             height: 100%;
         }
-
         .glitch::before {
             left: 2px;
             text-shadow: -2px 0 var(--neon-pink);
             clip: rect(24px, 550px, 90px, 0);
             animation: glitch-anim 3s infinite linear alternate-reverse;
         }
-
         .glitch::after {
             left: -2px;
             text-shadow: -2px 0 var(--neon-green);
             clip: rect(85px, 550px, 140px, 0);
             animation: glitch-anim 2s infinite linear alternate-reverse;
         }
-
         @keyframes glitch-anim {
             0% { clip: rect(17px, 9999px, 36px, 0); }
             20% { clip: rect(63px, 9999px, 97px, 0); }
@@ -255,6 +237,12 @@
     </footer>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('initiateImmersionBtn').addEventListener('click', () => {
+                window.location.href = '../gt/virtual_gallery.html';
+            });
+        });
+
         // Sample data for different sections
         const featuredArtifacts = [
             { title: "Neon Dreams", artist: "CyberVision", price: 2.5, img: "https://images.unsplash.com/photo-1515630277035-0f4ff5c8efcb?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bmVvbiUyMGNpdHl8ZW58MHx8MHx8fDA%3D" },
@@ -393,10 +381,6 @@
                 backgroundPositionY: -mouseY * 50,
                 duration: 1
             });
-        });
-
-        document.getElementById('initiateImmersionBtn').addEventListener('click', () => {
-            window.location.href = 'immersive-marketplace.html';
         });
     </script>
 </body>
