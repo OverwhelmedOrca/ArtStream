@@ -1,11 +1,11 @@
 Pranav:
 
 1. fixing the 3d page (x)
-2. deploying the contracts
+2. making a fully functioning marketplace
 3. putting it online (x)
 4. figuring out a video storage system
 6. minting nfts (x)
-7. displaying in marketplace and gallery(50 %) -- **automation left**
+7. displaying in marketplace and gallery(50 %) -- automation left
 8. how to delete streams from theta, when it reaches limit
 
 Yash:
@@ -15,7 +15,7 @@ Yash:
 3. making sure that users can like streams and follow artists and it is linked to the backend
 4. battle page prompts
 5. voting functionality (x)
-6. linking ai tools for artists
+6. linking ai tools for artists with their own interface
 7. displaying live streams in stream preview pages (50 %)
 8. linking all pages to all pages (x)
 9. fixing everything in the battlewatch page (x)
