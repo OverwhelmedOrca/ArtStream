@@ -1,11 +1,11 @@
 Pranav:
 
-1. fixing the 3d page
+1. fixing the 3d page (x)
 2. deploying the contracts
 3. putting it online (x)
 4. figuring out a video storage system
 6. minting nfts (x)
-7. displaying in marketplace and gallery
+7. displaying in marketplace and gallery(50 %) -- **automation left**
 8. how to delete streams from theta, when it reaches limit
 
 Yash:
