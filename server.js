@@ -10,6 +10,8 @@ const app = express();
 const port = 3000;
 const jwtSecret = 'your_jwt_secret';
 const fs = require('fs');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const genAI = new GoogleGenerativeAI('AIzaSyDCxq-CSoFyziFcEVskDXib91sIsVMQU3g');
 
 app.use(bodyParser.json());
 
@@ -93,6 +95,8 @@ const battleSchema = new mongoose.Schema({
   opponentVotes: { type: Number, default: 0 },
   opponentVotedBy: [{ type: String }],
   prompt: { type: String, default: 'Abstract emotions' },
+  category: { type: String, required: true },
+  arenaDesc: { type: String, required: true },
   createdAt: { type: Date, default: Date.now, expires: '1h' }
 });
 
@@ -476,12 +480,18 @@ app.post('/streams/:id/start', verifyToken, async (req, res) => {
 });
 
 app.post('/api/find-opponent', verifyToken, async (req, res) => {
-  const { username, arenaName, stakeAmount, aiAllowed, liveStream, timeLimit } = req.body;
+  const { username, arenaName, stakeAmount, aiAllowed, liveStream, timeLimit, category, arenaDesc } = req.body;
 
   try {
     // Validate incoming data
-    if (!username || !arenaName || stakeAmount === undefined || aiAllowed === undefined || liveStream === undefined || !timeLimit) {
+    if (!username || !arenaName || stakeAmount === undefined || aiAllowed === undefined || liveStream === undefined || !timeLimit || !category || !arenaDesc) {
       return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    // Generate prompt
+    let prompt = null;
+    while (!prompt) {
+      prompt = await generatePrompt(category, arenaName, arenaDesc);
     }
 
     // Check for an existing opponent
@@ -491,20 +501,23 @@ app.post('/api/find-opponent', verifyToken, async (req, res) => {
       aiAllowed,
       liveStream,
       timeLimit,
+      category,
       opponentFound: false,
       username: { $ne: username }
     });
 
     if (existingBattle) {
-      // Update the existing battle with the opponent's information
+      // Update the existing battle with the opponent's information and prompt
       existingBattle.opponentFound = true;
       existingBattle.opponentName = username;
+      existingBattle.prompt = prompt;
       await existingBattle.save();
 
       return res.json({ 
         opponentFound: true, 
         opponent: { username: existingBattle.username },
-        battleId: existingBattle.battleId
+        battleId: existingBattle.battleId,
+        prompt
       });
     } else {
       // Create a new battle if no opponent is found
@@ -516,11 +529,14 @@ app.post('/api/find-opponent', verifyToken, async (req, res) => {
         stakeAmount,
         aiAllowed,
         liveStream,
-        timeLimit
+        timeLimit,
+        category,
+        arenaDesc,
+        prompt
       });
       await newBattle.save();
 
-      return res.json({ opponentFound: false, battleId: newBattle.battleId });
+      return res.json({ opponentFound: false, battleId: newBattle.battleId, prompt });
     }
   } catch (err) {
     console.error('Error finding opponent:', err);
@@ -798,6 +814,52 @@ app.get('/api/battle/:battleId/votes', async (req, res) => {
     res.status(500).json({ message: 'Error fetching vote counts', error: err.message });
   }
 });
+
+app.put('/api/update-battle-prompt/:battleId', verifyToken, async (req, res) => {
+  const { battleId } = req.params;
+  const { prompt } = req.body;
+
+  try {
+    const battle = await Battle.findOne({ battleId });
+
+    if (!battle) {
+      return res.status(404).json({ message: 'Battle not found' });
+    }
+
+    battle.prompt = prompt;
+    await battle.save();
+
+    res.json({ message: 'Prompt updated successfully', battle });
+  } catch (err) {
+    console.error('Error updating battle prompt:', err);
+    res.status(500).json({ message: 'Error updating battle prompt', error: err.message });
+  }
+});
+
+async function generatePrompt(category, arenaName, arenaDesc) {
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const prompt = `Generate a 1-5 word prompt for a creative battle in the following context:
+  Category: ${category}
+  Arena: ${arenaName}
+  Description: ${arenaDesc}
+  
+  Respond only with the prompt in this format: prompt: "your prompt here"`;
+
+  try {
+      const result = await model.generateContent(prompt);
+      const response = result.response;
+      const text = response.text();
+      const match = text.match(/prompt: "(.+?)"/);
+      if (match) {
+          return match[1];
+      } else {
+          throw new Error('Prompt not in expected format');
+      }
+  } catch (error) {
+      console.error('Error generating prompt:', error);
+      return null;
+  }
+}
 
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));

@@ -106,18 +106,20 @@
                 <!-- Stream Details -->
                 <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
                     <div class="flex items-center space-x-4 mb-4">
-                        <img src="https://i.pravatar.cc/150?u=artistname" alt="Artist" class="w-16 h-16 rounded-full border-2 border-blue-500 glow">
+                        <img id="artistImage" src="" alt="Artist" class="w-16 h-16 rounded-full border-2 border-blue-500 glow">
                         <div>
-                            <h2 class="text-2xl font-bold text-blue-300">Artist Name</h2>
-                            <p class="text-sm text-gray-400">Music</p>
+                            <h2 id="artistName" class="text-2xl font-bold text-blue-300"></h2>
+                            <p id="categoryText" class="text-sm text-gray-400"></p>
                         </div>
                     </div>
-                    <h1 class="text-3xl font-bold mb-2 text-blue-100">Live Music Session</h1>
-                    <p class="text-gray-400 mb-4">Join us for an amazing live music performance! We'll be playing some of our favorite tunes and taking requests from the audience.</p>
-                    <div class="flex space-x-4">
-                        <span class="bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm">#LiveMusic</span>
-                        <span class="bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm">#AcousticSession</span>
-                        <span class="bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm">#IndieArtist</span>
+                    <h1 id="arenaTitle" class="text-3xl font-bold mb-2 text-blue-100"></h1>
+                    <p id="arenaDesc" class="text-gray-400 mb-4"></p>
+                    <div id="promptContainer" class="mb-4 hidden">
+                        <h3 class="text-xl font-semibold mb-2 text-blue-300">Your Prompt:</h3>
+                        <p id="promptText" class="text-lg text-white bg-gray-700 p-3 rounded-lg"></p>
+                    </div>
+                    <div id="categoryTags" class="flex space-x-4">
+                        <!-- Tags will be dynamically added here -->
                     </div>
                 </div>
 
@@ -179,10 +181,55 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@google/generative-ai@0.1.3/dist/index.min.js"></script>
     <script>
         const videoContainer = document.getElementById('videoContainer');
         const sideBySideBtn = document.getElementById('sideBySideBtn');
         const pipBtn = document.getElementById('pipBtn');
+
+        const categoryTags = {
+            'art': ['#LiveArt', '#CreativeProcess', '#ArtisticExpression'],
+            'music': ['#LiveMusic', '#AcousticSession', '#IndieArtist'],
+            'stand-up': ['#LiveComedy', '#StandUpNight', '#ComedyClub'],
+            'acting': ['#LiveTheater', '#ActingWorkshop', '#DramaPerformance']
+        };
+
+        function updateStreamDetails(battleData) {
+            const username = localStorage.getItem('username');
+            const category = battleData.category;
+            const arenaName = battleData.arenaName;
+            const arenaDesc = battleData.arenaDesc;
+            const stake = battleData.stakeAmount;
+            const prompt = battleData.prompt;
+
+            document.getElementById('artistImage').src = `https://i.pravatar.cc/150?u=${username}`;
+            document.getElementById('artistName').textContent = username;
+            document.getElementById('categoryText').textContent = category;
+            document.getElementById('arenaTitle').textContent = `${arenaName} (stake: $${stake})`;
+            document.getElementById('arenaDesc').textContent = arenaDesc;
+
+            // Update prompt
+            const promptElement = document.getElementById('promptText');
+            promptElement.textContent = prompt;
+            document.getElementById('promptContainer').classList.remove('hidden');
+
+            const tagsContainer = document.getElementById('categoryTags');
+            tagsContainer.innerHTML = '';
+            categoryTags[category.toLowerCase()].forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm';
+                tagElement.textContent = tag;
+                tagsContainer.appendChild(tagElement);
+            });
+
+            // Hide the prompt modal after 3 seconds
+            setTimeout(() => {
+                document.getElementById('promptModal').classList.add('hidden');
+            }, 3000);
+        }
+
+        // Call this function when the page loads
+        window.addEventListener('load', updateStreamDetails);
 
         let streams = [];
 
@@ -202,6 +249,10 @@
                 }
                 
                 const battleData = await response.json();
+                console.log(battleData);
+                
+                // Update stream details with fetched data
+                updateStreamDetails(battleData);
                 
                 streams = [
                     { id: battleData.opponentThetaStreamID, title: 'Opponent Stream', playbackUrl: null },
