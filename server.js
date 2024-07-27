@@ -537,24 +537,24 @@ app.put('/api/update-battle-stream/:battleId', verifyToken, async (req, res) => 
       const battle = await Battle.findOne({ battleId });
 
       if (!battle) {
-          return res.status(404).json({ message: 'Battle not found' });
+        return res.status(404).json({ message: 'Battle not found' });
       }
 
       if (battle.username === req.user.username) {
-          battle.thetaStreamID = thetaStreamID;
+        battle.thetaStreamID = thetaStreamID;
       } else if (battle.opponentName === req.user.username) {
-          battle.opponentThetaStreamID = thetaStreamID;
+        battle.opponentThetaStreamID = thetaStreamID;
       } else {
-          return res.status(403).json({ message: 'User not authorized to update this battle' });
+        return res.status(403).json({ message: 'User not authorized to update this battle' });
       }
 
       await battle.save();
 
       res.json({ message: 'Battle updated successfully', battle });
-  } catch (err) {
+    } catch (err) {
       console.error('Error updating battle with stream ID:', err);
       res.status(500).json({ message: 'Error updating battle with stream ID', error: err.message });
-  }
+    }
 });
 
 app.get('/api/check-opponent/:battleId', verifyToken, async (req, res) => {
@@ -705,7 +705,8 @@ app.get('/api/check-battle-stream/:streamId', async (req, res) => {
   }
 });
 
-app.get('/api/battle/:battleId', async (req, res) => {
+// Add this new route to get battle details including stream IDs
+app.get('/api/battle/:battleId', verifyToken, async (req, res) => {
   const { battleId } = req.params;
 
   try {

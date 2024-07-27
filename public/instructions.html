@@ -244,41 +244,74 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const streamServer = localStorage.getItem('streamServer');
-            const streamKey = localStorage.getItem('streamKey');
-            const streamId = localStorage.getItem('streamId');
-    
-            document.getElementById('streamServer').textContent = streamServer;
-            document.getElementById('streamKey').textContent = streamKey;
-    
-            // Function to check stream status
-            async function checkStreamStatus() {
-                try {
-                    const response = await axios.get(`https://api.thetavideoapi.com/stream/${streamId}`, {
-                        headers: {
-                            'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
-                            'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
-                        }
-                    });
-    
-                    console.log('Stream status response:', response.data);
-    
-                    if (response.data.body.status === 'on') {
-                        console.log('Stream is live! Redirecting to stream page...');
-                        clearInterval(statusCheckInterval);
-                        window.location.href = 'stream.html';
+        document.addEventListener('DOMContentLoaded', async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const battleId = urlParams.get('id');
+            const username = localStorage.getItem('username');
+
+            try {
+                // Fetch battle data from the backend
+                const battleResponse = await fetch(`/api/battle/${battleId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
-                } catch (error) {
-                    console.error('Error checking stream status:', error);
+                });
+                const battleData = await battleResponse.json();
+
+                // Determine which stream ID to use
+                let streamId;
+                if (username === battleData.username) {
+                    streamId = battleData.thetaStreamID;
+                } else if (username === battleData.opponentName) {
+                    streamId = battleData.opponentThetaStreamID;
+                } else {
+                    throw new Error('User not part of this battle');
                 }
+
+                // Fetch stream details from Theta API
+                const streamResponse = await axios.get(`https://api.thetavideoapi.com/stream/${streamId}`, {
+                    headers: {
+                        'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
+                        'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
+                    }
+                });
+
+                const streamData = streamResponse.data.body;
+                document.getElementById('streamServer').textContent = streamData.stream_server;
+                document.getElementById('streamKey').textContent = streamData.stream_key;
+
+                // Function to check stream status
+                async function checkStreamStatus() {
+                    try {
+                        const statusResponse = await axios.get(`https://api.thetavideoapi.com/stream/${streamId}`, {
+                            headers: {
+                                'x-tva-sa-id': 'srvacc_uaef6ix91e360bvt2zw31n2hf',
+                                'x-tva-sa-secret': '231c167vuc8d1ik6i3yhkqt5y404v0wb'
+                            }
+                        });
+
+                        console.log('Stream status response:', statusResponse.data);
+
+                        if (statusResponse.data.body.status === 'on') {
+                            console.log('Stream is live! Redirecting to stream page...');
+                            clearInterval(statusCheckInterval);
+                            window.location.href = `stream.html?id=${battleId}`;
+                        }
+                    } catch (error) {
+                        console.error('Error checking stream status:', error);
+                    }
+                }
+
+                // Check stream status every 5 seconds
+                const statusCheckInterval = setInterval(checkStreamStatus, 5000);
+
+                // Initial check
+                checkStreamStatus();
+
+            } catch (error) {
+                console.error('Error setting up stream:', error);
+                alert('Failed to set up stream. Please try again.');
             }
-    
-            // Check stream status every 2 seconds
-            const statusCheckInterval = setInterval(checkStreamStatus, 2000);
-    
-            // Initial check
-            checkStreamStatus();
         });
     
         function copyToClipboard(elementId) {

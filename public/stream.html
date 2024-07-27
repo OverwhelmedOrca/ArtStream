@@ -184,10 +184,38 @@
         const sideBySideBtn = document.getElementById('sideBySideBtn');
         const pipBtn = document.getElementById('pipBtn');
 
-        let streams = [
-            { id: localStorage.getItem('opponentThetaID'), title: 'Opponent Stream', playbackUrl: null },
-            { id: localStorage.getItem('ThetaID'), title: 'Your Stream', playbackUrl: null },
-        ];
+        let streams = [];
+
+        async function fetchBattleData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const battleId = urlParams.get('id');
+
+            try {
+                const response = await fetch(`/api/battle/${battleId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch battle data');
+                }
+                
+                const battleData = await response.json();
+                
+                streams = [
+                    { id: battleData.opponentThetaStreamID, title: 'Opponent Stream', playbackUrl: null },
+                    { id: battleData.thetaStreamID, title: 'Your Stream', playbackUrl: null },
+                ];
+                
+                console.log('Fetched stream IDs:', streams);
+                
+                // Initialize streams after fetching the data
+                initializeStreams();
+            } catch (error) {
+                console.error('Error fetching battle data:', error);
+            }
+        }
 
         async function fetchStreamPlaybackUrl(stream) {
             if (stream.playbackUrl) return true; // Skip if we already have the playback URL
@@ -366,7 +394,7 @@
         }
 
         // Start the initialization process
-        initializeStreams();
+        fetchBattleData();
 
         // Chat functionality
         const chatForm = document.getElementById('chatForm');

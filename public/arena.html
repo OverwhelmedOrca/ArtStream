@@ -451,7 +451,7 @@
                     this.showOpponentModal = true;
                     this.opponentName = opponent.username;
                     this.opponentAvatar = `https://i.pravatar.cc/150?u=${opponent.username}`;
-                    this.battleId = battleId; // Store the new battleId
+                    this.battleId = battleId;
 
                     const redirectMessage = this.liveStream ? "Setting up live stream... \n (it can take a few seconds)" : "Redirecting to battle...";
                     const redirectElement = document.getElementById('redirectMessage');
@@ -462,13 +462,11 @@
                     try {
                         if (this.liveStream) {
                             await this.setupLiveStream();
-                            // Update the backend with the thetaStreamID after it's created
-                            await this.updateBattleWithStreamId();
                         }
                     } catch (error) {
                         console.error('Error setting up live stream:', error);
                         alert(`Failed to set up live stream: ${error.message}. Continuing to battle without live stream.`);
-                        this.liveStream = false; // Disable live stream if setup fails
+                        this.liveStream = false;
                     }
 
                     // Store battle information in localStorage
@@ -481,23 +479,23 @@
 
                     // Redirect after 3 seconds
                     setTimeout(() => {
-                        if (this.liveStream) {
-                            window.location.href = `/instructions.html?id=${this.battleId}`;
-                        } else {
-                            window.location.href = `/battle.html?id=${this.battleId}`;
-                        }
+                        window.location.href = `/instructions.html?id=${this.battleId}`;
                     }, 3000);
                 },
 
-                async updateBattleWithStreamId() {
+                async updateBattleWithStreamId(streamId) {
                     try {
+                        const username = localStorage.getItem('username');
                         const response = await fetch(`/api/update-battle-stream/${this.battleId}`, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${localStorage.getItem('token')}`
                             },
-                            body: JSON.stringify({ thetaStreamID: localStorage.getItem('ThetaID') })
+                            body: JSON.stringify({ 
+                                thetaStreamID: streamId,
+                                username: username
+                            })
                         });
 
                         if (!response.ok) {
@@ -506,13 +504,9 @@
 
                         const result = await response.json();
                         console.log('Battle updated with stream ID:', result);
-
-                        // Store opponent's ThetaID if available
-                        if (result.battle.opponentThetaStreamID) {
-                            localStorage.setItem('opponentThetaID', result.battle.opponentThetaStreamID);
-                        }
                     } catch (error) {
                         console.error('Error updating battle with stream ID:', error);
+                        throw error;
                     }
                 },
 
@@ -520,7 +514,8 @@
                 async setupLiveStream() {
                     try {
                         console.log('Creating new livestream...');
-                        const streamName = `${this.currentArena.name} Battle: ${localStorage.getItem('username')} vs ${this.opponentName}`;
+                        const username = localStorage.getItem('username');
+                        const streamName = `${this.currentArena.name} Battle: ${username} vs ${this.opponentName}`;
                         const createStreamResponse = await axios.post('https://api.thetavideoapi.com/stream', 
                             { name: streamName },
                             {
@@ -535,9 +530,6 @@
 
                         const streamId = createStreamResponse.data.body.id;
                         console.log('Stream ID:', streamId);
-
-                        // Save thetaStreamID to localStorage
-                        localStorage.setItem('ThetaID', streamId);
 
                         console.log('Listing ingestors...');
                         const ingestorsResponse = await axios.get('https://api.thetavideoapi.com/ingestor/filter', {
@@ -568,10 +560,8 @@
                         console.log('Stream server:', stream_server);
                         console.log('Stream key:', stream_key);
 
-                        localStorage.setItem('streamId', streamId);
-                        localStorage.setItem('streamServer', stream_server);
-                        localStorage.setItem('streamKey', stream_key);
-                        console.log('Stream info saved to localStorage');
+                        // Update the backend with the stream ID
+                        await this.updateBattleWithStreamId(streamId);
 
                     } catch (error) {
                         console.error('Error setting up live stream:', error);
