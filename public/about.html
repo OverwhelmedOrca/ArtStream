@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About PalettePalls - Unleash Your Creativity</title>
+    <title>PalettePalls - Where Creativity Knows No Bounds</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Pacifico&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Raleway:wght@300;400;700&display=swap');
 
         :root {
-            --primary-color: #8A2BE2;
-            --secondary-color: #FF1493;
-            --accent-color: #00CED1;
-            --background-color: #1a1a2e;
+            --primary-color: #00ffff;
+            --secondary-color: #ff00ff;
+            --accent-color: #ffff00;
+            --background-color: #000000;
             --text-color: #ffffff;
         }
 
@@ -24,7 +23,7 @@
         }
 
         body {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Raleway', sans-serif;
             background-color: var(--background-color);
             color: var(--text-color);
             line-height: 1.6;
@@ -32,49 +31,92 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 0 20px;
         }
 
         header {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            text-align: center;
-            padding: 4rem 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             position: relative;
             overflow: hidden;
         }
 
-        header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('/api/placeholder/800/600') center/cover no-repeat;
-            opacity: 0.2;
-            z-index: 0;
-        }
-
-        header .container {
-            position: relative;
-            z-index: 1;
+        .hero-content {
+            text-align: center;
+            z-index: 2;
         }
 
         h1 {
-            font-family: 'Pacifico', cursive;
-            font-size: 4rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 6rem;
             margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color), 0 0 30px var(--primary-color);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color), 0 0 30px var(--primary-color);
+            }
+            to {
+                text-shadow: 0 0 20px var(--primary-color), 0 0 30px var(--primary-color), 0 0 40px var(--primary-color);
+            }
         }
 
         .subtitle {
-            font-size: 1.4rem;
+            font-size: 1.8rem;
             opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px var(--secondary-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px var(--secondary-color);
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255,255,255,0.1);
+            transform: rotate(45deg);
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
         }
 
         .features {
@@ -82,7 +124,7 @@
             flex-wrap: wrap;
             justify-content: space-around;
             padding: 6rem 0;
-            background: linear-gradient(to bottom, var(--background-color), #2a2a3e);
+            position: relative;
         }
 
         .feature {
@@ -96,6 +138,29 @@
             border: 1px solid rgba(255,255,255,0.18);
             text-align: center;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.1) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(45deg);
+            transition: all 0.3s ease;
+        }
+
+        .feature:hover::before {
+            left: 100%;
         }
 
         .feature:hover {
@@ -125,61 +190,22 @@
             color: rgba(255,255,255,0.8);
         }
 
-        .cta {
-            background: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
-            color: white;
-            text-align: center;
+        .how-it-works {
             padding: 6rem 0;
             position: relative;
             overflow: hidden;
         }
 
-        .cta::before {
+        .how-it-works::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('/api/placeholder/800/600') center/cover no-repeat;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             opacity: 0.1;
-            z-index: 0;
-        }
-
-        .cta .container {
-            position: relative;
-            z-index: 1;
-        }
-
-        .cta h2 {
-            font-size: 3rem;
-            margin-bottom: 1.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .cta-button {
-            display: inline-block;
-            background-color: white;
-            color: var(--secondary-color);
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .cta-button:hover {
-            background-color: var(--primary-color);
-            color: white;
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        }
-
-        .how-it-works {
-            padding: 6rem 0;
-            background: linear-gradient(to bottom, #2a2a3e, var(--background-color));
+            z-index: -1;
         }
 
         .how-it-works h2 {
@@ -187,45 +213,45 @@
             font-size: 3rem;
             margin-bottom: 3rem;
             color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-around;
+            align-items: stretch;
+            flex-wrap: wrap;
         }
 
         .step {
+            flex-basis: calc(25% - 2rem);
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.18);
+            margin: 1rem;
             display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
             align-items: center;
-            margin-bottom: 3rem;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-
-        .step.active {
-            opacity: 1;
-            transform: translateY(0);
         }
 
         .step-number {
-            font-size: 3rem;
+            font-size: 4rem;
             font-weight: bold;
             color: var(--primary-color);
-            margin-right: 2rem;
-            flex-shrink: 0;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .step-content {
-            flex: 1;
+            opacity: 0.5;
+            margin-bottom: 1rem;
         }
 
         .step h3 {
             font-size: 1.8rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
             color: var(--secondary-color);
         }
 
@@ -234,144 +260,180 @@
             color: rgba(255,255,255,0.8);
         }
 
-        footer {
-            background-color: rgba(0,0,0,0.8);
-            color: white;
-            text-align: center;
-            padding: 3rem 0;
-        }
-
-        .social-icons {
-            margin-top: 1.5rem;
-        }
-
-        .social-icons a {
-            color: white;
-            font-size: 1.8rem;
-            margin: 0 0.7rem;
-            transition: all 0.3s ease;
-        }
-
-        .social-icons a:hover {
-            color: var(--accent-color);
-            transform: scale(1.2);
+        @media (max-width: 1200px) {
+            .feature, .step {
+                flex-basis: calc(50% - 2rem);
+            }
         }
 
         @media (max-width: 768px) {
-            .feature {
+            h1 {
+                font-size: 4rem;
+            }
+            .subtitle {
+                font-size: 1.4rem;
+            }
+            .feature, .step {
                 flex-basis: 100%;
             }
+        }
 
-            .step {
-                flex-direction: column;
-                text-align: center;
+        .scroll-down {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            color: var(--text-color);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0) translateX(-50%);
             }
-
-            .step-number {
-                margin-right: 0;
-                margin-bottom: 1rem;
+            40% {
+                transform: translateY(-30px) translateX(-50%);
+            }
+            60% {
+                transform: translateY(-15px) translateX(-50%);
             }
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="container">
-            <h1 data-aos="zoom-in">PalettePalls</h1>
-            <p class="subtitle" data-aos="fade-up" data-aos-delay="300">Unleash Your Creativity, Connect with Artists, and Earn in a Vibrant Digital Ecosystem</p>
+        <canvas id="particles" class="particles"></canvas>
+        <div class="hero-content">
+            <h1>PalettePalls</h1>
+            <p class="subtitle">Unleash Your Creativity in a Digital Universe of Infinite Possibilities</p>
+            <a href="#" class="cta-button">Enter the Artverse</a>
+        </div>
+        <div class="scroll-down">
+            <i class="fas fa-chevron-down"></i>
         </div>
     </header>
 
     <section class="features">
-        <div class="feature" data-aos="flip-left">
+        <div class="feature">
             <i class="fas fa-paint-brush"></i>
-            <h2>Collaborate</h2>
-            <p>Join forces with global artists to create stunning masterpieces in real-time, pushing the boundaries of creativity.</p>
+            <h2>Collaborative Creation</h2>
+            <p>Join forces with artists worldwide to craft stunning masterpieces in real-time, pushing the boundaries of collective creativity.</p>
         </div>
-        <div class="feature" data-aos="flip-up">
+        <div class="feature">
             <i class="fas fa-gamepad"></i>
-            <h2>1v1 Battles</h2>
-            <p>Challenge artists worldwide in exhilarating head-to-head competitions across various artistic categories.</p>
+            <h2>Artistic Duels</h2>
+            <p>Challenge fellow creators in exhilarating 1v1 battles across various artistic disciplines, from digital painting to 3D modeling.</p>
         </div>
-        <div class="feature" data-aos="flip-right">
+        <div class="feature">
             <i class="fas fa-store"></i>
             <h2>NFT Marketplace</h2>
-            <p>Mint and sell your digital creations as NFTs in our immersive, interactive 3D art gallery.</p>
-        </div>
-    </section>
-
-    <section class="cta">
-        <div class="container">
-            <h2 data-aos="fade-up">Ready to Revolutionize Your Art?</h2>
-            <a href="#" class="cta-button" data-aos="zoom-in" data-aos-delay="300">Join PalettePalls Now</a>
+            <p>Mint your digital creations as unique NFTs and showcase them in our immersive, 3D virtual art gallery powered by blockchain technology.</p>
         </div>
     </section>
 
     <section class="how-it-works">
         <div class="container">
-            <h2 data-aos="fade-up">Your Journey Begins Here</h2>
-            <div class="step">
-                <div class="step-number">1</div>
-                <div class="step-content">
-                    <h3>Sign Up and Connect</h3>
-                    <p>Create your unique artist profile and seamlessly connect your Theta wallet to dive into the world of PalettePalls.</p>
+            <h2>Your Artistic Journey Begins</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Connect & Create</h3>
+                    <p>Sign up and link your Theta wallet to dive into a world of limitless artistic possibilities.</p>
                 </div>
-            </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <div class="step-content">
-                    <h3>Choose Your Creative Path</h3>
-                    <p>Embark on collaborative adventures or engage in thrilling 1v1 battles to showcase your artistic prowess.</p>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Choose Your Path</h3>
+                    <p>Embark on collaborative adventures or engage in thrilling artistic duels to showcase your skills.</p>
                 </div>
-            </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <div class="step-content">
-                    <h3>Stream and Create</h3>
-                    <p>Leverage our cutting-edge P2P streaming technology to broadcast your creative process live to a global audience.</p>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Stream & Inspire</h3>
+                    <p>Broadcast your creative process live using our cutting-edge P2P streaming technology.</p>
                 </div>
-            </div>
-            <div class="step">
-                <div class="step-number">4</div>
-                <div class="step-content">
-                    <h3>Mint and Thrive</h3>
-                    <p>Transform your digital masterpieces into valuable NFTs and showcase them in our groundbreaking 3D marketplace.</p>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Mint & Thrive</h3>
+                    <p>Transform your digital masterpieces into valuable NFTs and thrive in our revolutionary marketplace.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2024 PalettePalls. Empowering Artists Worldwide.</p>
-            <div class="social-icons">
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-discord"></i></a>
-                <a href="#"><i class="fab fa-youtube"></i></a>
-            </div>
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
     <script>
-        AOS.init({
-            duration: 1000,
-            once: true,
+        // Particle animation
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particlesArray;
+
+        // Particle class
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 5 + 1;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * 3 - 1.5;
+                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.size > 0.2) this.size -= 0.1;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Create particle array
+        function init() {
+            particlesArray = [];
+            for (let i = 0; i < 100; i++) {
+                let x = Math.random() * canvas.width;
+                let y = Math.random() * canvas.height;
+                particlesArray.push(new Particle(x, y));
+            }
+        }
+
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+                if (particlesArray[i].size <= 0.2) {
+                    particlesArray.splice(i, 1);
+                    i--;
+                    let x = Math.random() * canvas.width;
+                    let y = Math.random() * canvas.height;
+                    particlesArray.push(new Particle(x, y));
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+
+        // Resize event
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            init();
         });
 
-        // Intersection Observer for step animations
-        const steps = document.querySelectorAll('.step');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('active');
-                }
-            });
-        }, { threshold: 0.5 });
-
-        steps.forEach(step => {
-            observer.observe(step);
+        // Smooth scroll
+        document.querySelector('.scroll-down').addEventListener('click', (e) => {
+            e.preventDefault();
+            const featuresSection = document.querySelector('.features');
+            featuresSection.scrollIntoView({ behavior: 'smooth' });
         });
     </script>
 </body>
