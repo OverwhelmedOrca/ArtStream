@@ -20,6 +20,7 @@ Yash:
 8. linking all pages to all pages (x)
 9. fixing everything in the battlewatch page (x)
 10. P2P implementation
+11. fixing the issue with local storage and theta streamID
 
 AIzaSyDCxq-CSoFyziFcEVskDXib91sIsVMQU3g
 
