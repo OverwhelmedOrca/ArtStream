@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometric Kaleidoscope</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script>
+        let symmetry = 8;
+        let angle;
+        let xoff = 0;
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            angleMode(DEGREES);
+            background(0);
+        }
+
+        function draw() {
+            translate(width / 2, height / 2);
+
+            if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+                let mx = mouseX - width / 2;
+                let my = mouseY - height / 2;
+                let pmx = pmouseX - width / 2;
+                let pmy = pmouseY - height / 2;
+
+                xoff += 0.01;
+                let n = noise(xoff) * 6;
+
+                if (mouseIsPressed) {
+                    for (let i = 0; i < symmetry; i++) {
+                        rotate(angle);
+                        stroke(random(255), random(255), random(255), 100);
+                        strokeWeight(n);
+                        line(mx, my, pmx, pmy);
+                        push();
+                        scale(1, -1);
+                        line(mx, my, pmx, pmy);
+                        pop();
+                    }
+                }
+            }
+
+            angle = 360 / symmetry;
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            background(0);
+        }
+    </script>
+</body>
+</html>

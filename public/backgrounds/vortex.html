@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interdimensional Vortex</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+        #canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const maxRadius = Math.sqrt(centerX * centerX + centerY * centerY);
+        let time = 0;
+
+        function drawVortex() {
+            const imageData = ctx.createImageData(canvas.width, canvas.height);
+            const data = imageData.data;
+
+            for (let x = 0; x < canvas.width; x++) {
+                for (let y = 0; y < canvas.height; y++) {
+                    const dx = x - centerX;
+                    const dy = y - centerY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const angle = Math.atan2(dy, dx);
+
+                    const hue = (angle + Math.PI) / (Math.PI * 2) * 360;
+                    const distortedDistance = distance + Math.sin(angle * 10 + time) * 20;
+                    const normalizedDistance = distortedDistance / maxRadius;
+                    const wave = Math.sin(normalizedDistance * 20 - time * 2) * 0.5 + 0.5;
+
+                    const r = Math.sin(wave * Math.PI * 2) * 127 + 128;
+                    const g = Math.sin(wave * Math.PI * 4 + Math.PI / 2) * 127 + 128;
+                    const b = Math.sin(wave * Math.PI * 6 + Math.PI) * 127 + 128;
+
+                    const i = (y * canvas.width + x) * 4;
+                    data[i] = r;
+                    data[i + 1] = g;
+                    data[i + 2] = b;
+                    data[i + 3] = 255;
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        function animate() {
+            drawVortex();
+            time += 0.05;
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+            maxRadius = Math.sqrt(centerX * centerX + centerY * centerY);
+        });
+    </script>
+</body>
+</html>

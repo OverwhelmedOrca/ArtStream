@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fractal Dream Background</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+        #canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const maxDepth = 10;
+        let angle = 0;
+
+        function drawFractal(x, y, len, angle, depth) {
+            if (depth > maxDepth) return;
+
+            const endX = x + len * Math.cos(angle);
+            const endY = y + len * Math.sin(angle);
+
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(endX, endY);
+            ctx.strokeStyle = `hsl(${(depth * 30 + Date.now() * 0.05) % 360}, 100%, 50%)`;
+            ctx.lineWidth = 2 * (maxDepth - depth) / maxDepth;
+            ctx.stroke();
+
+            drawFractal(endX, endY, len * 0.8, angle - 0.5, depth + 1);
+            drawFractal(endX, endY, len * 0.8, angle + 0.5, depth + 1);
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const len = Math.min(canvas.width, canvas.height) * 0.3;
+
+            for (let i = 0; i < 4; i++) {
+                drawFractal(centerX, centerY, len, angle + i * Math.PI / 2, 0);
+            }
+
+            angle += 0.01;
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
