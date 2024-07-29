@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurora Borealis</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000033;
+        }
+        #auroraCanvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="auroraCanvas"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
+    <script>
+        const canvas = document.getElementById('auroraCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const simplex = new SimplexNoise();
+
+        const auroraColors = [
+            [0, 255, 0],   // Green
+            [0, 255, 255], // Cyan
+            [148, 0, 211], // Violet
+            [255, 0, 255]  // Magenta
+        ];
+
+        function lerp(start, end, t) {
+            return start * (1 - t) + end * t;
+        }
+
+        function drawAurora(time) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let x = 0; x < canvas.width; x++) {
+                const noiseValue = simplex.noise2D(x / 200, time / 1000) * 0.5 + 0.5;
+                const height = noiseValue * canvas.height * 0.7;
+
+                const gradient = ctx.createLinearGradient(x, canvas.height - height, x, canvas.height);
+
+                const colorIndex = Math.floor(noiseValue * (auroraColors.length - 1));
+                const nextColorIndex = (colorIndex + 1) % auroraColors.length;
+                const t = noiseValue * (auroraColors.length - 1) - colorIndex;
+
+                const r = Math.round(lerp(auroraColors[colorIndex][0], auroraColors[nextColorIndex][0], t));
+                const g = Math.round(lerp(auroraColors[colorIndex][1], auroraColors[nextColorIndex][1], t));
+                const b = Math.round(lerp(auroraColors[colorIndex][2], auroraColors[nextColorIndex][2], t));
+
+                gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0)`);
+                gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.5)`);
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, canvas.height - height, 1, height);
+            }
+
+            requestAnimationFrame(() => drawAurora(time + 16));
+        }
+
+        drawAurora(0);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
