@@ -10,5 +10,11 @@ One of the major challenges was deploying the NFT minting contracts, as this was
 We are incredibly proud of successfully building a comprehensive streaming platform that integrates an NFT marketplace and a virtual art gallery. This project represents a significant achievement in merging art, technology, and blockchain, providing a unique platform for artists.
 ## What we learned
 Throughout this project, we gained extensive knowledge in web3 development and Theta blockchain services. This experience has not only enhanced our technical skills but also opened up new possibilities for future projects involving blockchain and streaming technologies.
+
 ## What's next for PalettePals
 Looking ahead, we plan to introduce more interactive features, such as real-time collaboration tools and enhanced community engagement options. We also aim to expand our marketplace to include more diverse forms of art and creativity. Additionally, we are exploring partnerships with established artists and art institutions to bring more visibility and credibility to PalettePals. Ultimately, our goal is to make PalettePals the go-to platform for artists worldwide to collaborate, compete, and showcase their talents in innovative ways.
+
+
+To test it, from the terminal in your root terminal do:
+ ```node server.js```
+ 
