@@ -66,22 +66,27 @@
             border: 2px solid var(--neon-blue);
             box-shadow: 0 0 10px var(--neon-blue);
             transition: all 0.3s ease;
-            width: 300px;  /* Fixed width */
-            min-height: 400px;  /* Minimum height */
+            height: 100%;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: space-between;
-            padding: 20px;
-            margin: 10px;
-            overflow: hidden;
+            padding: 1rem;
+            word-break: break-word;
         }
-        
+
         .nft-image {
-            width: 100%;  /* Full width of the card */
-            height: auto;  /* Maintain aspect ratio */
-            max-height: 200px;  /* Maximum image height */
-            object-fit: cover;  /* Ensures the image covers the area without distorting aspect ratio */
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            margin-bottom: 1rem;
+        }
+
+        .wallet-address {
+            font-size: 0.8em;
+            opacity: 0.8;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            hyphens: auto;
         }
         
 
@@ -189,9 +194,28 @@
                 clip: rect(91px, 9999px, 23px, 0);
             }
         }
-        .modal.hidden {
+
+        .modal {
             display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
         }
+
+        .modal-content {
+            background-color: var(--dark-bg);
+            margin: 15% auto;
+            padding: 20px;
+            border: 2px solid var(--neon-blue);
+            width: 50%;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
         .text-input {
             width: 100%;
             padding: 10px;
@@ -201,7 +225,18 @@
             border: 1px solid var(--neon-blue);
             border-radius: 5px;
         }
-        
+
+        .nft-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .nft-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
     </style>
 </head>
 
@@ -218,11 +253,11 @@
                     <a href="#" class="text-2xl font-bold orbitron neon-text">ArtStream Nexus</a>
                 </div>
                 
-                <div class="hidden md:flex items-center space-x-8">
+                <div class="flex items-center space-x-8">
                     <a href="#" class="text-gray-300 hover:text-white transition duration-300">Explore</a>
                     <a href="#" class="text-gray-300 hover:text-white transition duration-300">Create</a>
                     <a href="#" class="text-gray-300 hover:text-white transition duration-300">Connect</a>
-                    <a href="#" class="cyber-btn" id="enterGridBtn">Enter the Grid</a>
+                    <button id="mintNFTBtn" class="cyber-btn">Mint NFTs</button>
                 </div>
             </div>
         </nav>
@@ -234,102 +269,33 @@
                 data-text="Digital Artifacts of the Future">Digital Artifacts of the Future</h1>
             <p class="text-xl mb-10 max-w-2xl mx-auto">Dive into a world where art transcends reality. Collect, create,
                 and connect in the digital frontier.</p>
-            <button id="initiateImmersionBtn" class="cyber-btn text-lg">Initiate Immersion</button>
-        </section>
-        <div class="hidden md:flex items-center space-x-8">
-            <button id="connectWallet" class="cyber-btn">Connect Wallet</button>
-            <p id="walletAddress"></p>
-        </div>
-        <div id="createNftModal" class="modal hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center">
-            
-
-            <!--<div id="createNftModal" class="modal hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center">
-                <div class="section">
-                    <h2>Connect Wallet</h2>
-                    <button id="connectWallet">Connect Wallet</button>
-                    <p id="walletAddress"></p>
-                </div>
-            
-                <div class="section">
-                    <h2>Create NFT</h2>
-                    <input type="text" id="tokenURI" placeholder="Token URI">
-                    <input type="number" id="tokenPrice" placeholder="Token Price (in TFUEL)">
-                    <button onclick="createNFT()">Create NFT</button>
-                </div>
-            
-                <div class="section">
-                    <h2>All NFTs</h2>
-                    <button onclick="displayAllNFTs()">Refresh NFTs</button>
-                    <div id="nftDisplay"></div>
-                </div>
-            </div>-->
-
-
-            <div class="bg-dark-bg p-6 rounded-lg">
-                
-                
-                <h2 class="text-2xl neon-text mb-4">Create New NFT</h2>
-                
-                <input id="tokenURI" type="text" placeholder="Token URI" class="text-input">
-                <input id="tokenPrice" type="number" placeholder="Price in TFUEL" class="text-input">
-                <div class="mt-4 flex justify-end space-x-4">
-                    <button onclick="createNFT()" class="cyber-btn">Create NFT</button>
-                    <button onclick="closeModal()" class="cyber-btn">Cancel</button>
-                </div>
+            <button id="initiateImmersionBtn" class="cyber-btn text-lg mb-6">Initiate Immersion</button>
+            <div class="flex flex-col items-center space-y-4">
+                <button id="connectWallet" class="cyber-btn">Connect Wallet</button>
+                <p id="walletAddress" class="neon-text"></p>
             </div>
-        </div>
-        <h2 class="text-2xl neon-text mb-4">All NFTs</h2>
-                    <button onclick="displayAllNFTs()" class="cyber-btn">Refresh NFTs</button>
-                    <div id="nftDisplay"></div>
-        <!-- Removed sections for a vacant marketplace -->
+        </section>
 
+        <section id="nftSection" class="mb-20">
+            <h2 class="text-3xl neon-text mb-6 text-center">All NFTs</h2>
+            <button onclick="displayAllNFTs()" class="cyber-btn mx-auto block mb-8">Refresh NFTs</button>
+            <div id="nftDisplay" class="nft-grid"></div>
+        </section>
     </main>
 
+    <div id="createNftModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl neon-text mb-4">Create New NFT</h2>
+            <input id="tokenURI" type="text" placeholder="Token URI" class="text-input">
+            <input id="tokenPrice" type="number" placeholder="Price in TFUEL" class="text-input">
+            <div class="mt-4 flex justify-end space-x-4">
+                <button onclick="createNFT()" class="cyber-btn">Create NFT</button>
+                <button onclick="closeModal()" class="cyber-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('initiateImmersionBtn').addEventListener('click', () => {
-                window.location.href = '../gt/virtual_gallery.html';
-            });
-        });
-
-        // Three.js background animation
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('heroCanvas'), alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-
-        const geometry = new THREE.TorusGeometry(10, 3, 16, 100);
-        const material = new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true });
-        const torus = new THREE.Mesh(geometry, material);
-        scene.add(torus);
-
-        camera.position.z = 30;
-
-        function animate() {
-            requestAnimationFrame(animate);
-            torus.rotation.x += 0.01;
-            torus.rotation.y += 0.005;
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // Interactive cyber grid
-        document.addEventListener('mousemove', (e) => {
-            const mouseX = e.clientX / window.innerWidth;
-            const mouseY = e.clientY / window.innerHeight;
-            gsap.to('.cyber-grid', {
-                backgroundPositionX: -mouseX * 50,
-                backgroundPositionY: -mouseY * 50,
-                duration: 1
-            });
-        });
-
         // Contract address (replace with your deployed contract address)
         const contractAddress = "0xb58bc5d7aa75ca9179362aa0a7c9d47c991d5bf8";
 
@@ -801,6 +767,7 @@
                 const tokenId = result.events.Transfer.returnValues.tokenId;
                 alert(`NFT created successfully! Token ID: ${tokenId}`);
                 displayAllNFTs();
+                closeModal();
             } catch (error) {
                 console.error("Error creating NFT:", error);
                 alert("Error creating NFT. Check console for details.");
@@ -810,31 +777,29 @@
         async function displayAllNFTs() {
             const nftDisplay = document.getElementById('nftDisplay');
             nftDisplay.innerHTML = '';
-        
+
             try {
                 const totalSupply = await contract.methods.totalSupply().call();
-        
+
                 for (let i = 1; i <= totalSupply; i++) {
                     const owner = await contract.methods.ownerOf(i).call();
                     const tokenURI = await contract.methods.tokenURI(i).call();
                     const tokenPrice = await contract.methods.getTokenPrice(i).call();
-        
+
                     const nftCard = document.createElement('div');
-                    nftCard.className = 'cyber-card p-4 rounded-lg mb-4'; // Apply cyber-card styling
+                    nftCard.className = 'cyber-card p-4 rounded-lg';
                     nftCard.innerHTML = `
-                        <div class="flex flex-col items-center justify-center">
-                            <img src="${tokenURI}" alt="NFT ${i}" class="w-full mb-3 rounded-md">
-                            <h3 class="text-xl neon-text mb-2">Token ID: ${i}</h3>
-                            <p class="neon-text">Price: ${web3.utils.fromWei(tokenPrice, 'ether')} TFUEL</p>
-                            <p class="neon-text mb-3">Owner: ${owner}</p>
-                            <div class="flex gap-2">
-                                ${owner.toLowerCase() === userAccount.toLowerCase() ? 
-                                `<button class="cyber-btn" onclick="transferNFT(${i})">Transfer</button>` : 
-                                `<button class="cyber-btn" onclick="buyNFT(${i}, '${tokenPrice}')">Buy</button>`}
-                            </div>
+                        <img src="${tokenURI}" alt="NFT ${i}" class="nft-image mb-3 rounded-md">
+                        <h3 class="text-xl neon-text mb-2">Token ID: ${i}</h3>
+                        <p class="neon-text">Price: ${web3.utils.fromWei(tokenPrice, 'ether')} TFUEL</p>
+                        <p class="neon-text mb-3">Owner: ${owner}</p>
+                        <div class="flex justify-center">
+                            ${owner.toLowerCase() === userAccount.toLowerCase() ? 
+                            `<button class="cyber-btn" onclick="transferNFT(${i})">Transfer</button>` : 
+                            `<button class="cyber-btn" onclick="buyNFT(${i}, '${tokenPrice}')">Buy</button>`}
                         </div>
                     `;
-        
+
                     nftDisplay.appendChild(nftCard);
                 }
             } catch (error) {
@@ -842,7 +807,7 @@
                 alert("Error displaying NFTs. Check console for details.");
             }
         }
-        
+
         async function transferNFT(tokenId) {
             const recipientAddress = prompt("Enter the recipient's address:");
             if (!recipientAddress) return;
@@ -868,42 +833,61 @@
             }
         }
 
-        document.getElementById('connectWallet').addEventListener('click', connectWallet);
-        initWeb3();
-        document.getElementById('enterGridBtn').addEventListener('click', function() {
-            console.log('Enter the Grid button pressed.');
-            document.getElementById('createNftModal').classList.remove('hidden');
-        });
-        function closeModal() {
-            document.getElementById('createNftModal').classList.add('hidden');
+        function openModal() {
+            document.getElementById('createNftModal').style.display = 'block';
         }
-        
-        /*async function createNFT() {
-            const tokenURI = document.getElementById('popupTokenURI').value;
-            const tokenPrice = document.getElementById('popupTokenPrice').value;
-            // Ensure web3 and user account are initialized
-            if (!web3 || !userAccount) {
-                alert("Please connect your wallet first.");
-                closeModal();
-                return;
-            }
-            if (!tokenURI || !tokenPrice) {
-                alert("Please enter both Token URI and Price.");
-                return;
-            }
-            // Convert price to Wei
-            const priceInWei = web3.utils.toWei(tokenPrice, 'ether');
-            try {
-                await contract.methods.createNFT(tokenURI, priceInWei).send({ from: userAccount });
-                alert("NFT created successfully!");
-                closeModal();
-                // Refresh or update UI as needed
-            } catch (error) {
-                console.error("Error creating NFT:", error);
-                alert("Failed to create NFT. Check console for details.");
-            }
-        }*/
-        
+
+        function closeModal() {
+            document.getElementById('createNftModal').style.display = 'none';
+        }
+
+        // Three.js background animation
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('heroCanvas'), alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const geometry = new THREE.TorusGeometry(10, 3, 16, 100);
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true });
+        const torus = new THREE.Mesh(geometry, material);
+        scene.add(torus);
+
+        camera.position.z = 30;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            torus.rotation.x += 0.01;
+            torus.rotation.y += 0.005;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Interactive cyber grid
+        document.addEventListener('mousemove', (e) => {
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            gsap.to('.cyber-grid', {
+                backgroundPositionX: -mouseX * 50,
+                backgroundPositionY: -mouseY * 50,
+                duration: 1
+            });
+        });
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('initiateImmersionBtn').addEventListener('click', () => {
+                window.location.href = '../gt/virtual_gallery.html';
+            });
+            document.getElementById('connectWallet').addEventListener('click', connectWallet);
+            document.getElementById('mintNFTBtn').addEventListener('click', openModal);
+            initWeb3();
+        });
     </script>
 </body>
 
