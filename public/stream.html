@@ -61,7 +61,6 @@
     </style>
 </head>
 <body class="text-gray-300 h-full flex flex-col">
-    <!-- Top Info Bar -->
     <div class="gradient-bg p-4 flex justify-between items-center border-b border-blue-700 shadow-lg">
         <div class="flex items-center space-x-6">
             <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold animate-pulse">LIVE</span>
@@ -102,13 +101,6 @@
                     <!-- Videos will be dynamically inserted here -->
                 </div>
 
-                <!-- Add this at the beginning of the body -->
-                <div id="promptModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div class="bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full text-center">
-                        <h3 class="text-3xl font-bold mb-2 text-blue-400">Your Prompt:</h3>
-                        <p id="promptText" class="text-2xl text-white"></p>
-                    </div>
-                </div>
 
                 <!-- Stream Details -->
                 <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
@@ -121,6 +113,10 @@
                     </div>
                     <h1 id="arenaTitle" class="text-3xl font-bold mb-2 text-blue-100"></h1>
                     <p id="arenaDesc" class="text-gray-400 mb-4"></p>
+                    <div id="promptContainer" class="mb-4 hidden">
+                        <h3 class="text-xl font-semibold mb-2 text-blue-300">Your Prompt:</h3>
+                        <p id="promptText" class="text-lg text-white bg-gray-700 p-3 rounded-lg"></p>
+                    </div>
                     <div id="categoryTags" class="flex space-x-4">
                         <!-- Tags will be dynamically added here -->
                     </div>
@@ -184,7 +180,12 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@google/generative-ai@0.1.3/dist/index.min.js"></script>
     <script>
+        const videoContainer = document.getElementById('videoContainer');
+        const sideBySideBtn = document.getElementById('sideBySideBtn');
+        const pipBtn = document.getElementById('pipBtn');
+
         const categoryTags = {
             'art': ['#LiveArt', '#CreativeProcess', '#ArtisticExpression'],
             'music': ['#LiveMusic', '#AcousticSession', '#IndieArtist'],
@@ -192,20 +193,24 @@
             'acting': ['#LiveTheater', '#ActingWorkshop', '#DramaPerformance']
         };
 
-        function updateStreamDetails() {
+        function updateStreamDetails(battleData) {
             const username = localStorage.getItem('username');
-            const category = localStorage.getItem('category');
-            const arenaName = localStorage.getItem('arenaName');
-            const arenaDesc = localStorage.getItem('arenaDesc');
-            const stake = localStorage.getItem('stake');
-            const prompt = localStorage.getItem('prompt');
+            const category = battleData.category;
+            const arenaName = battleData.arenaName;
+            const arenaDesc = battleData.arenaDesc;
+            const stake = battleData.stakeAmount;
+            const prompt = battleData.prompt;
 
             document.getElementById('artistImage').src = `https://i.pravatar.cc/150?u=${username}`;
             document.getElementById('artistName').textContent = username;
             document.getElementById('categoryText').textContent = category;
             document.getElementById('arenaTitle').textContent = `${arenaName} (stake: $${stake})`;
             document.getElementById('arenaDesc').textContent = arenaDesc;
-            document.getElementById('promptText').textContent = prompt;
+
+            // Update prompt
+            const promptElement = document.getElementById('promptText');
+            promptElement.textContent = prompt;
+            document.getElementById('promptContainer').classList.remove('hidden');
 
             const tagsContainer = document.getElementById('categoryTags');
             tagsContainer.innerHTML = '';
@@ -224,15 +229,42 @@
 
         // Call this function when the page loads
         window.addEventListener('load', updateStreamDetails);
-        
-        const videoContainer = document.getElementById('videoContainer');
-        const sideBySideBtn = document.getElementById('sideBySideBtn');
-        const pipBtn = document.getElementById('pipBtn');
 
-        let streams = [
-            { id: localStorage.getItem('opponentThetaID'), title: 'Opponent Stream', playbackUrl: null },
-            { id: localStorage.getItem('ThetaID'), title: 'Your Stream', playbackUrl: null },
-        ];
+        let streams = [];
+
+        async function fetchBattleData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const battleId = urlParams.get('id');
+
+            try {
+                const response = await fetch(`/api/battle/${battleId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch battle data');
+                }
+                
+                const battleData = await response.json();
+                
+                // Update stream details with fetched data
+                updateStreamDetails(battleData);
+                
+                streams = [
+                    { id: battleData.opponentThetaStreamID, title: 'Opponent Stream', playbackUrl: null },
+                    { id: battleData.thetaStreamID, title: 'Your Stream', playbackUrl: null },
+                ];
+                
+                console.log('Fetched stream IDs:', streams);
+                
+                // Initialize streams after fetching the data
+                initializeStreams();
+            } catch (error) {
+                console.error('Error fetching battle data:', error);
+            }
+        }
 
         async function fetchStreamPlaybackUrl(stream) {
             if (stream.playbackUrl) return true; // Skip if we already have the playback URL
@@ -363,6 +395,8 @@
                 videoContainer.appendChild(swapButton);
             }
         }
+        // Start the initialization process
+        window.addEventListener('load', fetchBattleData);
 
         async function checkAndUpdateStreams() {
             let updatedStreams = false;
@@ -411,7 +445,7 @@
         }
 
         // Start the initialization process
-        initializeStreams();
+        fetchBattleData();
 
         // Chat functionality
         const chatForm = document.getElementById('chatForm');
