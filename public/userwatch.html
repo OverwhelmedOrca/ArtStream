@@ -253,7 +253,7 @@
                 console.log('Theta stream data:', thetaStreamData);
 
                 // Fetch all streams from your database
-                const dbStreamsResponse = await axios.get('http://localhost:3000/streams');
+                const dbStreamsResponse = await axios.get('https://artstream-production.up.railway.app/streams');
                 const dbStreams = dbStreamsResponse.data;
                 console.log('Database streams:', dbStreams);
 
