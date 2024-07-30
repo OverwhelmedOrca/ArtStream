@@ -371,6 +371,10 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 
@@ -416,9 +420,7 @@
     </main>
 
     <div id="buyNftModal" class="modal">
-        <div class="modal-content">
-            <!-- Content will be dynamically inserted here -->
-        </div>
+        <!-- Content will be dynamically inserted here -->
     </div>
 
     <div id="manageModal" class="modal">
@@ -1218,7 +1220,27 @@
 
 
         async function buyNFT(tokenId, price) {
-            showProcessing('buyNftModal');
+            const buyNftModal = document.getElementById('buyNftModal');
+            buyNftModal.innerHTML = `
+                <div class="modal-content">
+                    <h2 class="text-2xl neon-text mb-4">Buy Digital Artifact</h2>
+                    <p class="mb-4">Confirm the transaction in your wallet to purchase this artifact.</p>
+                    <div id="buyNftProcessing" class="hidden">
+                        <div class="loading mb-4"></div>
+                        <p class="neon-text">Processing transaction...</p>
+                    </div>
+                    <div id="buyNftButtons">
+                        <button onclick="confirmBuyNFT(${tokenId}, '${price}')" class="cyber-btn mr-2">Confirm Purchase</button>
+                        <button onclick="closeModal('buyNftModal')" class="cyber-btn">Cancel</button>
+                    </div>
+                </div>
+            `;
+            openModal('buyNftModal');
+        }
+
+        async function confirmBuyNFT(tokenId, price) {
+            document.getElementById('buyNftProcessing').classList.remove('hidden');
+            document.getElementById('buyNftButtons').classList.add('hidden');
 
             try {
                 await contract.methods.buyNFT(tokenId).send({ from: userAccount, value: price });
