@@ -15,6 +15,6 @@ Throughout this project, we gained extensive knowledge in web3 development and T
 Looking ahead, we plan to introduce more interactive features, such as real-time collaboration tools and enhanced community engagement options. We also aim to expand our marketplace to include more diverse forms of art and creativity. Additionally, we are exploring partnerships with established artists and art institutions to bring more visibility and credibility to PalettePals. Ultimately, our goal is to make PalettePals the go-to platform for artists worldwide to collaborate, compete, and showcase their talents in innovative ways.
 
 
-To test it, from the terminal in your root terminal do:
+To test it, from the terminal in your root terminal, run command:
  ```node server.js```
  
