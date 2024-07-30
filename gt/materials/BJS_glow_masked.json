@@ -615,7 +615,7 @@
       ],
       "texture": {
         "tags": null,
-        "url": "http://127.0.0.1:5500/gt/materials/logo.png",
+        "url": "https://artstream-production.up.railway.app/gt/materials/logo.png",
         "uOffset": 0,
         "vOffset": 0,
         "uScale": 1,
@@ -628,7 +628,7 @@
         "wRotationCenter": 0.5,
         "homogeneousRotationInUVTransform": false,
         "isBlocking": true,
-        "name": "http://127.0.0.1:5500/gt/materials/logo.png",
+        "name": "https://artstream-production.up.railway.app/gt/materials/logo.png",
         "hasAlpha": false,
         "getAlphaFromRGB": false,
         "level": 1,
