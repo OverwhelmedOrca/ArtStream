@@ -15,7 +15,7 @@ Yash:
 3. making sure that users can like streams and follow artists and it is linked to the backend
 4. battle page prompts (x) -- testing left
 5. voting functionality (x)
-6. linking ai tools for artists with their own interface
+6. linking ai tools for artists with their own interface (x)
 7. displaying live streams in stream preview pages (50 %)
 8. linking all pages to all pages (x)
 9. fixing everything in the battlewatch page (x)
