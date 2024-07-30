@@ -801,6 +801,9 @@ app.get('/api/battle/:battleId/votes', async (req, res) => {
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Serve static files from the "gt" directory
+app.use('/gt', express.static(path.join(__dirname, 'gt')));
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
