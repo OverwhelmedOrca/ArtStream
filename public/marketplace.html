@@ -1352,20 +1352,27 @@
         });
 
         function initiateImmersion() {
-            // Start loading the virtual gallery in the background
             const virtualGalleryUrl = '../gt/virtual_gallery.html';
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = virtualGalleryUrl;
-            document.body.appendChild(iframe);
 
-            // Show random loading screen
+            // Start loading the virtual gallery immediately
+            const galleryIframe = document.createElement('iframe');
+            galleryIframe.style.position = 'fixed';
+            galleryIframe.style.top = '0';
+            galleryIframe.style.left = '0';
+            galleryIframe.style.width = '100%';
+            galleryIframe.style.height = '100%';
+            galleryIframe.style.border = 'none';
+            galleryIframe.style.zIndex = '1'; // Set a lower z-index
+            galleryIframe.src = virtualGalleryUrl;
+            document.body.appendChild(galleryIframe);
+
+            // Show random loading screen on top
             showRandomLoadingScreen();
 
-            // After 4 seconds, remove the loading screen and show the virtual gallery
+            // After 4 seconds, remove the loading screen
             setTimeout(() => {
                 removeLoadingScreen();
-                window.location.href = virtualGalleryUrl;
+                // The virtual gallery is already loaded and visible
             }, 4000);
         }
 
@@ -1386,7 +1393,8 @@
             loadingIframe.style.width = '100%';
             loadingIframe.style.height = '100%';
             loadingIframe.style.border = 'none';
-            loadingIframe.style.zIndex = '9999';
+            loadingIframe.style.zIndex = '2'; // Higher z-index to be on top
+            loadingIframe.style.transition = 'opacity 0.5s ease-out';
 
             document.body.appendChild(loadingIframe);
         }
@@ -1394,7 +1402,10 @@
         function removeLoadingScreen() {
             const loadingScreen = document.getElementById('loadingScreen');
             if (loadingScreen) {
-                loadingScreen.remove();
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.remove();
+                }, 500); // Remove after fade-out animation
             }
         }
 
