@@ -356,6 +356,21 @@
             text-decoration: none;
             cursor: pointer;
         }
+
+        .loading {
+            border: 4px solid var(--neon-blue);
+            border-top: 4px solid var(--neon-pink);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 
@@ -399,6 +414,12 @@
             <div id="nftDisplay" class="nft-grid"></div>
         </section>
     </main>
+
+    <div id="buyNftModal" class="modal">
+        <div class="modal-content">
+            <!-- Content will be dynamically inserted here -->
+        </div>
+    </div>
 
     <div id="manageModal" class="modal">
         <!-- Content will be dynamically inserted here -->
@@ -979,17 +1000,22 @@
                 return;
             }
 
+            showProcessing('createNftModal');
+
             try {
                 const result = await contract.methods.createNFT(tokenURI, tokenName, tokenPrice).send({ from: userAccount });
                 const tokenId = result.events.Transfer.returnValues.tokenId;
-                alert(`Digital Artifact created successfully! Token ID: ${tokenId}`);
-                closeAllModals();
-                displayAllNFTs();
+                showSuccess('createNftModal', `Digital Artifact created successfully!<br>Token ID: ${tokenId}`);
+                setTimeout(() => {
+                    closeAllModals();
+                    displayAllNFTs();
+                }, 3000);
             } catch (error) {
                 console.error("Error creating Digital Artifact:", error);
-                alert("Error creating Digital Artifact. Check console for details.");
+                showError('createNftModal', "Error creating Digital Artifact. Please try again.");
             }
         }
+
 
         async function displayAllNFTs() {
             const nftDisplay = document.getElementById('nftDisplay');
@@ -1086,14 +1112,18 @@
             const newName = document.getElementById('updateTokenName').value;
             const newPrice = web3.utils.toWei(document.getElementById('updateTokenPrice').value, 'ether');
 
+            showProcessing('updateInfoModal');
+
             try {
                 await contract.methods.updateNFTInfo(tokenId, newName, newPrice).send({ from: userAccount });
-                alert("Digital Artifact information updated successfully!");
-                closeAllModals();
-                displayAllNFTs();
+                showSuccess('updateInfoModal', "Digital Artifact information updated successfully!");
+                setTimeout(() => {
+                    closeAllModals();
+                    displayAllNFTs();
+                }, 3000);
             } catch (error) {
                 console.error("Error updating Digital Artifact info:", error);
-                alert("Error updating Digital Artifact info. Check console for details.");
+                showError('updateInfoModal', "Error updating Digital Artifact info. Please try again.");
             }
         }
 
@@ -1113,6 +1143,18 @@
             openModal('transferModal');
         }
 
+        function showError(modalId, message) {
+            const modal = document.getElementById(modalId);
+            const content = modal.querySelector('.modal-content');
+            content.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-exclamation-circle text-6xl text-red-500 mb-4"></i>
+                    <p class="neon-text text-xl mb-4">${message}</p>
+                    <button onclick="closeModal('${modalId}')" class="cyber-btn">Close</button>
+                </div>
+            `;
+        }
+
         function openVideoModal(videoSrc) {
             const modal = document.getElementById('videoModal');
             const modalVideo = document.getElementById('modalVideo');
@@ -1127,6 +1169,31 @@
             modal.style.display = 'none';
         }
 
+        function showProcessing(modalId) {
+            const modal = document.getElementById(modalId);
+            const content = modal.querySelector('.modal-content');
+            content.innerHTML += `
+                <div id="processingOverlay" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div class="text-center">
+                        <div class="loading mb-4"></div>
+                        <p class="neon-text">Processing transaction...</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showSuccess(modalId, message) {
+            const modal = document.getElementById(modalId);
+            const content = modal.querySelector('.modal-content');
+            content.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+                    <p class="neon-text text-xl mb-4">${message}</p>
+                    <button onclick="closeAllModals()" class="cyber-btn">Close</button>
+                </div>
+            `;
+        }
+
         async function transferNFT(tokenId) {
             const recipientAddress = document.getElementById('recipientAddress').value;
             if (!recipientAddress) {
@@ -1134,26 +1201,35 @@
                 return;
             }
 
+            showProcessing('transferModal');
+
             try {
                 await contract.methods.transferFrom(userAccount, recipientAddress, tokenId).send({ from: userAccount });
-                alert(`NFT transferred successfully! Token ID ${tokenId} sent to ${recipientAddress}`);
-                closeAllModals();
-                displayAllNFTs();
+                showSuccess('transferModal', `NFT transferred successfully!<br>Token ID ${tokenId} sent to ${recipientAddress}`);
+                setTimeout(() => {
+                    closeAllModals();
+                    displayAllNFTs();
+                }, 3000);
             } catch (error) {
                 console.error("Error transferring NFT:", error);
-                alert("Error transferring NFT. Check console for details.");
+                showError('transferModal', "Error transferring NFT. Please try again.");
             }
         }
 
 
         async function buyNFT(tokenId, price) {
+            showProcessing('buyNftModal');
+
             try {
                 await contract.methods.buyNFT(tokenId).send({ from: userAccount, value: price });
-                alert(`NFT purchased successfully! Token ID: ${tokenId}`);
-                displayAllNFTs();
+                showSuccess('buyNftModal', `NFT purchased successfully!<br>Token ID: ${tokenId}`);
+                setTimeout(() => {
+                    closeAllModals();
+                    displayAllNFTs();
+                }, 3000);
             } catch (error) {
                 console.error("Error buying NFT:", error);
-                alert("Error buying NFT. Check console for details.");
+                showError('buyNftModal', "Error buying NFT. Please try again.");
             }
         }
 
