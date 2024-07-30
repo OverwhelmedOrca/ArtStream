@@ -75,6 +75,14 @@
                     </div>
                 </div>
 
+                <!-- Quality Control -->
+                <div class="mt-4">
+                    <select id="qualitySelect" class="bg-gray-700 text-white rounded px-3 py-2">
+                        <option value="auto">Auto</option>
+                        <!-- Other quality options will be added dynamically -->
+                    </select>
+                </div>
+
                <!-- Stream Details -->
                 <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
                     <div class="flex items-center space-x-4 mb-4">
@@ -150,6 +158,8 @@
     </div>
 
     <script>
+        let hls;
+
         document.addEventListener('DOMContentLoaded', async function() {
             const urlParams = new URLSearchParams(window.location.search);
             const streamId = urlParams.get('streamId');
@@ -172,10 +182,37 @@
                         const playbackUrl = thetaResponse.data.body.playback_uri;
 
                         if (Hls.isSupported()) {
-                            const hls = new Hls();
+                            hls = new Hls({
+                                capLevelToPlayerSize: true,
+                                autoStartLoad: false
+                            });
+
                             hls.loadSource(playbackUrl);
                             hls.attachMedia(video);
-                            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                            hls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {
+                                const qualitySelect = document.getElementById('qualitySelect');
+                                const availableLevels = data.levels.map((level, index) => ({
+                                    index: index,
+                                    height: level.height,
+                                    bitrate: level.bitrate
+                                }));
+
+                                availableLevels.forEach(level => {
+                                    const option = document.createElement('option');
+                                    option.value = level.index;
+                                    option.text = `${level.height}p (${Math.round(level.bitrate / 1000)} kbps)`;
+                                    qualitySelect.add(option);
+                                });
+
+                                qualitySelect.addEventListener('change', function() {
+                                    if (this.value === 'auto') {
+                                        hls.currentLevel = -1; // Auto quality
+                                    } else {
+                                        hls.currentLevel = parseInt(this.value);
+                                    }
+                                });
+
+                                hls.startLoad();
                                 video.play();
                             });
                         }
