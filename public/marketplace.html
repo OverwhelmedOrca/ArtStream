@@ -1342,15 +1342,71 @@
 
         // Event listeners
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('initiateImmersionBtn').addEventListener('click', () => {
-                window.location.href = '../gt/virtual_gallery.html';
-            });
+            document.getElementById('initiateImmersionBtn').addEventListener('click', initiateImmersion);
             document.getElementById('connectWallet').addEventListener('click', connectWallet);
             document.getElementById('mintNFTBtn').addEventListener('click', () => openModal('createNftModal'));
             document.querySelector('.close-modal').addEventListener('click', () => closeModal('videoModal'));
             initWeb3();
             displayAllNFTs();
         });
+
+        function initiateImmersion() {
+            const virtualGalleryUrl = '../gt/virtual_gallery.html';
+
+            // Start loading the virtual gallery immediately
+            const galleryIframe = document.createElement('iframe');
+            galleryIframe.style.position = 'fixed';
+            galleryIframe.style.top = '0';
+            galleryIframe.style.left = '0';
+            galleryIframe.style.width = '100%';
+            galleryIframe.style.height = '100%';
+            galleryIframe.style.border = 'none';
+            galleryIframe.style.zIndex = '1'; // Set a lower z-index
+            galleryIframe.src = virtualGalleryUrl;
+            document.body.appendChild(galleryIframe);
+
+            // Show random loading screen on top
+            showRandomLoadingScreen();
+
+            // After 4 seconds, remove the loading screen
+            setTimeout(() => {
+                removeLoadingScreen();
+                // The virtual gallery is already loaded and visible
+            }, 4000);
+        }
+
+        function showRandomLoadingScreen() {
+            const loadingScreens = [
+                'aurora.html', 'CosmicKaleidoscope.html', 'cube.html', 'fluid.html',
+                'fractalDream.html', 'galaxy.html', 'infiniteFractal.html', 'jellyfish.html',
+                'Kaleidoscope.html', 'quantum.html', 'tree.html', 'web.html'
+            ];
+            const randomScreen = loadingScreens[Math.floor(Math.random() * loadingScreens.length)];
+            
+            const loadingIframe = document.createElement('iframe');
+            loadingIframe.id = 'loadingScreen';
+            loadingIframe.src = `backgrounds/${randomScreen}`;
+            loadingIframe.style.position = 'fixed';
+            loadingIframe.style.top = '0';
+            loadingIframe.style.left = '0';
+            loadingIframe.style.width = '100%';
+            loadingIframe.style.height = '100%';
+            loadingIframe.style.border = 'none';
+            loadingIframe.style.zIndex = '2'; // Higher z-index to be on top
+            loadingIframe.style.transition = 'opacity 0.5s ease-out';
+
+            document.body.appendChild(loadingIframe);
+        }
+
+        function removeLoadingScreen() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.remove();
+                }, 500); // Remove after fade-out animation
+            }
+        }
 
         // Update the createNFT function in the existing code to include the name field
         function updateCreateNFTModal() {
