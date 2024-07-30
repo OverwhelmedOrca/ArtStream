@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.5.2/web3.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400;700&display=swap');
+
         :root {
             --neon-blue: #00ffff;
             --neon-pink: #ff00ff;
@@ -17,17 +20,20 @@
             --dark-bg: #0a0a0f;
             --cyber-grid: rgba(0, 255, 255, 0.1);
         }
+
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--dark-bg);
             color: #ffffff;
             overflow-x: hidden;
         }
+
         .orbitron {
             font-family: 'Orbitron', sans-serif;
         }
+
         .cyber-grid {
-            background-image: 
+            background-image:
                 linear-gradient(to right, var(--cyber-grid) 1px, transparent 1px),
                 linear-gradient(to bottom, var(--cyber-grid) 1px, transparent 1px);
             background-size: 50px 50px;
@@ -38,13 +44,15 @@
             bottom: 0;
             z-index: -1;
         }
+
         .neon-text {
-            text-shadow: 
+            text-shadow:
                 0 0 5px var(--neon-blue),
                 0 0 10px var(--neon-blue),
                 0 0 20px var(--neon-blue),
                 0 0 40px var(--neon-blue);
         }
+
         .neon-border {
             box-shadow:
                 0 0 5px var(--neon-blue),
@@ -52,18 +60,38 @@
                 inset 0 0 5px var(--neon-blue),
                 inset 0 0 10px var(--neon-blue);
         }
+
         .cyber-card {
             background: rgba(10, 10, 15, 0.8);
             border: 2px solid var(--neon-blue);
             box-shadow: 0 0 10px var(--neon-blue);
             transition: all 0.3s ease;
+            width: 300px;  /* Fixed width */
+            min-height: 400px;  /* Minimum height */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            margin: 10px;
+            overflow: hidden;
         }
+        
+        .nft-image {
+            width: 100%;  /* Full width of the card */
+            height: auto;  /* Maintain aspect ratio */
+            max-height: 200px;  /* Maximum image height */
+            object-fit: cover;  /* Ensures the image covers the area without distorting aspect ratio */
+        }
+        
+
         .cyber-card:hover {
             transform: translateY(-5px) scale(1.02);
-            box-shadow: 
+            box-shadow:
                 0 0 20px var(--neon-blue),
                 0 0 40px var(--neon-pink);
         }
+
         .cyber-btn {
             background: transparent;
             border: 2px solid var(--neon-blue);
@@ -76,6 +104,7 @@
             overflow: hidden;
             transition: all 0.3s ease;
         }
+
         .cyber-btn::before {
             content: '';
             position: absolute;
@@ -83,31 +112,34 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.2),
-                transparent
-            );
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.2),
+                    transparent);
             transition: all 0.3s ease;
         }
+
         .cyber-btn:hover::before {
             left: 100%;
         }
+
         .cyber-btn:hover {
             background: var(--neon-blue);
             color: var(--dark-bg);
             box-shadow: 0 0 20px var(--neon-blue);
         }
+
         #heroCanvas {
             position: fixed;
             top: 0;
             left: 0;
             z-index: -1;
         }
+
         .glitch {
             position: relative;
         }
+
         .glitch::before,
         .glitch::after {
             content: attr(data-text);
@@ -117,28 +149,62 @@
             width: 100%;
             height: 100%;
         }
+
         .glitch::before {
             left: 2px;
             text-shadow: -2px 0 var(--neon-pink);
             clip: rect(24px, 550px, 90px, 0);
             animation: glitch-anim 3s infinite linear alternate-reverse;
         }
+
         .glitch::after {
             left: -2px;
             text-shadow: -2px 0 var(--neon-green);
             clip: rect(85px, 550px, 140px, 0);
             animation: glitch-anim 2s infinite linear alternate-reverse;
         }
+
         @keyframes glitch-anim {
-            0% { clip: rect(17px, 9999px, 36px, 0); }
-            20% { clip: rect(63px, 9999px, 97px, 0); }
-            40% { clip: rect(76px, 9999px, 5px, 0); }
-            60% { clip: rect(56px, 9999px, 98px, 0); }
-            80% { clip: rect(12px, 9999px, 54px, 0); }
-            100% { clip: rect(91px, 9999px, 23px, 0); }
+            0% {
+                clip: rect(17px, 9999px, 36px, 0);
+            }
+
+            20% {
+                clip: rect(63px, 9999px, 97px, 0);
+            }
+
+            40% {
+                clip: rect(76px, 9999px, 5px, 0);
+            }
+
+            60% {
+                clip: rect(56px, 9999px, 98px, 0);
+            }
+
+            80% {
+                clip: rect(12px, 9999px, 54px, 0);
+            }
+
+            100% {
+                clip: rect(91px, 9999px, 23px, 0);
+            }
         }
+        .modal.hidden {
+            display: none;
+        }
+        .text-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            color: var(--neon-blue);
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            border-radius: 5px;
+        }
+        
     </style>
 </head>
+
 <body class="min-h-screen">
     <div class="cyber-grid"></div>
     <canvas id="heroCanvas"></canvas>
@@ -147,14 +213,16 @@
         <nav class="container mx-auto px-6 py-3">
             <div class="flex justify-between items-center">
                 <div class="flex items-center">
-                    <img src="/api/placeholder/40/40" alt="ArtStream Logo" class="h-10 w-10 mr-3 neon-border rounded-full">
+                    <img src="/api/placeholder/40/40" alt="ArtStream Logo"
+                        class="h-10 w-10 mr-3 neon-border rounded-full">
                     <a href="#" class="text-2xl font-bold orbitron neon-text">ArtStream Nexus</a>
                 </div>
+                
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="#" class="text-gray-300 hover:text-white transition duration-300">Explore</a>
                     <a href="#" class="text-gray-300 hover:text-white transition duration-300">Create</a>
                     <a href="#" class="text-gray-300 hover:text-white transition duration-300">Connect</a>
-                    <a href="#" class="cyber-btn">Enter the Grid</a>
+                    <a href="#" class="cyber-btn" id="enterGridBtn">Enter the Grid</a>
                 </div>
             </div>
         </nav>
@@ -162,79 +230,60 @@
 
     <main class="container mx-auto px-6 py-20">
         <section id="hero" class="text-center mb-20">
-            <h1 class="text-5xl md:text-7xl font-bold mb-6 orbitron glitch neon-text" data-text="Digital Artifacts of the Future">Digital Artifacts of the Future</h1>
-            <p class="text-xl mb-10 max-w-2xl mx-auto">Dive into a world where art transcends reality. Collect, create, and connect in the digital frontier.</p>
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 orbitron glitch neon-text"
+                data-text="Digital Artifacts of the Future">Digital Artifacts of the Future</h1>
+            <p class="text-xl mb-10 max-w-2xl mx-auto">Dive into a world where art transcends reality. Collect, create,
+                and connect in the digital frontier.</p>
             <button id="initiateImmersionBtn" class="cyber-btn text-lg">Initiate Immersion</button>
         </section>
+        <div class="hidden md:flex items-center space-x-8">
+            <button id="connectWallet" class="cyber-btn">Connect Wallet</button>
+            <p id="walletAddress"></p>
+        </div>
+        <div id="createNftModal" class="modal hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center">
+            
 
-        <section id="featuredArtifacts" class="mb-20">
-            <h2 class="text-3xl font-bold mb-10 orbitron neon-text text-center">Featured Digital Artifacts</h2>
-            <div id="featuredArtifactsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Featured artifacts will be dynamically populated here -->
-            </div>
-        </section>
-
-        <section id="digitalRealms" class="mb-20">
-            <h2 class="text-3xl font-bold mb-10 orbitron neon-text text-center">Digital Realms</h2>
-            <div id="digitalRealmsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Digital realms will be dynamically populated here -->
-            </div>
-        </section>
-
-        <section id="neuralSymphonies" class="mb-20">
-            <h2 class="text-3xl font-bold mb-10 orbitron neon-text text-center">Neural Symphonies</h2>
-            <div id="neuralSymphoniesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Neural symphonies will be dynamically populated here -->
-            </div>
-        </section>
-
-        <section id="cyberneticMoments" class="mb-20">
-            <h2 class="text-3xl font-bold mb-10 orbitron neon-text text-center">Cybernetic Moments</h2>
-            <div id="cyberneticMomentsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Cybernetic moments will be dynamically populated here -->
-            </div>
-        </section>
-    </main>
-
-    <footer class="bg-opacity-70 bg-black backdrop-filter backdrop-blur-md py-10">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <h3 class="text-2xl font-bold mb-4 orbitron neon-text">ArtStream Nexus</h3>
-                    <p class="text-gray-400">Bridging reality and digital artistry in the cybernetic age.</p>
+            <!--<div id="createNftModal" class="modal hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center">
+                <div class="section">
+                    <h2>Connect Wallet</h2>
+                    <button id="connectWallet">Connect Wallet</button>
+                    <p id="walletAddress"></p>
                 </div>
-                <div>
-                    <h4 class="text-lg font-semibold mb-4 orbitron">Navigate</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Explore</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Create</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Connect</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">About</a></li>
-                    </ul>
+            
+                <div class="section">
+                    <h2>Create NFT</h2>
+                    <input type="text" id="tokenURI" placeholder="Token URI">
+                    <input type="number" id="tokenPrice" placeholder="Token Price (in TFUEL)">
+                    <button onclick="createNFT()">Create NFT</button>
                 </div>
-                <div>
-                    <h4 class="text-lg font-semibold mb-4 orbitron">Support</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">FAQ</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Contact</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Terms</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Privacy</a></li>
-                    </ul>
+            
+                <div class="section">
+                    <h2>All NFTs</h2>
+                    <button onclick="displayAllNFTs()">Refresh NFTs</button>
+                    <div id="nftDisplay"></div>
                 </div>
-                <div>
-                    <h4 class="text-lg font-semibold mb-4 orbitron">Join the Network</h4>
-                    <p class="text-gray-400 mb-4">Stay updated with the latest in digital artistry.</p>
-                    <form class="flex">
-                        <input type="email" placeholder="Enter your email" class="bg-gray-800 text-white px-4 py-2 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 transition duration-300">Subscribe</button>
-                    </form>
+            </div>-->
+
+
+            <div class="bg-dark-bg p-6 rounded-lg">
+                
+                
+                <h2 class="text-2xl neon-text mb-4">Create New NFT</h2>
+                
+                <input id="tokenURI" type="text" placeholder="Token URI" class="text-input">
+                <input id="tokenPrice" type="number" placeholder="Price in TFUEL" class="text-input">
+                <div class="mt-4 flex justify-end space-x-4">
+                    <button onclick="createNFT()" class="cyber-btn">Create NFT</button>
+                    <button onclick="closeModal()" class="cyber-btn">Cancel</button>
                 </div>
-            </div>
-            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
-                <p class="text-gray-400">&copy; 2024 ArtStream Nexus. All rights reserved in this reality and beyond.</p>
             </div>
         </div>
-    </footer>
+        <h2 class="text-2xl neon-text mb-4">All NFTs</h2>
+                    <button onclick="displayAllNFTs()" class="cyber-btn">Refresh NFTs</button>
+                    <div id="nftDisplay"></div>
+        <!-- Removed sections for a vacant marketplace -->
+
+    </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -242,68 +291,6 @@
                 window.location.href = '../gt/virtual_gallery.html';
             });
         });
-
-        // Sample data for different sections
-        const featuredArtifacts = [
-            { title: "Neon Dreams", artist: "CyberVision", price: 2.5, img: "https://images.unsplash.com/photo-1515630277035-0f4ff5c8efcb?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bmVvbiUyMGNpdHl8ZW58MHx8MHx8fDA%3D" },
-            { title: "Quantum Resonance", artist: "NeuralArtist", price: 1.8, img: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aG9sb2dyYW18ZW58MHx8MHx8fDA%3D" },
-            { title: "Digital Eden", artist: "PixelGardener", price: 3.2, img: "https://images.unsplash.com/photo-1555448248-2571daf6344b?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZGlnaXRhbCUyMGFydHxlbnwwfHwwfHx8MA%3D%3D" },
-        ];
-
-        const digitalRealms = [
-            { title: "Cyberpunk Metropolis", creator: "NeonArchitect", price: 5.0, img: "https://images.unsplash.com/photo-1545147986-a9d6f2ab03b5?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y3liZXJwdW5rfGVufDB8fDB8fHww" },
-            { title: "Virtual Oasis", creator: "DigitalNomad", price: 4.2, img: "https://images.unsplash.com/photo-1520034475321-cbe63696469a?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8dmlydHVhbCUyMHJlYWxpdHl8ZW58MHx8MHx8fDA%3D" },
-            { title: "Neon Jungle", creator: "BioHacker", price: 3.8, img: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Z3JhZGllbnR8ZW58MHx8MHx8fDA%3D" },
-        ];
-
-        const neuralSymphonies = [
-            { title: "Synthwave Serenity", composer: "AIComposer", price: 1.5, img: "https://images.unsplash.com/photo-1508385082359-f38ae991e8f2?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c3ludGh3YXZlfGVufDB8fDB8fHww" },
-            { title: "Binary Beats", composer: "CodeMaestro", price: 1.2, img: "https://images.unsplash.com/photo-1542372597-005594e1a716?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZGlnaXRhbCUyMG11c2ljfGVufDB8fDB8fHww" },
-            { title: "Quantum Harmonies", composer: "WaveFunction", price: 1.8, img: "https://images.unsplash.com/photo-1614149162883-504ce4d13909?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c3ludGh3YXZlfGVufDB8fDB8fHww" },
-        ];
-
-        const cyberneticMoments = [
-            { title: "Neon Drift Victory", game: "CyberRacer 2077", streamer: "SpeedDemon", price: 0.5, img: "https://images.unsplash.com/photo-1551103782-8ab07afd45c1?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8c3RyZWV0JTIwcmFjaW5nfGVufDB8fDB8fHww", video: "https://assets.mixkit.co/videos/preview/mixkit-race-car-at-high-speeds-on-the-road-31496-large.mp4" },
-            { title: "Quantum Hack", game: "NetRunner", streamer: "CyberWitch", price: 0.8, img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8aGFja2VyfGVufDB8fDB8fHww", video: "https://assets.mixkit.co/videos/preview/mixkit-lines-of-code-appearing-on-a-black-screen-32915-large.mp4" },
-            { title: "Mech Showdown", game: "TitanFall X", streamer: "IronHeart", price: 0.7, img: "https://images.unsplash.com/photo-1624397640148-949b1732bb0a?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fHJvYm90fGVufDB8fDB8fHww", video: "https://assets.mixkit.co/videos/preview/mixkit-machine-engine-start-up-1773-large.mp4" },
-        ];
-
-        function createArtifactCard(item, type) {
-            return `
-                <div class="cyber-card p-4 rounded-lg">
-                    <img src="${item.img}" alt="${item.title}" class="w-full h-48 object-cover mb-4 rounded">
-                    <h3 class="text-xl font-bold mb-2 orbitron neon-text">${item.title}</h3>
-                    <p class="text-gray-400 mb-2">by ${item.artist || item.creator || item.composer || item.streamer}</p>
-                    <p class="text-lg font-bold mb-4 text-neon-green">${item.price} ETH</p>
-                    <div class="flex justify-between">
-                        <button class="cyber-btn" onclick="initiatePurchase('${item.title}', ${item.price})">Buy Now</button>
-                        ${type === 'moment' ? `<button class="cyber-btn" onclick="previewMoment('${item.video}')">Preview</button>` : ''}
-                    </div>
-                </div>
-            `;
-        }
-
-        // Populate sections
-        document.getElementById('featuredArtifactsContainer').innerHTML = featuredArtifacts.map(item => createArtifactCard(item)).join('');
-        document.getElementById('digitalRealmsContainer').innerHTML = digitalRealms.map(item => createArtifactCard(item)).join('');
-        document.getElementById('neuralSymphoniesContainer').innerHTML = neuralSymphonies.map(item => createArtifactCard(item)).join('');
-        document.getElementById('cyberneticMomentsContainer').innerHTML = cyberneticMoments.map(item => createArtifactCard(item, 'moment')).join('');
-
-        function initiatePurchase(title, price) {
-            alert(`Initiating smart contract for "${title}" - ${price} ETH. Please confirm the transaction in your crypto wallet.`);
-        }
-
-        function previewMoment(videoUrl) {
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
-            modal.innerHTML = `
-                <div class="bg-gray-900 p-4 rounded-lg max-w-3xl w-full">
-                    <video src="${videoUrl}" controls autoplay class="w-full rounded-lg"></video>
-                    <button class="cyber-btn mt-4" onclick="this.closest('.fixed').remove()">Close Preview</button>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
 
         // Three.js background animation
         const scene = new THREE.Scene();
@@ -332,46 +319,6 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Glitch effect on hover for cyber cards
-        document.querySelectorAll('.cyber-card').forEach(card => {
-            card.addEventListener('mouseover', () => {
-                gsap.to(card, {duration: 0.1, x: '+=3', yoyo: true, repeat: 5, ease: 'power1.inOut'});
-                gsap.to(card, {duration: 0.1, boxShadow: '0 0 20px var(--neon-pink)', yoyo: true, repeat: 5});
-            });
-        });
-
-        // Typing effect for main title
-        const mainTitle = document.querySelector('h1');
-        const titleText = mainTitle.textContent;
-        mainTitle.textContent = '';
-        let i = 0;
-        function typeWriter() {
-            if (i < titleText.length) {
-                mainTitle.textContent += titleText.charAt(i);
-                i++;
-                setTimeout(typeWriter, 100);
-            }
-        }
-        typeWriter();
-
-        // Scroll-triggered animations
-        gsap.registerPlugin(ScrollTrigger);
-
-        gsap.utils.toArray('.cyber-card').forEach((card, i) => {
-            gsap.from(card, {
-                scrollTrigger: {
-                    trigger: card,
-                    start: 'top bottom-=100',
-                    toggleActions: 'play none none reverse'
-                },
-                opacity: 0,
-                y: 50,
-                duration: 0.6,
-                ease: 'power2.out',
-                delay: i * 0.1
-            });
-        });
-
         // Interactive cyber grid
         document.addEventListener('mousemove', (e) => {
             const mouseX = e.clientX / window.innerWidth;
@@ -382,6 +329,582 @@
                 duration: 1
             });
         });
+
+        // Contract address (replace with your deployed contract address)
+        const contractAddress = "0xb58bc5d7aa75ca9179362aa0a7c9d47c991d5bf8";
+
+        // Contract ABI (replace with your contract ABI)
+        const contractABI = [
+            {
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "name_",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "symbol_",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "constructor"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "approved",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "Approval",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "operator",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "bool",
+                        "name": "approved",
+                        "type": "bool"
+                    }
+                ],
+                "name": "ApprovalForAll",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "price",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "NFTListed",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "price",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "NFTSold",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "Transfer",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "approve",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    }
+                ],
+                "name": "balanceOf",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "buyNFT",
+                "outputs": [],
+                "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "_tokenURI",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "price",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "createNFT",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "getApproved",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "getTokenPrice",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "operator",
+                        "type": "address"
+                    }
+                ],
+                "name": "isApprovedForAll",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "name",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "ownerOf",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "operator",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "approved",
+                        "type": "bool"
+                    }
+                ],
+                "name": "setApprovalForAll",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "symbol",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "index",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "tokenOfOwnerByIndex",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "tokenURI",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "totalSupply",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "transferFrom",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            }
+        ];
+
+        let web3;
+        let contract;
+        let userAccount;
+
+        async function initWeb3() {
+            if (typeof window.ethereum !== 'undefined') {
+                web3 = new Web3(window.ethereum);
+                contract = new web3.eth.Contract(contractABI, contractAddress);
+            } else {
+                console.log('Non-Ethereum browser detected. Consider trying MetaMask!');
+            }
+        }
+
+        async function connectWallet() {
+            if (!web3) {
+                await initWeb3();
+            }
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                userAccount = accounts[0];
+                document.getElementById('walletAddress').textContent = `Connected: ${userAccount}`;
+            } catch (error) {
+                console.error("User denied account access");
+            }
+        }
+
+        async function createNFT() {
+            if (!userAccount) {
+                alert("Please connect your wallet first");
+                return;
+            }
+
+            const tokenURI = document.getElementById('tokenURI').value;
+            const tokenPrice = web3.utils.toWei(document.getElementById('tokenPrice').value, 'ether');
+
+            if (!tokenURI || !tokenPrice) {
+                alert("Please enter both Token URI and Price");
+                return;
+            }
+
+            try {
+                const result = await contract.methods.createNFT(tokenURI, tokenPrice).send({ from: userAccount });
+                const tokenId = result.events.Transfer.returnValues.tokenId;
+                alert(`NFT created successfully! Token ID: ${tokenId}`);
+                displayAllNFTs();
+            } catch (error) {
+                console.error("Error creating NFT:", error);
+                alert("Error creating NFT. Check console for details.");
+            }
+        }
+
+        async function displayAllNFTs() {
+            const nftDisplay = document.getElementById('nftDisplay');
+            nftDisplay.innerHTML = '';
+        
+            try {
+                const totalSupply = await contract.methods.totalSupply().call();
+        
+                for (let i = 1; i <= totalSupply; i++) {
+                    const owner = await contract.methods.ownerOf(i).call();
+                    const tokenURI = await contract.methods.tokenURI(i).call();
+                    const tokenPrice = await contract.methods.getTokenPrice(i).call();
+        
+                    const nftCard = document.createElement('div');
+                    nftCard.className = 'cyber-card p-4 rounded-lg mb-4'; // Apply cyber-card styling
+                    nftCard.innerHTML = `
+                        <div class="flex flex-col items-center justify-center">
+                            <img src="${tokenURI}" alt="NFT ${i}" class="w-full mb-3 rounded-md">
+                            <h3 class="text-xl neon-text mb-2">Token ID: ${i}</h3>
+                            <p class="neon-text">Price: ${web3.utils.fromWei(tokenPrice, 'ether')} TFUEL</p>
+                            <p class="neon-text mb-3">Owner: ${owner}</p>
+                            <div class="flex gap-2">
+                                ${owner.toLowerCase() === userAccount.toLowerCase() ? 
+                                `<button class="cyber-btn" onclick="transferNFT(${i})">Transfer</button>` : 
+                                `<button class="cyber-btn" onclick="buyNFT(${i}, '${tokenPrice}')">Buy</button>`}
+                            </div>
+                        </div>
+                    `;
+        
+                    nftDisplay.appendChild(nftCard);
+                }
+            } catch (error) {
+                console.error("Error displaying NFTs:", error);
+                alert("Error displaying NFTs. Check console for details.");
+            }
+        }
+        
+        async function transferNFT(tokenId) {
+            const recipientAddress = prompt("Enter the recipient's address:");
+            if (!recipientAddress) return;
+
+            try {
+                await contract.methods.transferFrom(userAccount, recipientAddress, tokenId).send({ from: userAccount });
+                alert(`NFT transferred successfully! Token ID ${tokenId} sent to ${recipientAddress}`);
+                displayAllNFTs();
+            } catch (error) {
+                console.error("Error transferring NFT:", error);
+                alert("Error transferring NFT. Check console for details.");
+            }
+        }
+
+        async function buyNFT(tokenId, price) {
+            try {
+                await contract.methods.buyNFT(tokenId).send({ from: userAccount, value: price });
+                alert(`NFT purchased successfully! Token ID: ${tokenId}`);
+                displayAllNFTs();
+            } catch (error) {
+                console.error("Error buying NFT:", error);
+                alert("Error buying NFT. Check console for details.");
+            }
+        }
+
+        document.getElementById('connectWallet').addEventListener('click', connectWallet);
+        initWeb3();
+        document.getElementById('enterGridBtn').addEventListener('click', function() {
+            console.log('Enter the Grid button pressed.');
+            document.getElementById('createNftModal').classList.remove('hidden');
+        });
+        function closeModal() {
+            document.getElementById('createNftModal').classList.add('hidden');
+        }
+        
+        /*async function createNFT() {
+            const tokenURI = document.getElementById('popupTokenURI').value;
+            const tokenPrice = document.getElementById('popupTokenPrice').value;
+            // Ensure web3 and user account are initialized
+            if (!web3 || !userAccount) {
+                alert("Please connect your wallet first.");
+                closeModal();
+                return;
+            }
+            if (!tokenURI || !tokenPrice) {
+                alert("Please enter both Token URI and Price.");
+                return;
+            }
+            // Convert price to Wei
+            const priceInWei = web3.utils.toWei(tokenPrice, 'ether');
+            try {
+                await contract.methods.createNFT(tokenURI, priceInWei).send({ from: userAccount });
+                alert("NFT created successfully!");
+                closeModal();
+                // Refresh or update UI as needed
+            } catch (error) {
+                console.error("Error creating NFT:", error);
+                alert("Failed to create NFT. Check console for details.");
+            }
+        }*/
+        
     </script>
 </body>
+
 </html>
