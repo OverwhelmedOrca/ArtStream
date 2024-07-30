@@ -341,6 +341,21 @@
             border: 2px solid var(--neon-blue);
             box-shadow: 0 0 20px var(--neon-blue);
         }
+
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-modal:hover,
+        .close-modal:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -385,6 +400,18 @@
         </section>
     </main>
 
+    <div id="manageModal" class="modal">
+        <!-- Content will be dynamically inserted here -->
+    </div>
+    
+    <div id="updateInfoModal" class="modal">
+        <!-- Content will be dynamically inserted here -->
+    </div>
+    
+    <div id="transferModal" class="modal">
+        <!-- Content will be dynamically inserted here -->
+    </div>
+
     <div id="createNftModal" class="modal">
         <div class="modal-content">
             <h2 class="text-2xl neon-text mb-4">Create New Digital Artifact</h2>
@@ -408,430 +435,508 @@
 
     <script>
         // Contract address (replace with your deployed contract address)
-        const contractAddress = "0xb58bc5d7aa75ca9179362aa0a7c9d47c991d5bf8";
+        const contractAddress = "0x84db62623de2b16dcb805e4a5483a53f6f751788";
 
         // Contract ABI (replace with your contract ABI)
         const contractABI = [
-            {
-                "inputs": [
-                    {
-                        "internalType": "string",
-                        "name": "name_",
-                        "type": "string"
-                    },
-                    {
-                        "internalType": "string",
-                        "name": "symbol_",
-                        "type": "string"
-                    }
-                ],
-                "stateMutability": "nonpayable",
-                "type": "constructor"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "owner",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "approved",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": true,
-                        "internalType": "uint256",
-                        "name": "tokenId",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "Approval",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "owner",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "operator",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "bool",
-                        "name": "approved",
-                        "type": "bool"
-                    }
-                ],
-                "name": "ApprovalForAll",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": false,
-                        "internalType": "uint256",
-                        "name": "tokenId",
-                        "type": "uint256"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "uint256",
-                        "name": "price",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "NFTListed",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": false,
-                        "internalType": "uint256",
-                        "name": "tokenId",
-                        "type": "uint256"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "address",
-                        "name": "from",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "address",
-                        "name": "to",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "internalType": "uint256",
-                        "name": "price",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "NFTSold",
-                "type": "event"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "from",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": true,
-                        "internalType": "address",
-                        "name": "to",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": true,
-                        "internalType": "uint256",
-                        "name": "tokenId",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "Transfer",
-                "type": "event"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "to",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "tokenId",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "approve",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "owner",
-                        "type": "address"
-                    }
-                ],
-                "name": "balanceOf",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "tokenId",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "buyNFT",
-                "outputs": [],
-                "stateMutability": "payable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "string",
-                        "name": "_tokenURI",
-                        "type": "string"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "price",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "createNFT",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "tokenId",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "getApproved",
-                "outputs": [
-                    {
-                        "internalType": "address",
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "tokenId",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "getTokenPrice",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "owner",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "operator",
-                        "type": "address"
-                    }
-                ],
-                "name": "isApprovedForAll",
-                "outputs": [
-                    {
-                        "internalType": "bool",
-                        "name": "",
-                        "type": "bool"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "name",
-                "outputs": [
-                    {
-                        "internalType": "string",
-                        "name": "",
-                        "type": "string"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "tokenId",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "ownerOf",
-                "outputs": [
-                    {
-                        "internalType": "address",
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "operator",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "bool",
-                        "name": "approved",
-                        "type": "bool"
-                    }
-                ],
-                "name": "setApprovalForAll",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "symbol",
-                "outputs": [
-                    {
-                        "internalType": "string",
-                        "name": "",
-                        "type": "string"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "owner",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "index",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "tokenOfOwnerByIndex",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "tokenId",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "tokenURI",
-                "outputs": [
-                    {
-                        "internalType": "string",
-                        "name": "",
-                        "type": "string"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "totalSupply",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "from",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "to",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "tokenId",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "transferFrom",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            }
-        ];
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "name_",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "symbol_",
+				"type": "string"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "approved",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "Approval",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "approved",
+				"type": "bool"
+			}
+		],
+		"name": "ApprovalForAll",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			}
+		],
+		"name": "NFTListed",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			}
+		],
+		"name": "NFTSold",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			}
+		],
+		"name": "NFTUpdated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "Transfer",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"name": "balanceOf",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "buyNFT",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "tokenURI_",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "tokenName_",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			}
+		],
+		"name": "createNFT",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "getApproved",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "getTokenName",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "getTokenPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			}
+		],
+		"name": "isApprovedForAll",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "name",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "ownerOf",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "approved",
+				"type": "bool"
+			}
+		],
+		"name": "setApprovalForAll",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "symbol",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "index",
+				"type": "uint256"
+			}
+		],
+		"name": "tokenOfOwnerByIndex",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "tokenURI",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalSupply",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "newName",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "newPrice",
+				"type": "uint256"
+			}
+		],
+		"name": "updateNFTInfo",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+];
 
         let web3;
         let contract;
@@ -866,19 +971,20 @@
             }
 
             const tokenURI = document.getElementById('tokenURI').value;
+            const tokenName = document.getElementById('tokenName').value;
             const tokenPrice = web3.utils.toWei(document.getElementById('tokenPrice').value, 'ether');
 
-            if (!tokenURI || !tokenPrice) {
-                alert("Please enter both Token URI and Price");
+            if (!tokenURI || !tokenName || !tokenPrice) {
+                alert("Please enter Token URI, Name, and Price");
                 return;
             }
 
             try {
-                const result = await contract.methods.createNFT(tokenURI, tokenPrice).send({ from: userAccount });
+                const result = await contract.methods.createNFT(tokenURI, tokenName, tokenPrice).send({ from: userAccount });
                 const tokenId = result.events.Transfer.returnValues.tokenId;
                 alert(`Digital Artifact created successfully! Token ID: ${tokenId}`);
+                closeAllModals();
                 displayAllNFTs();
-                closeModal();
             } catch (error) {
                 console.error("Error creating Digital Artifact:", error);
                 alert("Error creating Digital Artifact. Check console for details.");
@@ -897,26 +1003,27 @@
                     const owner = await contract.methods.ownerOf(i).call();
                     const tokenURI = await contract.methods.tokenURI(i).call();
                     const tokenPrice = await contract.methods.getTokenPrice(i).call();
+                    const tokenName = await contract.methods.getTokenName(i).call();
 
                     const isVideo = tokenURI.match(/\.(mp4|webm|ogg)$/i);
                     const mediaHtml = isVideo
                         ? `<div class="nft-media-container">
-                             <video class="nft-media" src="${tokenURI}" muted loop>
-                               Your browser does not support the video tag.
-                             </video>
-                             <i class="fas fa-expand expand-icon" onclick="openVideoModal('${tokenURI}')"></i>
-                           </div>`
+                            <video class="nft-media" src="${tokenURI}" muted loop>
+                            Your browser does not support the video tag.
+                            </video>
+                            <i class="fas fa-expand expand-icon" onclick="openVideoModal('${tokenURI}')"></i>
+                        </div>`
                         : `<img src="${tokenURI}" alt="NFT ${i}" class="nft-image mb-3 rounded-md">`;
 
                     nftHtml += `
                         <div class="cyber-card p-4 rounded-lg">
                             ${mediaHtml}
-                            <h3 class="text-xl neon-text mb-2">Token ID: ${i}</h3>
+                            <h3 class="text-xl neon-text mb-2">${tokenName}</h3>
                             <p class="neon-text">Price: ${web3.utils.fromWei(tokenPrice, 'ether')} TFUEL</p>
                             <p class="wallet-address mb-3">Owner: ${owner}</p>
                             <div class="flex justify-center">
                                 ${owner.toLowerCase() === userAccount.toLowerCase() ? 
-                                `<button class="cyber-btn" onclick="transferNFT(${i})">Transfer</button>` : 
+                                `<button class="cyber-btn" onclick="openManageModal(${i})">Manage</button>` : 
                                 `<button class="cyber-btn" onclick="buyNFT(${i}, '${tokenPrice}')">Buy</button>`}
                             </div>
                         </div>
@@ -940,6 +1047,72 @@
             }
         }
 
+        async function openManageModal(tokenId) {
+            const manageModal = document.getElementById('manageModal');
+            manageModal.innerHTML = `
+                <div class="modal-content relative">
+                    <span class="close-modal absolute top-2 right-2 text-2xl cursor-pointer" onclick="closeModal('manageModal')">&times;</span>
+                    <h2 class="text-2xl neon-text mb-6">Manage Digital Artifact</h2>
+                    <div class="flex flex-col space-y-4">
+                        <button onclick="openUpdateInfoModal(${tokenId})" class="cyber-btn w-full">UPDATE INFO</button>
+                        <button onclick="openTransferModal(${tokenId})" class="cyber-btn w-full">TRANSFER</button>
+                    </div>
+                </div>
+            `;
+            openModal('manageModal');
+        }
+
+        async function openUpdateInfoModal(tokenId) {
+            const tokenName = await contract.methods.getTokenName(tokenId).call();
+            const tokenPrice = await contract.methods.getTokenPrice(tokenId).call();
+
+            const updateInfoModal = document.getElementById('updateInfoModal');
+            updateInfoModal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-modal" onclick="closeModal('updateInfoModal')">&times;</span>
+                    <h2 class="text-2xl neon-text mb-4">Update Digital Artifact Info</h2>
+                    <input id="updateTokenName" type="text" value="${tokenName}" class="text-input mb-4">
+                    <input id="updateTokenPrice" type="number" value="${web3.utils.fromWei(tokenPrice, 'ether')}" class="text-input mb-4">
+                    <div class="flex justify-end space-x-4">
+                        <button onclick="updateNFTInfo(${tokenId})" class="cyber-btn">Save</button>
+                        <button onclick="closeModal('updateInfoModal')" class="cyber-btn">Cancel</button>
+                    </div>
+                </div>
+            `;
+            openModal('updateInfoModal');
+        }
+
+        async function updateNFTInfo(tokenId) {
+            const newName = document.getElementById('updateTokenName').value;
+            const newPrice = web3.utils.toWei(document.getElementById('updateTokenPrice').value, 'ether');
+
+            try {
+                await contract.methods.updateNFTInfo(tokenId, newName, newPrice).send({ from: userAccount });
+                alert("Digital Artifact information updated successfully!");
+                closeAllModals();
+                displayAllNFTs();
+            } catch (error) {
+                console.error("Error updating Digital Artifact info:", error);
+                alert("Error updating Digital Artifact info. Check console for details.");
+            }
+        }
+
+        function openTransferModal(tokenId) {
+            const transferModal = document.getElementById('transferModal');
+            transferModal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-modal" onclick="closeModal('transferModal')">&times;</span>
+                    <h2 class="text-2xl neon-text mb-4">Transfer Digital Artifact</h2>
+                    <input id="recipientAddress" type="text" placeholder="Recipient's wallet address" class="text-input mb-4">
+                    <div class="flex justify-end space-x-4">
+                        <button onclick="transferNFT(${tokenId})" class="cyber-btn">Transfer</button>
+                        <button onclick="closeModal('transferModal')" class="cyber-btn">Cancel</button>
+                    </div>
+                </div>
+            `;
+            openModal('transferModal');
+        }
+
         function openVideoModal(videoSrc) {
             const modal = document.getElementById('videoModal');
             const modalVideo = document.getElementById('modalVideo');
@@ -955,18 +1128,23 @@
         }
 
         async function transferNFT(tokenId) {
-            const recipientAddress = prompt("Enter the recipient's address:");
-            if (!recipientAddress) return;
+            const recipientAddress = document.getElementById('recipientAddress').value;
+            if (!recipientAddress) {
+                alert("Please enter the recipient's address");
+                return;
+            }
 
             try {
                 await contract.methods.transferFrom(userAccount, recipientAddress, tokenId).send({ from: userAccount });
                 alert(`NFT transferred successfully! Token ID ${tokenId} sent to ${recipientAddress}`);
+                closeAllModals();
                 displayAllNFTs();
             } catch (error) {
                 console.error("Error transferring NFT:", error);
                 alert("Error transferring NFT. Check console for details.");
             }
         }
+
 
         async function buyNFT(tokenId, price) {
             try {
@@ -979,12 +1157,17 @@
             }
         }
 
-        function openModal() {
-            document.getElementById('createNftModal').style.display = 'block';
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
         }
 
-        function closeModal() {
-            document.getElementById('createNftModal').style.display = 'none';
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function closeAllModals() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => modal.style.display = 'none');
         }
 
         // Particle system background
@@ -1053,11 +1236,32 @@
                 alert('Immersion initiated! Welcome to the future of digital art.');
             });
             document.getElementById('connectWallet').addEventListener('click', connectWallet);
-            document.getElementById('mintNFTBtn').addEventListener('click', openModal);
-            document.querySelector('.close-modal').addEventListener('click', closeVideoModal);
+            document.getElementById('mintNFTBtn').addEventListener('click', () => openModal('createNftModal'));
+            document.querySelector('.close-modal').addEventListener('click', () => closeModal('videoModal'));
             initWeb3();
             displayAllNFTs();
         });
+
+        // Update the createNFT function in the existing code to include the name field
+        function updateCreateNFTModal() {
+            const createNftModal = document.getElementById('createNftModal');
+            createNftModal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-modal" onclick="closeModal('createNftModal')">&times;</span>
+                    <h2 class="text-2xl neon-text mb-4">Create New Digital Artifact</h2>
+                    <input id="tokenName" type="text" placeholder="Artifact Name" class="text-input mb-4">
+                    <input id="tokenURI" type="text" placeholder="Artifact URI" class="text-input mb-4">
+                    <input id="tokenPrice" type="number" placeholder="Price in TFUEL" class="text-input mb-4">
+                    <div class="flex justify-end space-x-4">
+                        <button onclick="createNFT()" class="cyber-btn">Create Artifact</button>
+                        <button onclick="closeModal('createNftModal')" class="cyber-btn">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Call this function when the page loads to update the create NFT modal
+        document.addEventListener('DOMContentLoaded', updateCreateNFTModal);
     </script>
 </body>
 
