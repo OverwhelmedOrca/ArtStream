@@ -102,22 +102,27 @@
                     <!-- Videos will be dynamically inserted here -->
                 </div>
 
+                <!-- Add this at the beginning of the body -->
+                <div id="promptModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div class="bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full text-center">
+                        <h3 class="text-3xl font-bold mb-2 text-blue-400">Your Prompt:</h3>
+                        <p id="promptText" class="text-2xl text-white"></p>
+                    </div>
+                </div>
 
                 <!-- Stream Details -->
                 <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
                     <div class="flex items-center space-x-4 mb-4">
-                        <img src="https://i.pravatar.cc/150?u=artistname" alt="Artist" class="w-16 h-16 rounded-full border-2 border-blue-500 glow">
+                        <img id="artistImage" src="" alt="Artist" class="w-16 h-16 rounded-full border-2 border-blue-500 glow">
                         <div>
-                            <h2 class="text-2xl font-bold text-blue-300">Artist Name</h2>
-                            <p class="text-sm text-gray-400">Music</p>
+                            <h2 id="artistName" class="text-2xl font-bold text-blue-300"></h2>
+                            <p id="categoryText" class="text-sm text-gray-400"></p>
                         </div>
                     </div>
-                    <h1 class="text-3xl font-bold mb-2 text-blue-100">Live Music Session</h1>
-                    <p class="text-gray-400 mb-4">Join us for an amazing live music performance! We'll be playing some of our favorite tunes and taking requests from the audience.</p>
-                    <div class="flex space-x-4">
-                        <span class="bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm">#LiveMusic</span>
-                        <span class="bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm">#AcousticSession</span>
-                        <span class="bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm">#IndieArtist</span>
+                    <h1 id="arenaTitle" class="text-3xl font-bold mb-2 text-blue-100"></h1>
+                    <p id="arenaDesc" class="text-gray-400 mb-4"></p>
+                    <div id="categoryTags" class="flex space-x-4">
+                        <!-- Tags will be dynamically added here -->
                     </div>
                 </div>
 
@@ -180,6 +185,46 @@
     </div>
 
     <script>
+        const categoryTags = {
+            'art': ['#LiveArt', '#CreativeProcess', '#ArtisticExpression'],
+            'music': ['#LiveMusic', '#AcousticSession', '#IndieArtist'],
+            'stand-up': ['#LiveComedy', '#StandUpNight', '#ComedyClub'],
+            'acting': ['#LiveTheater', '#ActingWorkshop', '#DramaPerformance']
+        };
+
+        function updateStreamDetails() {
+            const username = localStorage.getItem('username');
+            const category = localStorage.getItem('category');
+            const arenaName = localStorage.getItem('arenaName');
+            const arenaDesc = localStorage.getItem('arenaDesc');
+            const stake = localStorage.getItem('stake');
+            const prompt = localStorage.getItem('prompt');
+
+            document.getElementById('artistImage').src = `https://i.pravatar.cc/150?u=${username}`;
+            document.getElementById('artistName').textContent = username;
+            document.getElementById('categoryText').textContent = category;
+            document.getElementById('arenaTitle').textContent = `${arenaName} (stake: $${stake})`;
+            document.getElementById('arenaDesc').textContent = arenaDesc;
+            document.getElementById('promptText').textContent = prompt;
+
+            const tagsContainer = document.getElementById('categoryTags');
+            tagsContainer.innerHTML = '';
+            categoryTags[category.toLowerCase()].forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm';
+                tagElement.textContent = tag;
+                tagsContainer.appendChild(tagElement);
+            });
+
+            // Hide the prompt modal after 3 seconds
+            setTimeout(() => {
+                document.getElementById('promptModal').classList.add('hidden');
+            }, 3000);
+        }
+
+        // Call this function when the page loads
+        window.addEventListener('load', updateStreamDetails);
+        
         const videoContainer = document.getElementById('videoContainer');
         const sideBySideBtn = document.getElementById('sideBySideBtn');
         const pipBtn = document.getElementById('pipBtn');

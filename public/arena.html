@@ -380,8 +380,8 @@
                         aiAllowed: this.aiAllowed,
                         liveStream: this.liveStream,
                         timeLimit: parseInt(this.timeLimit),
-                        category: this.selectedCategory
-                        // Remove thetaStreamID from here
+                        category: this.selectedCategory,
+                        arenaDesc: this.currentArena.description
                     };
 
                     try {
@@ -401,9 +401,11 @@
                         const result = await response.json();
 
                         if (result.opponentFound) {
+                            localStorage.setItem('prompt', result.prompt);
                             this.showOpponentFound(result.opponent, result.battleId);
                         } else {
                             this.battleId = result.battleId;
+                            localStorage.setItem('prompt', result.prompt);
                             this.checkForOpponent();
                         }
                     } catch (error) {
