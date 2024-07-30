@@ -1,7 +1,7 @@
 Pranav:
 
 1. fixing the 3d page (x)
-2. making a fully functioning marketplace
+2. making a fully functioning marketplace (x)
 3. putting it online (x)
 4. figuring out a video storage system
 6. minting nfts (x)
