@@ -71,7 +71,7 @@
                 <!-- Stream Preview -->
                 <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg glow relative">
                     <div class="aspect-video">
-                        <video id="video" class="w-full h-full object-cover" controls autoplay></video>
+                        <video id="video" class="w-full h-full object-cover" controls></video>
                     </div>
                 </div>
 
@@ -165,11 +165,34 @@
                     });
 
                     console.log('Theta stream data:', thetaResponse.data);
+                    console.log(thetaResponse.data.body.playback_uri);
 
                     if (thetaResponse.data.body.playback_uri) {
                         const video = document.getElementById('video');
-                        video.src = thetaResponse.data.body.playback_uri;
-                        video.play();
+                        const playbackUrl = thetaResponse.data.body.playback_uri;
+
+                        if (Hls.isSupported()) {
+                            const hls = new Hls();
+                            hls.loadSource(playbackUrl);
+                            hls.attachMedia(video);
+                            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                                video.play();
+                            });
+                        }
+                        // For browsers that natively support HLS (like Safari)
+                        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                            video.src = playbackUrl;
+                            video.addEventListener('loadedmetadata', function() {
+                                video.play();
+                            });
+                        }
+                        else {
+                            console.error('This browser does not support HLS playback');
+                        }
+
+                        // Disable default "Live Broadcast" controls in Safari
+                        video.setAttribute('playsinline', '');
+                        video.setAttribute('webkit-playsinline', '');
                     } else {
                         console.error('Playback URI not available');
                     }
