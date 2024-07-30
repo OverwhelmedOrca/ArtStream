@@ -367,38 +367,6 @@
         }
         setInterval(simulateRealtimeUpdates, 5000);
 
-
-        // Add a floating action button for quick actions
-        const fab = document.createElement('button');
-        fab.className = 'fixed bottom-8 right-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full w-16 h-16 flex items-center justify-center text-3xl shadow-lg hover:from-purple-600 hover:to-pink-600 transition duration-300 z-50';
-        fab.innerHTML = '<i class="fas fa-plus"></i>';
-        document.body.appendChild(fab);
-
-        fab.addEventListener('click', () => {
-            const actions = [
-                { icon: 'fa-video', text: 'New Stream' },
-                { icon: 'fa-paint-brush', text: 'Create Artwork' },
-                { icon: 'fa-users', text: 'Collaborate' }
-            ];
-            const menu = document.createElement('div');
-            menu.className = 'fixed bottom-28 right-8 bg-white rounded-lg shadow-xl z-50';
-            actions.forEach(action => {
-                const button = document.createElement('button');
-                button.className = 'block w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-300';
-                button.innerHTML = `<i class="fas ${action.icon} mr-2"></i>${action.text}`;
-                menu.appendChild(button);
-            });
-            document.body.appendChild(menu);
-            
-            const closeMenu = (e) => {
-                if (!menu.contains(e.target) && e.target !== fab) {
-                    menu.remove();
-                    document.removeEventListener('click', closeMenu);
-                }
-            };
-            setTimeout(() => document.addEventListener('click', closeMenu), 0);
-        });
-
         // Initialize tooltips for better UX
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(function (tooltipTriggerEl) {
