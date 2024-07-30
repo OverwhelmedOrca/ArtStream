@@ -805,11 +805,6 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Add this route near your other app.get routes
-app.get('/gt/virtual_gallery.html', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'gt', 'virtual_gallery.html'));
-});
-
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
